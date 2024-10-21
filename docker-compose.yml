@@ -1,0 +1,6 @@
+﻿services:
+  hubt-social-api:
+    image: hubt-social-api
+    build:
+      context: .
+      dockerfile: Dockerfile
