@@ -1,19 +1,9 @@
-namespace HUBTSOCIAL.Src.Features.Auth.Responses
+namespace HUBT_Social_API.Features.Auth.Dtos.Reponse;
+
+public class AuthResponse(bool success, int statusCode, string message, object? data = null)
 {
-    public class AụthResponse
-    {
-        public bool Success { get; set; }
-        public int StatusCode { get; set; }
-        public string Message { get; set; }
-        public object? Data { get; set; }
-
-        public AụthResponse(bool success, int statusCode, string message, object? data = null)
-        {
-            Success = success;
-            StatusCode = statusCode;
-            Message = message;
-            Data = data;
-        }
-    }    
+    public bool Success { get; set; } = success;
+    public int StatusCode { get; set; } = statusCode;
+    public string Message { get; set; } = message;
+    public object? Data { get; set; } = data;
 }
-
