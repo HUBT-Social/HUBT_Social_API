@@ -1,4 +1,4 @@
-namespace HUBTSOCIAL.Resources
+namespace HUBTSOCIAL
 {
     public class SharedResource
     {

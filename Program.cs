@@ -11,14 +11,10 @@ public class Program
 {
     private static void Configures(WebApplicationBuilder builder)
     {
-<<<<<<< Updated upstream
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddAuthorization();
 
-=======
-        // Cấu hình Swagger
->>>>>>> Stashed changes
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
@@ -32,7 +28,7 @@ public class Program
         builder.Services.ConfigureSMPT(builder.Configuration);
         builder.Services.FirebaseService(builder.Configuration);
         builder.Services.AddConfigureationService(builder.Configuration);
-
+        builder.Services.ConfigureLocalization(); //Them cau hinh da ngon ngu
         // collection
         builder.Services.AddAuthMongoCollections(builder.Configuration);
         builder.Services.AddAuthMongoCollections(builder.Configuration);
@@ -63,23 +59,13 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-<<<<<<< Updated upstream
 
         app.UseHttpsRedirection();
-=======
->>>>>>> Stashed changes
 
         app.UseLocalization();
         app.UseHttpsRedirection();
         app.UseAuthentication();
         app.UseAuthorization();
-<<<<<<< Updated upstream
-=======
-
-        // Định tuyến các controller và SignalR Hub
-        app.MapControllers();
-        app.MapHub<ChatHub>("/chathub");
->>>>>>> Stashed changes
 
         app.Run();
     }
