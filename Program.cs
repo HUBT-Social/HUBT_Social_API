@@ -1,23 +1,16 @@
-<<<<<<< Updated upstream
-=======
-﻿using HUBT_Social_API.src.Core.Configurations;
+using HUBT_Social_API.src.Core.Configurations;
 using HUBTSOCIAL.Src.Features.Chat.ChatHubs;
 
-
->>>>>>> Stashed changes
 namespace HUBT_Social_API;
 
 public class Program
 {
     private static void Configures(WebApplicationBuilder builder)
     {
-        var builder = WebApplication.CreateBuilder(args);
-
+        // Cấu hình Swagger
         builder.Services.AddAuthorization();
-
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-
 
         // Cấu hình localization, JWT, Identity, MongoDB, SignalR, Cloudinary và SMTP
         builder.Services.ConfigureLocalization();
@@ -28,9 +21,8 @@ public class Program
         builder.Services.ConfigureSMPT(builder.Configuration);
         builder.Services.FirebaseService(builder.Configuration);
         builder.Services.AddConfigureationService(builder.Configuration);
-        builder.Services.ConfigureLocalization(); //Them cau hinh da ngon ngu
-        // collection
-        builder.Services.AddAuthMongoCollections(builder.Configuration);
+
+        builder.Services.AddChatMongoCollections(builder.Configuration);
         builder.Services.AddAuthMongoCollections(builder.Configuration);
     }
 
@@ -50,7 +42,6 @@ public class Program
         Configures(builder);
         Services(builder);
 
-
         var app = builder.Build();
 
         // Cấu hình HTTP request pipeline
@@ -60,12 +51,14 @@ public class Program
             app.UseSwaggerUI();
         }
 
-        app.UseHttpsRedirection();
-
         app.UseLocalization();
         app.UseHttpsRedirection();
         app.UseAuthentication();
         app.UseAuthorization();
+
+        // Định tuyến các controller và SignalR Hub
+        app.MapControllers();
+        app.MapHub<ChatHub>("/chathub");
 
         app.Run();
     }
