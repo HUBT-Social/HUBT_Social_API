@@ -9,8 +9,20 @@
     </PropertyGroup>
 
     <ItemGroup>
+<<<<<<< Updated upstream
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8"/>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+=======
+        <PackageReference Include="AspNetCore.Identity.MongoDbCore" Version="3.1.2" />
+        <PackageReference Include="CloudinaryDotNet" Version="1.14.0" />
+        <PackageReference Include="FireSharp" Version="2.0.4" />
+        <PackageReference Include="MailKit" Version="4.8.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
+        <PackageReference Include="MongoDB.Bson" Version="2.29.0" />
+        <PackageReference Include="MongoDB.Driver" Version="2.29.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+>>>>>>> Stashed changes
     </ItemGroup>
 
 </Project>

@@ -1,0 +1,107 @@
+<root>
+  <data name="InvalidInformation" xml:space="preserve">
+    <value>Thông tin không hợp lệ.</value>
+  </data>
+  <data name="RegistrationFailed" xml:space="preserve">
+    <value>Đăng ký thất bại.</value>
+  </data>
+  <data name="UnableToSendOTP" xml:space="preserve">
+    <value>Không thể gửi mã OTP. Vui lòng thử lại.</value>
+  </data>
+  <data name="RegistrationSuccess" xml:space="preserve">
+    <value>Đăng ký thành công. Vui lòng kiểm tra email để nhập mã OTP.</value>
+  </data>
+  <data name="StepOneVerificationSuccess" xml:space="preserve">
+    <value>Xác minh bước một thành công. Vui lòng kiểm tra email để nhập mã OTP.</value>
+  </data>
+  <data name="AccountLocked" xml:space="preserve">
+    <value>Tài khoản đã bị khóa.</value>
+  </data>
+  <data name="LoginNotAllowed" xml:space="preserve">
+    <value>Đăng nhập không được phép.</value>
+  </data>
+  <data name="TwoFactorRequired" xml:space="preserve">
+    <value>Cần xác thực hai yếu tố.</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Tên người dùng hoặc mật khẩu không hợp lệ.</value>
+  </data>
+  <data name="VerificationSuccess" xml:space="preserve">
+    <value>Xác minh thành công.</value>
+  </data>
+  <data name="OTPVerificationFailed" xml:space="preserve">
+    <value>Xác minh mã OTP thất bại.</value>
+  </data>
+  <data name="InvalidLanguage" xml:space="preserve">
+    <value>Ngôn ngữ không hợp lệ.</value>
+  </data>
+  <data name="LanguageChanged" xml:space="preserve">
+    <value>Đã thay đổi ngôn ngữ thành công.</value>
+  </data>
+  <data name="LanguageChangeFailed" xml:space="preserve">
+    <value>Thay đổi ngôn ngữ thất bại.</value>
+  </data>
+   <data name="InvalidMessageData" xml:space="preserve">
+    <value>Dữ liệu tin nhắn không hợp lệ</value>
+  </data>
+  <data name="MessageSentSuccessfully" xml:space="preserve">
+    <value>Tin nhắn đã được gửi thành công</value>
+  </data>
+  <data name="FailedToSendMessage" xml:space="preserve">
+    <value>Gửi tin nhắn không thành công</value>
+  </data>
+  <data name="ChatRoomIdRequired" xml:space="preserve">
+    <value>ID phòng chat là bắt buộc</value>
+  </data>
+  <data name="NoMessagesFound" xml:space="preserve">
+    <value>Không tìm thấy tin nhắn nào</value>
+  </data>
+  <data name="MessageDeletedSuccessfully" xml:space="preserve">
+    <value>Tin nhắn đã được xóa thành công</value>
+  </data>
+  <data name="FailedToDeleteMessage" xml:space="preserve">
+    <value>Xóa tin nhắn không thành công</value>
+  </data>
+  <data name="ChatRoomIdAndKeywordRequired" xml:space="preserve">
+    <value>ID phòng chat và từ khóa là bắt buộc</value>
+  </data>
+  <data name="MessagesFoundSuccessfully" xml:space="preserve">
+    <value>Tin nhắn đã được tìm thấy thành công</value>
+  </data>
+  <data name="ImageUploadedSuccessfully" xml:space="preserve">
+    <value>Ảnh đã được tải lên thành công</value>
+  </data>
+  <data name="FailedToUploadImage" xml:space="preserve">
+    <value>Tải ảnh lên không thành công</value>
+  </data>
+  <data name="FileUploadedSuccessfully" xml:space="preserve">
+    <value>Tập tin đã được tải lên thành công</value>
+  </data>
+  <data name="FailedToUploadFile" xml:space="preserve">
+    <value>Tải tập tin lên không thành công</value>
+  </data>
+   <data name="GroupNameRequired" xml:space="preserve">
+    <value>Tên nhóm không được để trống</value>
+  </data>
+  <data name="GroupCreatedSuccessfully" xml:space="preserve">
+    <value>Nhóm chat đã được tạo thành công</value>
+  </data>
+  <data name="FailedToCreateGroup" xml:space="preserve">
+    <value>Không thể tạo nhóm chat</value>
+  </data>
+  <data name="GroupNameUpdatedSuccessfully" xml:space="preserve">
+    <value>Tên nhóm đã được cập nhật thành công</value>
+  </data>
+  <data name="FailedToUpdateGroup" xml:space="preserve">
+    <value>Không thể cập nhật tên nhóm</value>
+  </data>
+  <data name="GroupDeletedSuccessfully" xml:space="preserve">
+    <value>Nhóm chat đã được xóa thành công</value>
+  </data>
+  <data name="FailedToDeleteGroup" xml:space="preserve">
+    <value>Không thể xóa nhóm chat</value>
+  </data>
+  <data name="GroupNotFound" xml:space="preserve">
+    <value>Không tìm thấy nhóm chat</value>
+  </data>
+</root>

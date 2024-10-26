@@ -1,0 +1,107 @@
+<root>
+  <data name="InvalidInformation" xml:space="preserve">
+    <value>Invalid information.</value>
+  </data>
+  <data name="RegistrationFailed" xml:space="preserve">
+    <value>Registration failed.</value>
+  </data>
+  <data name="UnableToSendOTP" xml:space="preserve">
+    <value>Unable to send OTP. Please try again.</value>
+  </data>
+  <data name="RegistrationSuccess" xml:space="preserve">
+    <value>Registration successful. Please check your email to enter the OTP.</value>
+  </data>
+  <data name="StepOneVerificationSuccess" xml:space="preserve">
+    <value>Step one verification successful. Please check your email to enter the OTP.</value>
+  </data>
+  <data name="AccountLocked" xml:space="preserve">
+    <value>Account is locked.</value>
+  </data>
+  <data name="LoginNotAllowed" xml:space="preserve">
+    <value>Login is not allowed.</value>
+  </data>
+  <data name="TwoFactorRequired" xml:space="preserve">
+    <value>Two-factor authentication is required.</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Invalid username or password.</value>
+  </data>
+  <data name="VerificationSuccess" xml:space="preserve">
+    <value>Verification successful.</value>
+  </data>
+  <data name="OTPVerificationFailed" xml:space="preserve">
+    <value>OTP verification failed.</value>
+  </data>
+  <data name="InvalidLanguage" xml:space="preserve">
+    <value>Invalid language.</value>
+  </data>
+  <data name="LanguageChanged" xml:space="preserve">
+    <value>Language changed successfully.</value>
+  </data>
+  <data name="LanguageChangeFailed" xml:space="preserve">
+    <value>Language change failed.</value>
+  </data>
+  <data name="InvalidMessageData" xml:space="preserve">
+    <value>Invalid message data</value>
+  </data>
+  <data name="MessageSentSuccessfully" xml:space="preserve">
+    <value>Message sent successfully</value>
+  </data>
+  <data name="FailedToSendMessage" xml:space="preserve">
+    <value>Failed to send message</value>
+  </data>
+  <data name="ChatRoomIdRequired" xml:space="preserve">
+    <value>Chat room ID is required</value>
+  </data>
+  <data name="NoMessagesFound" xml:space="preserve">
+    <value>No messages found</value>
+  </data>
+  <data name="MessageDeletedSuccessfully" xml:space="preserve">
+    <value>Message deleted successfully</value>
+  </data>
+  <data name="FailedToDeleteMessage" xml:space="preserve">
+    <value>Failed to delete message</value>
+  </data>
+  <data name="ChatRoomIdAndKeywordRequired" xml:space="preserve">
+    <value>Chat room ID and keyword are required</value>
+  </data>
+  <data name="MessagesFoundSuccessfully" xml:space="preserve">
+    <value>Messages found successfully</value>
+  </data>
+  <data name="ImageUploadedSuccessfully" xml:space="preserve">
+    <value>Image uploaded successfully</value>
+  </data>
+  <data name="FailedToUploadImage" xml:space="preserve">
+    <value>Failed to upload image</value>
+  </data>
+  <data name="FileUploadedSuccessfully" xml:space="preserve">
+    <value>File uploaded successfully</value>
+  </data>
+  <data name="FailedToUploadFile" xml:space="preserve">
+    <value>Failed to upload file</value>
+  </data>
+  <data name="GroupNameRequired" xml:space="preserve">
+    <value>Group name is required</value>
+  </data>
+  <data name="GroupCreatedSuccessfully" xml:space="preserve">
+    <value>Group chat has been created successfully</value>
+  </data>
+  <data name="FailedToCreateGroup" xml:space="preserve">
+    <value>Failed to create group chat</value>
+  </data>
+  <data name="GroupNameUpdatedSuccessfully" xml:space="preserve">
+    <value>Group name has been updated successfully</value>
+  </data>
+  <data name="FailedToUpdateGroup" xml:space="preserve">
+    <value>Failed to update group name</value>
+  </data>
+  <data name="GroupDeletedSuccessfully" xml:space="preserve">
+    <value>Group chat has been deleted successfully</value>
+  </data>
+  <data name="FailedToDeleteGroup" xml:space="preserve">
+    <value>Failed to delete group chat</value>
+  </data>
+  <data name="GroupNotFound" xml:space="preserve">
+    <value>Group chat not found</value>
+  </data>
+</root>
