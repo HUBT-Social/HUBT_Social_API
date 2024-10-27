@@ -1,4 +1,4 @@
-using HUBT_Social_API.Features.Chat.Services.IChatServices;
+using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 

@@ -1,7 +1,7 @@
 ﻿using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.LoginRequest;
 using HUBT_Social_API.Features.Auth.Services;
-using HUBT_Social_API.Features.Auth.Services.IAuthServices;
+using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,10 +32,20 @@ public class EmailAuthenticationController : ControllerBase
     {
         var code = await _emailService.CreatePostcode(revicer);
 
-        await _emailService.SendEmailAsync(new EmailRequest
-            { Code = code.Code, Subject = "Validate Email Code", ToEmail = revicer });
+        await _emailService.SendEmailAsync(
+            new EmailRequest
+            { 
+                Code = code.Code, 
+                Subject = "Validate Email Code", 
+                ToEmail = revicer 
+            });
 
-        var result = await _userManagerService.Login(new LoginByEmailRequest { Email = revicer, Password = "" });
+        var result = await _userManagerService.Login(
+            new LoginByEmailRequest 
+            { 
+                Email = revicer, 
+                Password = "" 
+            });
 
         return result.Success ? Ok(new { result.AccessToken }) : BadRequest(result.Message);
     }

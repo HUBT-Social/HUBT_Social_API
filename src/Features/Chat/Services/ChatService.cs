@@ -1,5 +1,5 @@
 using HUBT_Social_API.Features.Chat.DTOs;
-using HUBT_Social_API.Features.Chat.Services.IChatServices;
+using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 
 namespace HUBT_Social_API.Features.Chat.Services;

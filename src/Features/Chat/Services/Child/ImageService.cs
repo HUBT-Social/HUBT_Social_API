@@ -1,10 +1,10 @@
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using HUBT_Social_API.Features.Chat.Services.IChatServices;
+using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using MongoDB.Driver;
 
-namespace HUBT_Social_API.Features.Chat.Services.ChildChatServices;
+namespace HUBT_Social_API.Features.Chat.Services.Child;
 
 public class ImageService : IImageService
 {

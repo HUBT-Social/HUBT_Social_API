@@ -1,5 +1,5 @@
 using HUBT_Social_API.Features.Chat.ChatHubs.IHubs;
-using HUBT_Social_API.Features.Chat.Services.IChatServices;
+using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 
 namespace HUBT_Social_API.Features.Chat.ChatHubs.ChildChatHubs;

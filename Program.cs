@@ -6,42 +6,12 @@ namespace HUBT_Social_API;
 
 public class Program
 {
-    private static void Configures(WebApplicationBuilder builder)
-    {
-        // Cấu hình Swagger
-        builder.Services.AddAuthorization();
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-
-        // Cấu hình localization, JWT, Identity, MongoDB, SignalR, Cloudinary và SMTP
-        builder.Services.ConfigureLocalization();
-        builder.Services.ConfigureJwt(builder.Configuration);
-        builder.Services.ConfigureIdentity(builder.Configuration);
-        builder.Services.ConfigureSignalR();
-        builder.Services.ConfigureCloudinary(builder.Configuration);
-        builder.Services.ConfigureSMPT(builder.Configuration);
-        builder.Services.FirebaseService(builder.Configuration);
-        builder.Services.AddConfigureationService(builder.Configuration);
-
-        builder.Services.AddChatMongoCollections(builder.Configuration);
-        builder.Services.AddAuthMongoCollections(builder.Configuration);
-    }
-
-    private static void Services(WebApplicationBuilder builder)
-    {
-        // Đăng ký các dịch vụ của hệ thống
-        builder.Services.RegisterApplicationServices();
-
-        // Thêm hỗ trợ cho các controller
-        builder.Services.AddControllers();
-    }
-
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
         // Gọi hàm cấu hình và đăng ký dịch vụ
-        Configures(builder);
-        Services(builder);
+        InitConfigures(builder);
+        InitServices(builder);
 
         var app = builder.Build();
 
@@ -63,4 +33,35 @@ public class Program
 
         app.Run();
     }
+    private static void InitConfigures(WebApplicationBuilder builder)
+    {
+        // Cấu hình Swagger
+        builder.Services.AddAuthorization();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+
+        // Cấu hình localization, JWT, Identity, MongoDB, SignalR, Cloudinary và SMTP
+        builder.Services.ConfigureLocalization();
+        builder.Services.ConfigureJwt(builder.Configuration);
+        builder.Services.ConfigureIdentity(builder.Configuration);
+        builder.Services.ConfigureSignalR();
+        builder.Services.ConfigureCloudinary(builder.Configuration);
+        builder.Services.ConfigureSMPT(builder.Configuration);
+        builder.Services.FirebaseService(builder.Configuration);
+        builder.Services.AddConfigureationService(builder.Configuration);
+
+        builder.Services.AddChatMongoCollections(builder.Configuration);
+        builder.Services.AddAuthMongoCollections(builder.Configuration);
+    }
+
+    private static void InitServices(WebApplicationBuilder builder)
+    {
+        // Đăng ký các dịch vụ của hệ thống
+        builder.Services.RegisterApplicationServices();
+
+        // Thêm hỗ trợ cho các controller
+        builder.Services.AddControllers();
+    }
+
+    
 }

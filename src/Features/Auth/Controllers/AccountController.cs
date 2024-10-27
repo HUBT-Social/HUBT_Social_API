@@ -1,7 +1,7 @@
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.LoginRequest;
-using HUBT_Social_API.Features.Auth.Services.IAuthServices;
+using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 
@@ -16,8 +16,11 @@ public class AccountController : ControllerBase
     private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly ITokenService _tokenService;
 
-    public AccountController(IAuthService authService, IStringLocalizer<SharedResource> localizer,
-        ITokenService tokenService, IEmailService emailService = null)
+    public AccountController(
+        IAuthService authService, 
+        IStringLocalizer<SharedResource> localizer,
+        ITokenService tokenService, 
+        IEmailService emailService)
     {
         _authService = authService;
         _localizer = localizer;
@@ -38,22 +41,29 @@ public class AccountController : ControllerBase
                 )
             );
 
-        var (result, user) = await _authService.RegisterAsync(request);
+        var (result, user, message) = await _authService.RegisterAsync(request);
+
         if (!result.Succeeded)
             return BadRequest(
                 new AuthResponse(
                     false,
                     400,
                     _localizer["RegistrationFailed"],
-                    result.Errors));
+                    message));
 
         // Gửi mã OTP qua email để xác thực
         try
         {
             var code = await _emailService.CreatePostcode(request.Email);
 
-            await _emailService.SendEmailAsync(new EmailRequest
-                { Code = code.Code, Subject = "Validate Email Code", ToEmail = request.Email });
+            await _emailService.SendEmailAsync(
+                new EmailRequest
+                { 
+                    Code = code.Code, 
+                    Subject = "Validate Email Code", 
+                    ToEmail = request.Email 
+                });
+
         }
         catch (Exception ex)
         {
@@ -62,7 +72,7 @@ public class AccountController : ControllerBase
                 new AuthResponse(
                     false,
                     500,
-                    _localizer["UnableToSendOTP"]
+                    $"{_localizer["UnableToSendOTP"]},{ex.Message}"
                 )
             );
         }
@@ -81,16 +91,25 @@ public class AccountController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> LoginAsync(ILoginRequest model)
     {
-        var (result, user) = await _authService.LoginAsync(model);
+        var (result, user, message) = await _authService.LoginAsync(model);
 
         if (result.Succeeded && user is not null)
         {
             try
             {
-                var code = await _emailService.CreatePostcode(user.Email);
+                if (user.Email != null)
+                {
+                    var code = await _emailService.CreatePostcode(user.Email);
 
-                await _emailService.SendEmailAsync(new EmailRequest
-                    { Code = code.Code, Subject = "Validate Email Code", ToEmail = user.Email });
+                    await _emailService.SendEmailAsync(
+                        new EmailRequest
+                        { 
+                            Code = code.Code, 
+                            Subject = "Validate Email Code", 
+                            ToEmail = user.Email 
+                        });  
+                }
+                
             }
             catch (Exception ex)
             {
@@ -99,7 +118,7 @@ public class AccountController : ControllerBase
                     new AuthResponse(
                         false,
                         500,
-                        _localizer["UnableToSendOTP"]
+                        $"{_localizer["UnableToSendOTP"]},{ex.Message}"
                     )
                 );
             }
@@ -183,36 +202,4 @@ public class AccountController : ControllerBase
         );
     }
 
-    // Thay đổi ngôn ngữ
-    [HttpPost("change-language")]
-    public async Task<IActionResult> ChangeLanguage([FromBody] ChangeLanguageRequest request)
-    {
-        if (request == null || string.IsNullOrEmpty(request.Language))
-            return BadRequest(
-                new AuthResponse(
-                    false,
-                    400,
-                    _localizer["InvalidLanguage"]
-                )
-            );
-
-        // Gọi phương thức trong AccountService để thay đổi ngôn ngữ
-        var result = await _authService.ChangeLanguage(request);
-        if (result)
-            return Ok(
-                new AuthResponse(
-                    true,
-                    200,
-                    _localizer["LanguageChanged"]
-                )
-            );
-
-        return BadRequest(
-            new AuthResponse(
-                false,
-                400,
-                _localizer["LanguageChangeFailed"]
-            )
-        );
-    }
 }

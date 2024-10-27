@@ -6,13 +6,13 @@ using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Models;
-using HUBT_Social_API.Features.Auth.Services.IAuthServices;
+using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 
-namespace HUBT_Social_API.Features.Auth.Services.ChildServices;
+namespace HUBT_Social_API.Features.Auth.Services.Child;
 
 public class TokenService : ITokenService
 {

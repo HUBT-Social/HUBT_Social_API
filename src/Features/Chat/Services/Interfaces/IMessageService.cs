@@ -1,6 +1,6 @@
 using HUBTSOCIAL.Src.Features.Chat.Models;
 
-namespace HUBT_Social_API.Features.Chat.Services.IChatServices;
+namespace HUBT_Social_API.Features.Chat.Services.Interfaces;
 
 public interface IMessageService
 {

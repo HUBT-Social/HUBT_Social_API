@@ -1,9 +1,9 @@
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Models;
-using HUBT_Social_API.Features.Auth.Services.IAuthServices;
+using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 
-namespace HUBT_Social_API.Features.Auth.Services.ChildServices;
+namespace HUBT_Social_API.Features.Auth.Services.Child;
 
 public class UserService : IUserService
 {
@@ -51,32 +51,6 @@ public class UserService : IUserService
         return false;
     }
 
-    public async Task<bool> ChangeLanguage(ChangeLanguageRequest changeLanguageRequest)
-    {
-        if (string.IsNullOrWhiteSpace(changeLanguageRequest.Language) ||
-            string.IsNullOrWhiteSpace(changeLanguageRequest.UserName))
-            throw new ArgumentException("Tên người dùng và ngôn ngữ không được để trống.",
-                nameof(changeLanguageRequest));
-
-        if (changeLanguageRequest.Language != "vi" &&
-            changeLanguageRequest.Language != "en") return false; // Ngôn ngữ không hợp lệ
-
-        var user = await _userManager.FindByNameAsync(changeLanguageRequest.UserName);
-        if (user is null) return false; // Không tìm thấy người dùng
-
-        user.Language = changeLanguageRequest.Language;
-        try
-        {
-            await _userManager.UpdateAsync(user);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error updating language: {ex.Message}");
-            return false;
-        }
-
-        return true;
-    }
 
     // Tương tự cho các phương thức PromoteToTeacherAsync, VerifyCodeAsync, v.v.
 }

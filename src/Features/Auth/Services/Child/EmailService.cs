@@ -2,7 +2,7 @@
 using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Models;
-using HUBT_Social_API.Features.Auth.Services.IAuthServices;
+using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.AspNetCore.Identity;
@@ -11,7 +11,7 @@ using MimeKit;
 using MimeKit.Text;
 using MongoDB.Driver;
 
-namespace HUBT_Social_API.Features.Auth.Services.ChildServices;
+namespace HUBT_Social_API.Features.Auth.Services.Child;
 
 public class EmailService : IEmailService
 {

@@ -1,4 +1,4 @@
-using HUBT_Social_API.Features.Chat.Services.IChatServices;
+using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using MongoDB.Driver;
 

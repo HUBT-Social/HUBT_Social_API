@@ -1,4 +1,4 @@
-namespace HUBT_Social_API.Features.Chat.Services.ChildChatServices;
+namespace HUBT_Social_API.Features.Chat.Services.Child;
 
 public class NotificationService
 {

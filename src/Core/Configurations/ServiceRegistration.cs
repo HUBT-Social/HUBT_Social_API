@@ -1,11 +1,11 @@
 using HUBT_Social_API.Features.Auth.Services;
-using HUBT_Social_API.Features.Auth.Services.ChildServices;
-using HUBT_Social_API.Features.Auth.Services.IAuthServices;
+using HUBT_Social_API.Features.Auth.Services.Child;
+using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.ChatHubs.ChildChatHubs;
 using HUBT_Social_API.Features.Chat.ChatHubs.IHubs;
 using HUBT_Social_API.Features.Chat.Services;
-using HUBT_Social_API.Features.Chat.Services.ChildChatServices;
-using HUBT_Social_API.Features.Chat.Services.IChatServices;
+using HUBT_Social_API.Features.Chat.Services.Child;
+using HUBT_Social_API.Features.Chat.Services.Interfaces;
 
 namespace HUBT_Social_API.Core.Configurations;
 
