@@ -7,6 +7,6 @@ namespace HUBT_Social_API.Features.Auth.Services.Interfaces;
 public interface IEmailService
 {
     Task SendEmailAsync(EmailRequest emailRequest);
-    Task<Postcode> CreatePostcode(string reciver);
+    Task<Postcode?> CreatePostcode(string? reciver);
     Task<AUser> ValidatePostcode(ValidatePostcodeRequest postcode);
 }

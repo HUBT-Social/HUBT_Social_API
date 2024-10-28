@@ -8,9 +8,10 @@ namespace HUBT_Social_API.Features.Auth.Services.Interfaces;
 
 public interface IAuthService
 {
-    Task<(IdentityResult, string?)> RegisterAsync(RegisterRequest model);
+    Task<(IdentityResult, AUser?)> RegisterAsync(RegisterRequest model);
     Task<(SignInResult, AUser?)> LoginAsync(ILoginRequest model);
 
-    Task<TempUserRegister> VerifyCodeAsync(ValidatePostcodeRequest request);
+    Task<AUser> VerifyCodeAsync(ValidatePostcodeRequest request);
 
+    Task<TempUserRegister> GetTempUser(string email); 
 }

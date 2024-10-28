@@ -1,7 +1,9 @@
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.LoginRequest;
+using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.src.Features.Auth.Dtos.Collections;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 
@@ -15,14 +17,15 @@ public class AccountController : ControllerBase
     private readonly IEmailService _emailService;
     private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly ITokenService _tokenService;
-
+    private readonly IRegisterService _registerService;
     public AccountController(IAuthService authService, IStringLocalizer<SharedResource> localizer,
-        ITokenService tokenService, IEmailService emailService = null)
+        ITokenService tokenService, IEmailService emailService, IRegisterService registerService)
     {
         _authService = authService;
         _localizer = localizer;
         _tokenService = tokenService;
         _emailService = emailService;
+        _registerService = registerService;
     }
 
     // Đăng ký tài khoản mới và gửi mã OTP qua email
@@ -37,15 +40,22 @@ public class AccountController : ControllerBase
                     _localizer["InvalidInformation"]
                 )
             );
-
-        var (result, message) = await _authService.RegisterAsync(request);
-        if (!result.Succeeded)
+        if (await _registerService.CheckUserAccountExit(request))
             return BadRequest(
                 new AuthResponse(
                     false,
                     400,
-                    message,
-                    result.Errors));
+                    "User already exit"
+                )
+            );
+        if (!await _registerService.AddToTempUser(request))
+            return BadRequest(
+                new AuthResponse(
+                    false,
+                    400,
+                    "Can't store in Database"
+                )
+            );
 
         // Gửi mã OTP qua email để xác thực
         try
@@ -159,28 +169,50 @@ public class AccountController : ControllerBase
                 )
             );
 
-        var user = await _authService.VerifyCodeAsync(request);
-        if (user is not null)
+        AUser user = await _authService.VerifyCodeAsync(request);
+        if (user == null)
         {
-            var token = await _tokenService.GenerateTokenAsync(user);
+            TempUserRegister tempUser = await _authService.GetTempUser(request.Email);
+            if (tempUser == null)
+            {
+                return Unauthorized(
+                    new AuthResponse(
+                        false,
+                        401,
+                        _localizer["OTPVerificationFailed"]
+                    ));
+            }
 
-            return Ok(
-                new AuthResponse(
-                    true,
-                    200,
-                    _localizer["VerificationSuccess"],
-                    new { Token = token }
-                )
-            );
+            var (result, registeredUser) = await _authService.RegisterAsync(new RegisterRequest
+            {
+                Email = tempUser.Email,
+                Password = tempUser.Password,
+                UserName = tempUser.UserName
+            });
+
+            if (!result.Succeeded)
+            {
+                return Unauthorized(
+                     new AuthResponse(
+                         false,
+                         401,
+                         _localizer["OTPVerificationFailed"]
+                     ));
+            }
+            user = registeredUser;
         }
+        var token = await _tokenService.GenerateTokenAsync(user);
 
-        return Unauthorized(
+        return Ok(
             new AuthResponse(
-                false,
-                401,
-                _localizer["OTPVerificationFailed"]
+                true,
+                200,
+                _localizer["VerificationSuccess"],
+                new { Token = token }
             )
         );
+
+        
     }
 
 }
