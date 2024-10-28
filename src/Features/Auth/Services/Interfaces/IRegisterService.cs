@@ -7,4 +7,6 @@ namespace HUBT_Social_API.Features.Auth.Services.Interfaces;
 public interface IRegisterService
 {
     Task<(IdentityResult Result, string? Error)> RegisterAsync(RegisterRequest model);
+
+    Task<bool> CheckUserAccount(RegisterRequest model);
 }

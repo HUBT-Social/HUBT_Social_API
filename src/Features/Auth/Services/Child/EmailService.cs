@@ -3,6 +3,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.src.Features.Auth.Dtos.Collections;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.AspNetCore.Identity;
@@ -17,15 +18,17 @@ public class EmailService : IEmailService
 {
     private readonly SMPTSetting _emailSetting;
     private readonly IMongoCollection<Postcode> _postcode;
-    private readonly UserManager<AUser> _userManager;
+    private readonly IMongoCollection<TempUserRegister> _tempUserRegister;
+
+
 
 
     public EmailService(IOptions<SMPTSetting> setting, IMongoCollection<Postcode> postcode,
-        UserManager<AUser> userManager)
+        IMongoCollection<TempUserRegister> tempUserRegister)
     {
         _emailSetting = setting.Value;
         _postcode = postcode;
-        _userManager = userManager;
+        _tempUserRegister = tempUserRegister;
     }
 
     public async Task SendEmailAsync(EmailRequest emailRequest)
@@ -62,15 +65,21 @@ public class EmailService : IEmailService
 
         var code = random.Next(100000, 999999).ToString();
         var expireTime = DateTime.UtcNow;
-        Postcode postcode = new() { Code = code, Email = reciver, ExpireTime = expireTime };
+        
+        Postcode postcode = new() {
+            Code = code,
+            Email = reciver,
+            ExpireTime = expireTime 
+        };
 
         await _postcode.InsertOneAsync(postcode);
         return postcode;
     }
 
-    public async Task<AUser?> ValidatePostcode(ValidatePostcodeRequest postcode)
+    public async Task<TempUserRegister?> ValidatePostcode(ValidatePostcodeRequest postcode)
     {
-        var user = await _userManager.FindByEmailAsync(postcode.Email);
+        var user = await _tempUserRegister.Find(t => t.Email == postcode.Email)
+            .FirstOrDefaultAsync();
         if (user == null) return null;
         var userPostcode = await _postcode.Find(ps => ps.Code == postcode.Postcode && ps.Email == postcode.Email)
             .FirstOrDefaultAsync();

@@ -3,7 +3,9 @@ using System.Security.Claims;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.src.Features.Auth.Dtos.Collections;
 using Microsoft.AspNetCore.Identity;
+using MongoDB.Driver;
 
 namespace HUBT_Social_API.Features.Auth.Services.Child;
 
@@ -11,13 +13,37 @@ public class RegisterService : IRegisterService
 {
     private readonly RoleManager<ARole> _roleManager;
     private readonly UserManager<AUser> _userManager;
+    private readonly IMongoCollection<TempUserRegister> _tempUserRegister;
 
-    public RegisterService(UserManager<AUser> userManager, RoleManager<ARole> roleManager)
+    public RegisterService(UserManager<AUser> userManager, RoleManager<ARole> roleManager, IMongoCollection<TempUserRegister> tempUserRegister)
     {
         _userManager = userManager;
         _roleManager = roleManager;
+        _tempUserRegister = tempUserRegister;
     }
 
+    public async Task<bool> AddToTempUser(RegisterRequest model)
+    {
+        if (model == null) return false;
+
+        TempUserRegister tempUser = new()
+        {
+            Email = model.Email,
+            ExpireTime = DateTime.UtcNow,
+            UserName = model.UserName,
+            Password = model.Password
+        };
+        await _tempUserRegister.InsertOneAsync(tempUser);
+        return true;
+    }
+
+    public async Task<bool> CheckUserAccount(RegisterRequest model)
+    {
+        return await _userManager.FindByNameAsync(model.UserName) != null ||
+               await _userManager.FindByEmailAsync(model.Email) != null;
+    }
+
+    
     public async Task<(IdentityResult Result, string? Error)> RegisterAsync(RegisterRequest model)
     {
         if (model == null)
@@ -26,16 +52,15 @@ public class RegisterService : IRegisterService
         try
         {
             // Kiểm tra tài khoản đã tồn tại
-            var accountAlreadyExists = await _userManager.FindByNameAsync(model.StudentCode);
-            if (accountAlreadyExists != null)
+            
+            if (await CheckUserAccount(model))
                 return (IdentityResult.Failed(new IdentityError { Description = "Tài khoản đã được đăng ký." }), "Tài khoản đã tồn tại.");
-
+            
             // Tạo người dùng mới
             var user = new AUser
             {
-                UserName = model.StudentCode,
-                Email = model.Email,
-                FullName = model.FullName
+                UserName = model.UserName,
+                Email = model.Email
             };
 
             // Tạo tài khoản và kiểm tra kết quả

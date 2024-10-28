@@ -2,6 +2,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.LoginRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.src.Features.Auth.Dtos.Collections;
 using Microsoft.AspNetCore.Identity;
 
 namespace HUBT_Social_API.Features.Auth.Services;
@@ -32,7 +33,7 @@ public class AuthService : IAuthService
         return await _loginService.LoginAsync(model);
     }
 
-    public async Task<AUser> VerifyCodeAsync(ValidatePostcodeRequest request)
+    public async Task<TempUserRegister> VerifyCodeAsync(ValidatePostcodeRequest request)
     {
         return await _emailService.ValidatePostcode(request);
     }

@@ -1,4 +1,5 @@
 ﻿using HUBT_Social_API.Features.Auth.Dtos.Collections;
+using HUBT_Social_API.src.Features.Auth.Dtos.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using MongoDB.Driver;
 
@@ -14,7 +15,7 @@ public static class MongoDbConfiguration
 
         services.AddScoped<IMongoCollection<RefreshToken>>(s => database.GetCollection<RefreshToken>("RefreshTokens"));
         services.AddScoped<IMongoCollection<Postcode>>(s => database.GetCollection<Postcode>("Postcode"));
-
+        services.AddScoped<IMongoCollection<TempUserRegister>>(s => database.GetCollection<TempUserRegister>("TempUserRegister"));
 
         return services;
     }
