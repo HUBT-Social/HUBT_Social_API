@@ -20,7 +20,7 @@ public static class LocalizationConfig
                 //  Thêm các ngôn ngữ khác ở đây.
             };
 
-            options.DefaultRequestCulture = new RequestCulture("vi"); // Ngôn ngữ mặc định là tiếng Việt
+            options.DefaultRequestCulture = new RequestCulture("en"); // Ngôn ngữ mặc định là tiếng Việt
             options.SupportedCultures = supportedCultures; // Các ngôn ngữ hỗ trợ
             options.SupportedUICultures = supportedCultures; // Các UI cultures hỗ trợ
 

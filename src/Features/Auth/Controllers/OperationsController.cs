@@ -41,24 +41,6 @@ public class OperationsController : ControllerBase
         return Ok(new { Message = "Create role success" });
     }
 
-    [HttpPost]
-    [Route("register")]
-    public async Task<ActionResult> Register(RegisterRequest registerRequest)
-    {
-        var result = await _userManagerService.Register(registerRequest);
-        _logger.LogInformation("User has register.");
-        return result.Success ? Ok(result.Message) : BadRequest(result.Message);
-    }
-
-    [HttpPost]
-    [Route("login")]
-    public async Task<ActionResult> Login(LoginByStudentCodeRequest loginRequest)
-    {
-        var result = await _userManagerService.Login(loginRequest);
-        _logger.LogInformation("User logged in.");
-        return result.Success ? Ok(new { result.AccessToken }) : BadRequest(result.Message);
-    }
-
     [HttpPut]
     [Route("refreshToken")]
     public async Task<ActionResult> RefreshToken(RefreshTokenRequest request)

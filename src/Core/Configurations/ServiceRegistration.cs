@@ -31,8 +31,6 @@ public static class ServiceRegistration
 
 /*            services.AddScoped<IUserManagerS, UserManagerS>();
 */
-        services.AddScoped<IEmailService, EmailService>();
-
 
         return services;
     }
