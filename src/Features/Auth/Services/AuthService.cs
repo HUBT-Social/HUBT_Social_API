@@ -22,17 +22,17 @@ public class AuthService : IAuthService
         _emailService = emailService;
     }
 
-    public async Task<(IdentityResult, AUser?,string?)> RegisterAsync(RegisterRequest model)
+    public async Task<(IdentityResult,string?)> RegisterAsync(RegisterRequest model)
     {
         return await _registerService.RegisterAsync(model);
     }
 
-    public async Task<(SignInResult, AUser?, string?)> LoginAsync(ILoginRequest model)
+    public async Task<(SignInResult, AUser?)> LoginAsync(ILoginRequest model)
     {
         return await _loginService.LoginAsync(model);
     }
 
-    public async Task<AUser> VerifyCodeAsync(VLpostcodeRequest request)
+    public async Task<AUser> VerifyCodeAsync(ValidatePostcodeRequest request)
     {
         return await _emailService.ValidatePostcode(request);
     }

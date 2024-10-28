@@ -17,62 +17,35 @@ public class LoginService : ILoginService
         _userManager = userManager;
     }
 
-    public async Task<(SignInResult Result, AUser? User, string? ErrorMessage)> LoginAsync(ILoginRequest model)
+    public async Task<(SignInResult, AUser?)> LoginAsync(ILoginRequest model)
     {
-        if (model == null)
-            return (SignInResult.Failed, null, "Yêu cầu đăng nhập không hợp lệ.");
+        var user = await FindUserByIdentifierAsync(model);
+        if (user == null)
+            return (SignInResult.Failed, null);
 
-        try
-        {
-            var (user, errorMessage) = await FindUserByIdentifierAsync(model);
-
-
-            if (user == null) return (SignInResult.Failed, null, errorMessage);
-
-
-            #pragma warning disable CS8604 // Possible null reference argument.
-            var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, false, false);
-            #pragma warning restore CS8604 // Possible null reference argument.
-
-            return result.Succeeded
-                ? (result, user, null)
-                : (SignInResult.Failed, null, "Đăng nhập không thành công.");
-                
-        }
-        catch (Exception ex)
-        {
-            return (SignInResult.Failed, null, $"Đã xảy ra lỗi không xác định: {ex.Message}");
-        }
+        var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, false, false);
+        return result.Succeeded
+            ? (result, await _userManager.FindByNameAsync(model.Identifier))
+            : (result, null);
     }
 
-    private async Task<(AUser? User, string? ErrorMessage)> FindUserByIdentifierAsync(ILoginRequest model)
+
+    private async Task<AUser?> FindUserByIdentifierAsync(ILoginRequest identifier)
     {
-        try
+        AUser? user = null;
+
+
+        if (new EmailAddressAttribute().IsValid(identifier.Identifier))
         {
-            AUser? user = null;
-
-            // Kiểm tra nếu identifier là email
-            if (new EmailAddressAttribute().IsValid(model.Identifier))
-            {
-                user = await _userManager.FindByEmailAsync(model.Identifier);
-            }
-            else
-            {
-                user = await _userManager.FindByNameAsync(model.Identifier);
-            }
-
-            // Kiểm tra sự tồn tại của user và xác thực mật khẩu
-            if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
-            {
-                return (null, "Tài khoản không tồn tại hoặc mật khẩu không chính xác.");
-            }
-
-            return (user, null);
+            user = await _userManager.FindByEmailAsync(identifier.Identifier);
         }
-        catch (Exception ex)
+
+        else
         {
-            // Xử lý lỗi và trả về thông báo thay vì throw
-            return (null, $"Lỗi khi tìm kiếm người dùng: {ex.Message}");
+            user = await _userManager.FindByNameAsync(identifier.Identifier);
+            if (!await _userManager.CheckPasswordAsync(user, identifier.Password)) return null;
         }
+
+        return user;
     }
 }

@@ -6,5 +6,5 @@ namespace HUBT_Social_API.Features.Auth.Services.Interfaces;
 
 public interface ILoginService
 {
-    Task<(SignInResult Result, AUser? User, string? ErrorMessage)> LoginAsync(ILoginRequest model);
+    Task<(SignInResult Result, AUser? User)> LoginAsync(ILoginRequest model);
 }

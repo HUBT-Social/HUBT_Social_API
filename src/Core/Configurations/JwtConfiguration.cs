@@ -1,6 +1,7 @@
 using System.Text;
 using HUBT_Social_API.Core.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
 namespace HUBT_Social_API.Core.Configurations;
@@ -31,7 +32,8 @@ public static class JwtConfiguration
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
                 };
 #pragma warning restore CS8602
-            });
+            })
+            .AddCookie(IdentityConstants.ApplicationScheme);
 
         return services;
     }

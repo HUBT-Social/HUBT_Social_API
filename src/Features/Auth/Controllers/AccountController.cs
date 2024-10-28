@@ -16,11 +16,8 @@ public class AccountController : ControllerBase
     private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly ITokenService _tokenService;
 
-    public AccountController(
-        IAuthService authService, 
-        IStringLocalizer<SharedResource> localizer,
-        ITokenService tokenService, 
-        IEmailService emailService)
+    public AccountController(IAuthService authService, IStringLocalizer<SharedResource> localizer,
+        ITokenService tokenService, IEmailService emailService = null)
     {
         _authService = authService;
         _localizer = localizer;
@@ -41,38 +38,31 @@ public class AccountController : ControllerBase
                 )
             );
 
-        var (result, user, message) = await _authService.RegisterAsync(request);
-
+        var (result, message) = await _authService.RegisterAsync(request);
         if (!result.Succeeded)
             return BadRequest(
                 new AuthResponse(
                     false,
                     400,
-                    _localizer["RegistrationFailed"],
-                    message));
+                    message,
+                    result.Errors));
 
         // Gửi mã OTP qua email để xác thực
         try
         {
             var code = await _emailService.CreatePostcode(request.Email);
 
-            await _emailService.SendEmailAsync(
-                new EmailRequest
-                { 
-                    Code = code.Code, 
-                    Subject = "Validate Email Code", 
-                    ToEmail = request.Email 
-                });
-
+            await _emailService.SendEmailAsync(new EmailRequest
+            { Code = code.Code, Subject = "Validate Email Code", ToEmail = request.Email });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return StatusCode(
                 500,
                 new AuthResponse(
                     false,
                     500,
-                    $"{_localizer["UnableToSendOTP"]},{ex.Message}"
+                    _localizer["UnableToSendOTP"]
                 )
             );
         }
@@ -89,36 +79,27 @@ public class AccountController : ControllerBase
 
     // Đăng nhập và gửi mã OTP qua email
     [HttpPost("login")]
-    public async Task<IActionResult> LoginAsync(ILoginRequest model)
+    public async Task<IActionResult> LoginAsync(LoginByStudentCodeRequest model)
     {
-        var (result, user, message) = await _authService.LoginAsync(model);
+        var (result, user) = await _authService.LoginAsync(model);
 
         if (result.Succeeded && user is not null)
         {
             try
             {
-                if (user.Email != null)
-                {
-                    var code = await _emailService.CreatePostcode(user.Email);
+                var code = await _emailService.CreatePostcode(user.Email);
 
-                    await _emailService.SendEmailAsync(
-                        new EmailRequest
-                        { 
-                            Code = code.Code, 
-                            Subject = "Validate Email Code", 
-                            ToEmail = user.Email 
-                        });  
-                }
-                
+                await _emailService.SendEmailAsync(new EmailRequest
+                { Code = code.Code, Subject = "Validate Email Code", ToEmail = user.Email });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(
                     500,
                     new AuthResponse(
                         false,
                         500,
-                        $"{_localizer["UnableToSendOTP"]},{ex.Message}"
+                        _localizer["UnableToSendOTP"]
                     )
                 );
             }
@@ -167,7 +148,7 @@ public class AccountController : ControllerBase
 
     // Xác thực mã OTP và tạo token nếu thành công
     [HttpPost("confirm-code")]
-    public async Task<IActionResult> ConfirmCode([FromBody] VLpostcodeRequest request)
+    public async Task<IActionResult> ConfirmCode([FromBody] ValidatePostcodeRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(
@@ -202,5 +183,4 @@ public class AccountController : ControllerBase
         );
     }
 
-    
 }

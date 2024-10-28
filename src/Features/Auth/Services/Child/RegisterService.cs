@@ -18,17 +18,17 @@ public class RegisterService : IRegisterService
         _roleManager = roleManager;
     }
 
-    public async Task<(IdentityResult Result, AUser? User, string? Error)> RegisterAsync(RegisterRequest model)
+    public async Task<(IdentityResult Result, string? Error)> RegisterAsync(RegisterRequest model)
     {
         if (model == null)
-            return (IdentityResult.Failed(new IdentityError { Description = "Model không thể null." }), null, "Model không thể null.");
+            return (IdentityResult.Failed(new IdentityError { Description = "Model không thể null." }), "Model không thể null.");
 
         try
         {
             // Kiểm tra tài khoản đã tồn tại
             var accountAlreadyExists = await _userManager.FindByNameAsync(model.StudentCode);
             if (accountAlreadyExists != null)
-                return (IdentityResult.Failed(new IdentityError { Description = "Tài khoản đã được đăng ký." }), null, "Tài khoản đã tồn tại.");
+                return (IdentityResult.Failed(new IdentityError { Description = "Tài khoản đã được đăng ký." }), "Tài khoản đã tồn tại.");
 
             // Tạo người dùng mới
             var user = new AUser
@@ -43,7 +43,7 @@ public class RegisterService : IRegisterService
             if (!result.Succeeded)
             {
                 var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-                return (result, null, $"Không thể tạo tài khoản. Lỗi: {errors}");
+                return (result, $"Không thể tạo tài khoản. Lỗi: {errors}");
             }
 
             // Xác định vai trò mặc định
@@ -56,7 +56,7 @@ public class RegisterService : IRegisterService
                 if (!roleResult.Succeeded)
                 {
                     var roleErrors = string.Join("; ", roleResult.Errors.Select(e => e.Description));
-                    return (IdentityResult.Failed(), null, $"Không thể tạo vai trò mặc định. Lỗi: {roleErrors}");
+                    return (IdentityResult.Failed(), $"Không thể tạo vai trò mặc định. Lỗi: {roleErrors}");
                 }
             }
 
@@ -76,22 +76,22 @@ public class RegisterService : IRegisterService
             if (!roleAssignmentResult.Succeeded)
             {
                 var roleAssignErrors = string.Join("; ", roleAssignmentResult.Errors.Select(e => e.Description));
-                return (IdentityResult.Failed(), null, $"Không thể gán vai trò cho người dùng. Lỗi: {roleAssignErrors}");
+                return (IdentityResult.Failed(), $"Không thể gán vai trò cho người dùng. Lỗi: {roleAssignErrors}");
             }
 
             var claimResult = await _userManager.AddClaimsAsync(user, claims);
             if (!claimResult.Succeeded)
             {
                 var claimErrors = string.Join("; ", claimResult.Errors.Select(e => e.Description));
-                return (IdentityResult.Failed(), null, $"Không thể gán claims cho người dùng. Lỗi: {claimErrors}");
+                return (IdentityResult.Failed(), $"Không thể gán claims cho người dùng. Lỗi: {claimErrors}");
             }
 
-            return (IdentityResult.Success, user, null);
+            return (IdentityResult.Success, null);
         }
         catch (Exception ex)
         {
             // Bắt các lỗi bất ngờ và trả về thông báo lỗi
-            return (IdentityResult.Failed(new IdentityError { Description = ex.Message }), null, $"Đã xảy ra lỗi không xác định: {ex.Message}");
+            return (IdentityResult.Failed(new IdentityError { Description = ex.Message }), $"Đã xảy ra lỗi không xác định: {ex.Message}");
         }
     }
 
