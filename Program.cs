@@ -11,16 +11,9 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
         // Gọi hàm cấu hình và đăng ký dịch vụ
 
-        var connectionString = Environment.GetEnvironmentVariable("ConnectionString");
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            throw new ArgumentNullException("ConnectionString is not configured in environment variables.");
-        }
-
         // Đường dẫn đến Secret File trên Render
         builder.Configuration
         .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) 
-        .AddJsonFile("/etc/secrets/appsettings.json", optional: true, reloadOnChange: true) 
         .AddEnvironmentVariables();
         
         InitConfigures(builder);
