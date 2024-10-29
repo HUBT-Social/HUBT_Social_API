@@ -76,9 +76,7 @@ public class UserManagerS : IUserManagerS
             user = new AUser
             {
                 Email = request.Email,
-                UserName = request.StudentCode,
-                FullName = request.FullName,
-                PhoneNumber = request.PhoneNumber
+
             };
             var created = await _userManager.CreateAsync(user, request.Password);
             if (!created.Succeeded)
