@@ -10,6 +10,13 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         // Gọi hàm cấu hình và đăng ký dịch vụ
+
+        // Đường dẫn đến Secret File trên Render
+        builder.Configuration
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) 
+        .AddJsonFile("/etc/secrets/appsettings.json", optional: true, reloadOnChange: true) 
+        .AddEnvironmentVariables();
+        
         InitConfigures(builder);
         InitServices(builder);
 
