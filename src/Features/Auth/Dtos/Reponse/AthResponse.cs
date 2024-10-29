@@ -4,6 +4,6 @@ public class AuthResponse(bool success, int statusCode, string message, object? 
 {
     public bool Success { get; set; } = success;
     public int StatusCode { get; set; } = statusCode;
-    public string Message { get; set; } = message;
+    public string? Message { get; set; } = message;
     public object? Data { get; set; } = data;
 }

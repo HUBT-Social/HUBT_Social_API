@@ -14,7 +14,7 @@ namespace HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest
 
         public  bool IsMale { get; set; } = false;
 
-        public DateTime DateOfBorn { get; set; }
+        public DateTime DateOfBirth { get; set; }
 
     }
 }

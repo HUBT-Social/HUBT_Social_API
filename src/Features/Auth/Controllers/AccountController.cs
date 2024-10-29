@@ -17,7 +17,7 @@ public class AccountController : ControllerBase
     private readonly ITokenService _tokenService;
 
     public AccountController(IAuthService authService, IStringLocalizer<SharedResource> localizer,
-        ITokenService tokenService, IEmailService emailService = null)
+        ITokenService tokenService, IEmailService emailService)
     {
         _authService = authService;
         _localizer = localizer;
@@ -50,7 +50,7 @@ public class AccountController : ControllerBase
         // Gửi mã OTP qua email để xác thực
         try
         {
-            var code = await _emailService.CreatePostcode(request.Email);
+            var code = await _emailService.CreatePostcodeAsync(request.Email);
 
             await _emailService.SendEmailAsync(new EmailRequest
             { Code = code.Code, Subject = "Validate Email Code", ToEmail = request.Email });
@@ -87,10 +87,15 @@ public class AccountController : ControllerBase
         {
             try
             {
-                var code = await _emailService.CreatePostcode(user.Email);
+                var code = await _emailService.CreatePostcodeAsync(user.Email);
 
-                await _emailService.SendEmailAsync(new EmailRequest
-                { Code = code.Code, Subject = "Validate Email Code", ToEmail = user.Email });
+                await _emailService.SendEmailAsync(
+                    new EmailRequest
+                    { 
+                        Code = code.Code, 
+                        Subject = "Validate Email Code", 
+                        ToEmail = user.Email 
+                    });
             }
             catch (Exception)
             {
