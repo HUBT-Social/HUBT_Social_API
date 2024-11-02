@@ -70,7 +70,7 @@ public class TokenService : ITokenService
 
         return new UserResponse
         {
-            Email = user.Email, StudentCode = user.UserName, LastName = nameParts[0],
+            Email = user.Email, Username = user.UserName, LastName = nameParts[0],
             FirstName = string.Join(" ", nameParts.Skip(1)), Success = true
         };
     }
@@ -84,10 +84,12 @@ public class TokenService : ITokenService
             var principal = tokenHandler.ValidateToken(accessToken, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                ValidateLifetime = false,
-                IssuerSigningKey = new SymmetricSecurityKey(tokenKey)
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                IssuerSigningKey = new SymmetricSecurityKey(tokenKey),
+                ValidIssuer = _jwtSetting.Issuer,
+                ValidAudience = _jwtSetting.Audience
             }, out var securityToken);
 
             if (securityToken is JwtSecurityToken token && token.Header.Alg.Equals(SecurityAlgorithms.HmacSha256))
@@ -138,7 +140,9 @@ public class TokenService : ITokenService
         {
             Subject = new ClaimsIdentity(claims),
             Expires = expiration(),
-            SigningCredentials = credentials
+            SigningCredentials = credentials,
+            Issuer = _jwtSetting.Issuer,
+            Audience = _jwtSetting.Audience
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();

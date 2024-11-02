@@ -51,9 +51,9 @@ public class UserService : IUserService
         return false;
     }
 
-    public async Task<bool> UpdateEmailAsync(UpdateEmailRequest request)
+    public async Task<bool> UpdateEmailAsync(string userName, UpdateEmailRequest request)
     {
-        var user = await _userManager.FindByNameAsync(request.UserName);
+        var user = await _userManager.FindByNameAsync(userName);
         if (user == null) return false;
 
         user.Email = request.Email;
@@ -61,9 +61,9 @@ public class UserService : IUserService
         return result.Succeeded;
     }
 
-    public async Task<bool> VerifyCurrentPasswordAsync(CheckPasswordRequest request)
+    public async Task<bool> VerifyCurrentPasswordAsync(string userName, CheckPasswordRequest request)
     {
-        var user = await _userManager.FindByNameAsync(request.Username);
+        var user = await _userManager.FindByNameAsync(userName);
         if (user == null) return false;
 
         // Kiểm tra mật khẩu hiện tại
@@ -71,9 +71,9 @@ public class UserService : IUserService
         return passwordCheck; // Trả về true nếu mật khẩu đúng, ngược lại là false
     }
 
-    public async Task<bool> UpdatePasswordAsync(UpdatePasswordRequest request)
+    public async Task<bool> UpdatePasswordAsync(string userName, UpdatePasswordRequest request)
     {
-        var user = await _userManager.FindByNameAsync(request.UserName);
+        var user = await _userManager.FindByNameAsync(userName);
         if (user == null) return false;
 
         // Tạo token đặt lại mật khẩu
@@ -84,9 +84,9 @@ public class UserService : IUserService
         return result.Succeeded;
     }
 
-    public async Task<bool> UpdateNameAsync(UpdateNameRequest request)
+    public async Task<bool> UpdateNameAsync(string userName, UpdateNameRequest request)
     {
-        var user = await _userManager.FindByNameAsync(request.UserName);
+        var user = await _userManager.FindByNameAsync(userName);
         if (user == null) return false;
 
         user.FirstName = request.FirstName;
@@ -95,9 +95,9 @@ public class UserService : IUserService
         return result.Succeeded;
     }
 
-    public async Task<bool> UpdatePhoneNumberAsync(UpdatePhoneNumberRequest request)
+    public async Task<bool> UpdatePhoneNumberAsync(string userName, UpdatePhoneNumberRequest request)
     {
-        var user = await _userManager.FindByNameAsync(request.Username);
+        var user = await _userManager.FindByNameAsync(userName);
         if (user == null) return false;
 
         user.PhoneNumber = request.PhoneNumber;
@@ -105,9 +105,9 @@ public class UserService : IUserService
         return result.Succeeded;
     }
 
-    public async Task<bool> UpdateGenderAsync(UpdateGenderRequest request)
+    public async Task<bool> UpdateGenderAsync(string userName, UpdateGenderRequest request)
     {
-        var user = await _userManager.FindByNameAsync(request.Username);
+        var user = await _userManager.FindByNameAsync(userName);
         if (user == null) return false;
 
         user.IsMale = request.IsMale;
@@ -115,9 +115,9 @@ public class UserService : IUserService
         return result.Succeeded;
     }
 
-    public async Task<bool> UpdateDateOfBirthAsync(UpdateDateOfBornRequest request)
+    public async Task<bool> UpdateDateOfBirthAsync(string userName, UpdateDateOfBornRequest request)
     {
-        var user = await _userManager.FindByNameAsync(request.Username);
+        var user = await _userManager.FindByNameAsync(userName);
         if (user == null) return false;
 
         user.DateOfBirth = request.DateOfBirth;
@@ -125,9 +125,9 @@ public class UserService : IUserService
         return result.Succeeded;
     }
 
-    public async Task<bool> GeneralUpdateAsync(GeneralUpdateRequest request)
+    public async Task<bool> GeneralUpdateAsync(string userName, GeneralUpdateRequest request)
     {
-        var user = await _userManager.FindByNameAsync(request.Username);
+        var user = await _userManager.FindByNameAsync(userName);
         if (user == null) return false;
 
         // Cập nhật các trường nếu có thay đổi

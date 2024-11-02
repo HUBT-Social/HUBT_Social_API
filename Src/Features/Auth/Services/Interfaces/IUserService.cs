@@ -9,14 +9,14 @@ public interface IUserService
     Task<bool> PromoteUserAccountAsync(string userName, string roleName);
 
     // Phương thức cập nhật từng trường riêng lẻ
-    Task<bool> UpdateEmailAsync(UpdateEmailRequest request);
-    Task<bool> VerifyCurrentPasswordAsync(CheckPasswordRequest request);
-    Task<bool> UpdatePasswordAsync(UpdatePasswordRequest request);
-    Task<bool> UpdateNameAsync(UpdateNameRequest request);
-    Task<bool> UpdatePhoneNumberAsync(UpdatePhoneNumberRequest request);
-    Task<bool> UpdateGenderAsync(UpdateGenderRequest request);
-    Task<bool> UpdateDateOfBirthAsync(UpdateDateOfBornRequest request);
+    Task<bool> UpdateEmailAsync(string userName, UpdateEmailRequest request);
+    Task<bool> VerifyCurrentPasswordAsync(string userName, CheckPasswordRequest request);
+    Task<bool> UpdatePasswordAsync(string userName, UpdatePasswordRequest request);
+    Task<bool> UpdateNameAsync(string userName, UpdateNameRequest request);
+    Task<bool> UpdatePhoneNumberAsync(string userName, UpdatePhoneNumberRequest request);
+    Task<bool> UpdateGenderAsync(string userName, UpdateGenderRequest request);
+    Task<bool> UpdateDateOfBirthAsync(string userName, UpdateDateOfBornRequest request);
 
     // Phương thức cập nhật tổng quát
-    Task<bool> GeneralUpdateAsync(GeneralUpdateRequest request);
+    Task<bool> GeneralUpdateAsync(string userName, GeneralUpdateRequest request);
 }

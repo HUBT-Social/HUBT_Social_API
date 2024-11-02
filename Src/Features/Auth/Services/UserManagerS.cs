@@ -221,7 +221,7 @@ public class UserManagerS : IUserManagerS
 
         return new UserResponse
         {
-            Email = user.Email, StudentCode = user.UserName, LastName = nameParts[0],
+            Email = user.Email, Username = user.UserName, LastName = nameParts[0],
             FirstName = string.Join(" ", nameParts.Skip(1)), Success = true
         };
     }

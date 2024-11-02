@@ -1,3 +1,4 @@
+using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
@@ -11,21 +12,25 @@ public class UpdateUserController : ControllerBase
 {
     private readonly IEmailService _emailService;
     private readonly IUserService _userService;
+    private readonly ITokenService _tokenService;
 
-    public UpdateUserController(IUserService userService, IEmailService emailService)
+    public UpdateUserController(IUserService userService, IEmailService emailService, ITokenService tokenService)
     {
         _userService = userService;
         _emailService = emailService;
+        _tokenService = tokenService;
     }
 
     // Cập nhật email
     [HttpPost("update-email")]
     public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Email))
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.Email))
             return BadRequest("Email không được để trống.");
 
-        var result = await _userService.UpdateEmailAsync(request);
+        var result = await _userService.UpdateEmailAsync(userResponse.Username,request);
         return result ? Ok("Email đã được cập nhật.") : BadRequest("Có lỗi xảy ra khi cập nhật email.");
     }
 
@@ -33,10 +38,12 @@ public class UpdateUserController : ControllerBase
     [HttpPost("update-password")]
     public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.NewPassword))
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.NewPassword))
             return BadRequest("Mật khẩu hiện tại và mật khẩu mới không được để trống.");
 
-        var result = await _userService.UpdatePasswordAsync(request);
+        var result = await _userService.UpdatePasswordAsync(userResponse.Username,request);
         return result ? Ok("Mật khẩu đã được cập nhật.") : BadRequest("Có lỗi xảy ra khi cập nhật mật khẩu.");
     }
 
@@ -44,7 +51,11 @@ public class UpdateUserController : ControllerBase
     [HttpPost("update-name")]
     public async Task<IActionResult> UpdateName([FromBody] UpdateNameRequest request)
     {
-        var result = await _userService.UpdateNameAsync(request);
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
+            return BadRequest("không được để trống.");
+        var result = await _userService.UpdateNameAsync(userResponse.Username,request);
         return result ? Ok("Tên người dùng đã được cập nhật.") : BadRequest("Có lỗi xảy ra khi cập nhật tên.");
     }
 
@@ -52,7 +63,12 @@ public class UpdateUserController : ControllerBase
     [HttpPost("update-phone-number")]
     public async Task<IActionResult> UpdatePhoneNumber([FromBody] UpdatePhoneNumberRequest request)
     {
-        var result = await _userService.UpdatePhoneNumberAsync(request);
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.PhoneNumber))
+            return BadRequest("không được để trống.");
+
+        var result = await _userService.UpdatePhoneNumberAsync(userResponse.Username,request);
         return result ? Ok("Số điện thoại đã được cập nhật.") : BadRequest("Có lỗi xảy ra khi cập nhật số điện thoại.");
     }
 
@@ -60,7 +76,12 @@ public class UpdateUserController : ControllerBase
     [HttpPost("update-gender")]
     public async Task<IActionResult> UpdateGender([FromBody] UpdateGenderRequest request)
     {
-        var result = await _userService.UpdateGenderAsync(request);
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        if (string.IsNullOrWhiteSpace(userResponse.Username))
+            return BadRequest("không được để trống.");
+
+        var result = await _userService.UpdateGenderAsync(userResponse.Username,request);
         return result ? Ok("Giới tính đã được cập nhật.") : BadRequest("Có lỗi xảy ra khi cập nhật giới tính.");
     }
 
@@ -68,7 +89,12 @@ public class UpdateUserController : ControllerBase
     [HttpPost("update-date-of-birth")]
     public async Task<IActionResult> UpdateDateOfBirth([FromBody] UpdateDateOfBornRequest request)
     {
-        var result = await _userService.UpdateDateOfBirthAsync(request);
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        if (string.IsNullOrWhiteSpace(userResponse.Username))
+            return BadRequest("không được để trống.");
+
+        var result = await _userService.UpdateDateOfBirthAsync(userResponse.Username,request);
         return result ? Ok("Ngày sinh đã được cập nhật.") : BadRequest("Có lỗi xảy ra khi cập nhật ngày sinh.");
     }
 
@@ -76,7 +102,12 @@ public class UpdateUserController : ControllerBase
     [HttpPost("general-update")]
     public async Task<IActionResult> GeneralUpdate([FromBody] GeneralUpdateRequest request)
     {
-        var result = await _userService.GeneralUpdateAsync(request);
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        if (string.IsNullOrWhiteSpace(userResponse.Username))
+            return BadRequest("không được để trống.");
+
+        var result = await _userService.GeneralUpdateAsync(userResponse.Username,request);
         return result
             ? Ok("Thông tin người dùng đã được cập nhật.")
             : BadRequest("Có lỗi xảy ra khi cập nhật thông tin.");
@@ -86,10 +117,13 @@ public class UpdateUserController : ControllerBase
     [HttpPost("check-password")]
     public async Task<IActionResult> CheckPassword([FromBody] CheckPasswordRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.Username))
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+
+        if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(userResponse.Username))
             return BadRequest("Tên người dùng và mật khẩu hiện tại không được để trống.");
 
-        var result = await _userService.VerifyCurrentPasswordAsync(request);
+        var result = await _userService.VerifyCurrentPasswordAsync(userResponse.Username,request);
         return result ? Ok("Mật khẩu đúng.") : BadRequest("Mật khẩu không đúng.");
     }
 
