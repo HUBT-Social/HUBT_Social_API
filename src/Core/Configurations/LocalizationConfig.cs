@@ -1,38 +1,44 @@
-using System.Globalization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using System.Globalization;
 
-namespace HUBT_Social_API.Core.Configurations;
-
-public static class LocalizationConfig
+namespace HUBT_Social_API.Src.Configurations
 {
-    public static void ConfigureLocalization(this IServiceCollection services)
+    public static class LocalizationConfig
     {
-        // Đăng ký localization và các ngôn ngữ được hỗ trợ
-        services.AddLocalization(options => options.ResourcesPath = "Resources");
-
-        services.Configure<RequestLocalizationOptions>(options =>
+        public static IServiceCollection ConfigureLocalization(this IServiceCollection services)
         {
-            var supportedCultures = new[]
+            // Đăng ký localization và các ngôn ngữ được hỗ trợ
+            services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+            services.Configure<RequestLocalizationOptions>(options =>
             {
-                new CultureInfo("vi"),
-                new CultureInfo("en")
-                //  Thêm các ngôn ngữ khác ở đây.
-            };
+                var supportedCultures = new[]
+                {
+                    new CultureInfo("vi"),
+                    new CultureInfo("en")
+                //  Thêm các ngôn ngữ khác ở đây
+                };
+                const string defaultCulture = "en";
 
-            options.DefaultRequestCulture = new RequestCulture("en"); // Ngôn ngữ mặc định là tiếng Việt
-            options.SupportedCultures = supportedCultures; // Các ngôn ngữ hỗ trợ
-            options.SupportedUICultures = supportedCultures; // Các UI cultures hỗ trợ
+                options.DefaultRequestCulture = new RequestCulture(defaultCulture);
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;         // Các UI cultures hỗ trợ
 
-            // Chọn ngôn ngữ dựa trên query string (?culture=), cookie hoặc header 'Accept-Language'
-            options.RequestCultureProviders.Insert(0, new QueryStringRequestCultureProvider());
-        });
-    }
+                // Chọn ngôn ngữ dựa trên query string (https://ip/login?culture=en), cookie hoặc header 'Accept-Language'
+                options.RequestCultureProviders.Insert(0, new QueryStringRequestCultureProvider());
+            });
+            return services;
+        }
 
-    public static void UseLocalization(this IApplicationBuilder app)
-    {
-        // Áp dụng middleware localization
-        var options = app.ApplicationServices.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
-        app.UseRequestLocalization(options);
+        public static IApplicationBuilder UseLocalization(this IApplicationBuilder app)
+        {
+            // Áp dụng middleware localization
+            var options = app.ApplicationServices.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
+            app.UseRequestLocalization(options);
+            return app;
+        }
     }
 }
