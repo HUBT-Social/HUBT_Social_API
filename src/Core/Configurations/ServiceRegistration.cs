@@ -6,7 +6,6 @@ using HUBT_Social_API.Features.Chat.ChatHubs.IHubs;
 using HUBT_Social_API.Features.Chat.Services;
 using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
-using Microsoft.Extensions.Localization;
 
 namespace HUBT_Social_API.Core.Configurations;
 

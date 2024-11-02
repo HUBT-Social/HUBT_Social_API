@@ -13,5 +13,5 @@ public interface IAuthService
 
     Task<AUser> VerifyCodeAsync(ValidatePostcodeRequest request);
 
-    Task<TempUserRegister> GetTempUser(string email); 
+    Task<TempUserRegister> GetTempUser(string email);
 }

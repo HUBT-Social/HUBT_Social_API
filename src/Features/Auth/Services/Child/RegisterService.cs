@@ -12,10 +12,11 @@ namespace HUBT_Social_API.Features.Auth.Services.Child;
 public class RegisterService : IRegisterService
 {
     private readonly RoleManager<ARole> _roleManager;
-    private readonly UserManager<AUser> _userManager;
     private readonly IMongoCollection<TempUserRegister> _tempUserRegister;
+    private readonly UserManager<AUser> _userManager;
 
-    public RegisterService(UserManager<AUser> userManager, RoleManager<ARole> roleManager, IMongoCollection<TempUserRegister> tempUserRegister)
+    public RegisterService(UserManager<AUser> userManager, RoleManager<ARole> roleManager,
+        IMongoCollection<TempUserRegister> tempUserRegister)
     {
         _userManager = userManager;
         _roleManager = roleManager;
@@ -42,29 +43,29 @@ public class RegisterService : IRegisterService
         return await _userManager.FindByNameAsync(model.UserName) != null ||
                await _userManager.FindByEmailAsync(model.Email) != null;
     }
+
     public async Task<TempUserRegister> GetTempUser(string email)
     {
-        TempUserRegister tempUser = await _tempUserRegister.Find(t => t.Email == email)
+        var tempUser = await _tempUserRegister.Find(t => t.Email == email)
             .FirstOrDefaultAsync();
         if (tempUser == null) return null;
 
         return tempUser;
-
     }
 
-    
+
     public async Task<(IdentityResult Result, AUser? user)> RegisterAsync(RegisterRequest model)
     {
         if (model == null)
-            return (IdentityResult.Failed(new IdentityError { Description = "Model không thể null." }),null);
+            return (IdentityResult.Failed(new IdentityError { Description = "Model không thể null." }), null);
 
         try
         {
             // Kiểm tra tài khoản đã tồn tại
-            
+
             if (await CheckUserAccountExit(model))
                 return (IdentityResult.Failed(new IdentityError { Description = "Tài khoản đã được đăng ký." }), null);
-            
+
             // Tạo người dùng mới
             var user = new AUser
             {
@@ -74,7 +75,7 @@ public class RegisterService : IRegisterService
 
             // Tạo tài khoản và kiểm tra kết quả
             var result = await _userManager.CreateAsync(user, model.Password);
-            
+
             if (!result.Succeeded)
             {
                 var errors = string.Join("; ", result.Errors.Select(e => e.Description));
@@ -134,6 +135,4 @@ public class RegisterService : IRegisterService
             return (IdentityResult.Failed(new IdentityError { Description = ex.Message }), null);
         }
     }
-
-
 }

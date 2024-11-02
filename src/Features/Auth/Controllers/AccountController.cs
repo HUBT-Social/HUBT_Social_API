@@ -1,9 +1,7 @@
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.LoginRequest;
-using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
-using HUBT_Social_API.src.Features.Auth.Dtos.Collections;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 
@@ -16,8 +14,9 @@ public class AccountController : ControllerBase
     private readonly IAuthService _authService;
     private readonly IEmailService _emailService;
     private readonly IStringLocalizer<SharedResource> _localizer;
-    private readonly ITokenService _tokenService;
     private readonly IRegisterService _registerService;
+    private readonly ITokenService _tokenService;
+
     public AccountController(IAuthService authService, IStringLocalizer<SharedResource> localizer,
         ITokenService tokenService, IEmailService emailService, IRegisterService registerService)
     {
@@ -63,7 +62,7 @@ public class AccountController : ControllerBase
             var code = await _emailService.CreatePostcodeAsync(request.Email);
 
             await _emailService.SendEmailAsync(new EmailRequest
-            { Code = code.Code, Subject = "Validate Email Code", ToEmail = request.Email });
+                { Code = code.Code, Subject = "Validate Email Code", ToEmail = request.Email });
         }
         catch (Exception)
         {
@@ -101,10 +100,10 @@ public class AccountController : ControllerBase
 
                 await _emailService.SendEmailAsync(
                     new EmailRequest
-                    { 
-                        Code = code.Code, 
-                        Subject = "Validate Email Code", 
-                        ToEmail = user.Email 
+                    {
+                        Code = code.Code,
+                        Subject = "Validate Email Code",
+                        ToEmail = user.Email
                     });
             }
             catch (Exception)
@@ -174,19 +173,17 @@ public class AccountController : ControllerBase
                 )
             );
 
-        AUser user = await _authService.VerifyCodeAsync(request);
+        var user = await _authService.VerifyCodeAsync(request);
         if (user == null)
         {
-            TempUserRegister tempUser = await _authService.GetTempUser(request.Email);
+            var tempUser = await _authService.GetTempUser(request.Email);
             if (tempUser == null)
-            {
                 return Unauthorized(
                     new AuthResponse(
                         false,
                         401,
                         _localizer["OTPVerificationFailed"]
                     ));
-            }
 
             var (result, registeredUser) = await _authService.RegisterAsync(new RegisterRequest
             {
@@ -196,16 +193,15 @@ public class AccountController : ControllerBase
             });
 
             if (!result.Succeeded)
-            {
                 return Unauthorized(
-                     new AuthResponse(
-                         false,
-                         401,
-                         _localizer["OTPVerificationFailed"]
-                     ));
-            }
+                    new AuthResponse(
+                        false,
+                        401,
+                        _localizer["OTPVerificationFailed"]
+                    ));
             user = registeredUser;
         }
+
         var token = await _tokenService.GenerateTokenAsync(user);
 
         return Ok(
@@ -216,8 +212,5 @@ public class AccountController : ControllerBase
                 new { Token = token }
             )
         );
-
-        
     }
-
 }

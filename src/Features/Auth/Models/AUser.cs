@@ -10,12 +10,11 @@ public class AUser : MongoIdentityUser<Guid>
 
     public string FullName { get; set; } = string.Empty;
 
-    public string FirstName { get; set; } = String.Empty;
+    public string FirstName { get; set; } = string.Empty;
 
-    public string LastName { get; set; } = String.Empty;
+    public string LastName { get; set; } = string.Empty;
 
-    public  bool IsMale { get; set; } = false;
+    public bool IsMale { get; set; } = false;
 
     public DateTime DateOfBirth { get; set; }
-    
 }

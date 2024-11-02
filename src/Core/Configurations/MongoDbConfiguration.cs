@@ -3,7 +3,7 @@ using HUBT_Social_API.src.Features.Auth.Dtos.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using MongoDB.Driver;
 
-namespace HUBT_Social_API.src.Core.Configurations;
+namespace HUBT_Social_API.Core.Configurations;
 
 public static class MongoDbConfiguration
 {
@@ -15,7 +15,8 @@ public static class MongoDbConfiguration
 
         services.AddScoped<IMongoCollection<RefreshToken>>(s => database.GetCollection<RefreshToken>("RefreshTokens"));
         services.AddScoped<IMongoCollection<Postcode>>(s => database.GetCollection<Postcode>("Postcode"));
-        services.AddScoped<IMongoCollection<TempUserRegister>>(s => database.GetCollection<TempUserRegister>("TempUserRegister"));
+        services.AddScoped<IMongoCollection<TempUserRegister>>(s =>
+            database.GetCollection<TempUserRegister>("TempUserRegister"));
 
         return services;
     }

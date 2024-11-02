@@ -1,8 +1,6 @@
 using System.Globalization;
 using HUBT_Social_API.Core.Configurations;
 using HUBT_Social_API.Features.Chat.ChatHubs;
-using HUBT_Social_API.src.Core.Configurations;
-using HUBT_Social_API.Src.Configurations;
 using Microsoft.AspNetCore.Localization;
 
 namespace HUBT_Social_API;

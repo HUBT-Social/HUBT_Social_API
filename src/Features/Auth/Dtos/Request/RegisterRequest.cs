@@ -4,8 +4,7 @@ namespace HUBT_Social_API.Features.Auth.Dtos.Request;
 
 public class RegisterRequest
 {
-    [Required]
-    public string UserName { get; set; } = string.Empty;
+    [Required] public string UserName { get; set; } = string.Empty;
 
     [Required]
     [DataType(DataType.Password)]

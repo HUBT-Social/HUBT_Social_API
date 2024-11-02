@@ -1,5 +1,4 @@
 ﻿using HUBT_Social_API.Features.Auth.Dtos.Request;
-using HUBT_Social_API.Features.Auth.Dtos.Request.LoginRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;

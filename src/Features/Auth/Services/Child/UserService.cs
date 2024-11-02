@@ -1,4 +1,3 @@
-using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
@@ -61,6 +60,7 @@ public class UserService : IUserService
         var result = await _userManager.UpdateAsync(user);
         return result.Succeeded;
     }
+
     public async Task<bool> VerifyCurrentPasswordAsync(CheckPasswordRequest request)
     {
         var user = await _userManager.FindByNameAsync(request.Username);
@@ -83,6 +83,7 @@ public class UserService : IUserService
         var result = await _userManager.ResetPasswordAsync(user, resetToken, request.NewPassword);
         return result.Succeeded;
     }
+
     public async Task<bool> UpdateNameAsync(UpdateNameRequest request)
     {
         var user = await _userManager.FindByNameAsync(request.UserName);
@@ -93,6 +94,7 @@ public class UserService : IUserService
         var result = await _userManager.UpdateAsync(user);
         return result.Succeeded;
     }
+
     public async Task<bool> UpdatePhoneNumberAsync(UpdatePhoneNumberRequest request)
     {
         var user = await _userManager.FindByNameAsync(request.Username);
@@ -102,6 +104,7 @@ public class UserService : IUserService
         var result = await _userManager.UpdateAsync(user);
         return result.Succeeded;
     }
+
     public async Task<bool> UpdateGenderAsync(UpdateGenderRequest request)
     {
         var user = await _userManager.FindByNameAsync(request.Username);
@@ -111,6 +114,7 @@ public class UserService : IUserService
         var result = await _userManager.UpdateAsync(user);
         return result.Succeeded;
     }
+
     public async Task<bool> UpdateDateOfBirthAsync(UpdateDateOfBornRequest request)
     {
         var user = await _userManager.FindByNameAsync(request.Username);
@@ -147,8 +151,6 @@ public class UserService : IUserService
         var result = await _userManager.UpdateAsync(user);
         return result.Succeeded;
     }
-
-
 
 
     // Tương tự cho các phương thức PromoteToTeacherAsync, VerifyCodeAsync, v.v.

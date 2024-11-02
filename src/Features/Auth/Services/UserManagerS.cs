@@ -75,8 +75,7 @@ public class UserManagerS : IUserManagerS
                 };
             user = new AUser
             {
-                Email = request.Email,
-
+                Email = request.Email
             };
             var created = await _userManager.CreateAsync(user, request.Password);
             if (!created.Succeeded)

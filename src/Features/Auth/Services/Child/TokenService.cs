@@ -4,7 +4,6 @@ using System.Text;
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
-using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -43,8 +42,8 @@ public class TokenService : ITokenService
         claims.AddRange(roleClaims);
 
         // Tạo JWT token
-        string token = GenerateAccessToken(claims);
-        string refreshToken = GenerateRefreshToken(claims);
+        var token = GenerateAccessToken(claims);
+        var refreshToken = GenerateRefreshToken(claims);
 
         // Xử lý Refresh Token: Cập nhật hoặc tạo mới
         await HandleRefreshTokenAsync(user, token, refreshToken);
@@ -107,19 +106,19 @@ public class TokenService : ITokenService
     }
 
 
-
-    private async Task HandleRefreshTokenAsync(AUser user, string accessToken,string refreshToken)
+    private async Task HandleRefreshTokenAsync(AUser user, string accessToken, string refreshToken)
     {
         var existingRefreshToken = await _refreshToken.Find(t => t.UserId == user.Id.ToString()).FirstOrDefaultAsync();
 
         if (existingRefreshToken == null)
         {
             await _refreshToken.InsertOneAsync(new RefreshToken
-                { AccessToken = accessToken, RefreshTo= refreshToken, UserId = user.Id.ToString() });
+                { AccessToken = accessToken, RefreshTo = refreshToken, UserId = user.Id.ToString() });
         }
         else
         {
-            var update = Builders<RefreshToken>.Update.Set(t => t.AccessToken, accessToken).Set(t => t.RefreshTo,refreshToken);
+            var update = Builders<RefreshToken>.Update.Set(t => t.AccessToken, accessToken)
+                .Set(t => t.RefreshTo, refreshToken);
             await _refreshToken.UpdateOneAsync(t => t.UserId == existingRefreshToken.UserId, update);
         }
 
