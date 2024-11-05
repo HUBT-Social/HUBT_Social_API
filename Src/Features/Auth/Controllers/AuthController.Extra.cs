@@ -1,33 +1,14 @@
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
+using HUBT_Social_API.Features.Auth.Dtos.Request.LoginRequest;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
-using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 
-namespace HUBT_Social_API.Controllers;
+namespace HUBT_Social_API.Features.Auth.Controllers;
 
-[ApiController]
-[Route("api/auth2")]
-public partial class AccountController : ControllerBase
+public partial class AccountController
 {
-    private readonly IEmailService _emailService;   
-    private readonly IUserService _userService;
-    private readonly IStringLocalizer<SharedResource> _localizer;
-
-    private readonly IAuthService _authService;
-
-    
-
-    public AccountController(IUserService userService, IEmailService emailService, IStringLocalizer<SharedResource> localizer,IAuthService authService)
-    {
-        _userService = userService;
-        _emailService = emailService;
-        _localizer = localizer;
-        _authService = authService;
-    }
-
     // Kiểm tra mật khẩu hiện tại
     [HttpPost("check-password")]
     public async Task<IActionResult> CheckPassword([FromBody] CheckPasswordRequest request)
