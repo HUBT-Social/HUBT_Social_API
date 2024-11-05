@@ -78,8 +78,8 @@ public class EmailService : IEmailService
             .Find(ps => ps.Code == postcodeRequest.Postcode && ps.Email == postcodeRequest.Email)
             .FirstOrDefaultAsync();
 
-        // Kiểm tra xem mã OTP đã hết hạn hay chưa
-        if (userPostcode == null || userPostcode.ExpireTime < DateTime.UtcNow) return null;
+        
+        if (userPostcode == null) return null;
 
         return user;
     }
