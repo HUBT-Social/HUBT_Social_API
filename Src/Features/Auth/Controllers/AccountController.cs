@@ -35,7 +35,6 @@ public class AccountController : ControllerBase
             return BadRequest(
                 new AuthResponse(
                     false,
-                    400,
                     _localizer["InvalidInformation"]
                 )
             );
@@ -43,16 +42,14 @@ public class AccountController : ControllerBase
             return BadRequest(
                 new AuthResponse(
                     false,
-                    400,
-                    "User already exit"
+                    _localizer["UserAlreadyExists"]
                 )
             );
         if (!await _registerService.AddToTempUser(request))
             return BadRequest(
                 new AuthResponse(
                     false,
-                    400,
-                    "Can't store in Database"
+                    _localizer["UnableToStoreInDatabase"]
                 )
             );
 
@@ -62,7 +59,7 @@ public class AccountController : ControllerBase
             var code = await _emailService.CreatePostcodeAsync(request.Email);
 
             await _emailService.SendEmailAsync(new EmailRequest
-                { Code = code.Code, Subject = "Validate Email Code", ToEmail = request.Email });
+                { Code = code.Code, Subject = _localizer["EmailVerificationCodeSubject"], ToEmail = request.Email });
         }
         catch (Exception)
         {
@@ -70,7 +67,6 @@ public class AccountController : ControllerBase
                 500,
                 new AuthResponse(
                     false,
-                    500,
                     _localizer["UnableToSendOTP"]
                 )
             );
@@ -79,12 +75,10 @@ public class AccountController : ControllerBase
         return Ok(
             new AuthResponse(
                 true,
-                200,
                 _localizer["RegistrationSuccess"]
             )
         );
     }
-
 
     // Đăng nhập và gửi mã OTP qua email
     [HttpPost("login")]
@@ -102,7 +96,7 @@ public class AccountController : ControllerBase
                     new EmailRequest
                     {
                         Code = code.Code,
-                        Subject = "Validate Email Code",
+                        Subject = _localizer["EmailVerificationCodeSubject"],
                         ToEmail = user.Email
                     });
             }
@@ -112,7 +106,6 @@ public class AccountController : ControllerBase
                     500,
                     new AuthResponse(
                         false,
-                        500,
                         _localizer["UnableToSendOTP"]
                     )
                 );
@@ -121,7 +114,6 @@ public class AccountController : ControllerBase
             return Ok(
                 new AuthResponse(
                     true,
-                    200,
                     _localizer["StepOneVerificationSuccess"]
                 )
             );
@@ -131,7 +123,6 @@ public class AccountController : ControllerBase
             return BadRequest(
                 new AuthResponse(
                     false,
-                    403,
                     _localizer["AccountLocked"]
                 )
             );
@@ -139,7 +130,6 @@ public class AccountController : ControllerBase
             return BadRequest(
                 new AuthResponse(
                     false,
-                    403,
                     _localizer["LoginNotAllowed"]
                 )
             );
@@ -147,14 +137,12 @@ public class AccountController : ControllerBase
             return BadRequest(
                 new AuthResponse(
                     false,
-                    401,
                     _localizer["TwoFactorRequired"]
                 )
             );
         return BadRequest(
             new AuthResponse(
                 false,
-                400,
                 _localizer["InvalidCredentials"]
             )
         );
@@ -168,7 +156,6 @@ public class AccountController : ControllerBase
             return BadRequest(
                 new AuthResponse(
                     false,
-                    400,
                     _localizer["InvalidInformation"]
                 )
             );
@@ -181,7 +168,6 @@ public class AccountController : ControllerBase
                 return Unauthorized(
                     new AuthResponse(
                         false,
-                        401,
                         _localizer["OTPVerificationFailed"]
                     ));
 
@@ -196,7 +182,6 @@ public class AccountController : ControllerBase
                 return Unauthorized(
                     new AuthResponse(
                         false,
-                        401,
                         _localizer["OTPVerificationFailed"]
                     ));
             user = registeredUser;
@@ -207,7 +192,6 @@ public class AccountController : ControllerBase
         return Ok(
             new AuthResponse(
                 true,
-                200,
                 _localizer["VerificationSuccess"],
                 new { Token = token }
             )
