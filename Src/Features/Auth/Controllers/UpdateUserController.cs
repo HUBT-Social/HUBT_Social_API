@@ -3,6 +3,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace HUBT_Social_API.Controllers;
 
@@ -12,12 +13,13 @@ public class UpdateUserController : ControllerBase
 {
     private readonly IEmailService _emailService;
     private readonly IUserService _userService;
+    private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly ITokenService _tokenService;
-
-    public UpdateUserController(IUserService userService, IEmailService emailService, ITokenService tokenService)
+    public UpdateUserController(IUserService userService, IEmailService emailService, IStringLocalizer<SharedResource> localizer,ITokenService tokenService)
     {
         _userService = userService;
         _emailService = emailService;
+        _localizer = localizer;
         _tokenService = tokenService;
     }
 
@@ -27,11 +29,12 @@ public class UpdateUserController : ControllerBase
     {
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+
         if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.Email))
-            return BadRequest("Email không được để trống.");
+            return BadRequest(_localizer["EmailEmptyError"]);
 
         var result = await _userService.UpdateEmailAsync(userResponse.Username,request);
-        return result ? Ok("Email đã được cập nhật.") : BadRequest("Có lỗi xảy ra khi cập nhật email.");
+        return result ? Ok(_localizer["EmailUpdatedSuccess"]) : BadRequest(_localizer["EmailUpdateError"]);
     }
 
     // Cập nhật mật khẩu
@@ -41,10 +44,11 @@ public class UpdateUserController : ControllerBase
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
         if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.NewPassword))
-            return BadRequest("Mật khẩu hiện tại và mật khẩu mới không được để trống.");
+            return BadRequest(_localizer["PasswordEmptyError"]);
+            
 
-        var result = await _userService.UpdatePasswordAsync(userResponse.Username,request);
-        return result ? Ok("Mật khẩu đã được cập nhật.") : BadRequest("Có lỗi xảy ra khi cập nhật mật khẩu.");
+        var result = await _userService.UpdatePasswordAsync(userResponse.Username, request);
+        return result ? Ok(_localizer["PasswordUpdatedSuccess"]) : BadRequest(_localizer["PasswordUpdateError"]);
     }
 
     // Cập nhật tên người dùng
@@ -54,9 +58,10 @@ public class UpdateUserController : ControllerBase
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
         if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
-            return BadRequest("không được để trống.");
-        var result = await _userService.UpdateNameAsync(userResponse.Username,request);
-        return result ? Ok("Tên người dùng đã được cập nhật.") : BadRequest("Có lỗi xảy ra khi cập nhật tên.");
+            return BadRequest(_localizer["UserNotFound"]);
+
+        var result = await _userService.UpdateNameAsync(userResponse.Username, request);
+        return result ? Ok(_localizer["NameUpdatedSuccess"]) : BadRequest(_localizer["NameUpdateError"]);
     }
 
     // Cập nhật số điện thoại
@@ -66,10 +71,11 @@ public class UpdateUserController : ControllerBase
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
         if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.PhoneNumber))
-            return BadRequest("không được để trống.");
+            return BadRequest(_localizer["UserNotFound"]);
+
 
         var result = await _userService.UpdatePhoneNumberAsync(userResponse.Username,request);
-        return result ? Ok("Số điện thoại đã được cập nhật.") : BadRequest("Có lỗi xảy ra khi cập nhật số điện thoại.");
+        return result ? Ok(_localizer["PhoneNumberUpdatedSuccess"]) : BadRequest(_localizer["PhoneNumberUpdateError"]);
     }
 
     // Cập nhật giới tính
@@ -79,10 +85,11 @@ public class UpdateUserController : ControllerBase
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
         if (string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest("không được để trống.");
+            return BadRequest(_localizer["UserNotFound"]);
 
-        var result = await _userService.UpdateGenderAsync(userResponse.Username,request);
-        return result ? Ok("Giới tính đã được cập nhật.") : BadRequest("Có lỗi xảy ra khi cập nhật giới tính.");
+
+        var result = await _userService.UpdateGenderAsync(userResponse.Username, request);
+        return result ? Ok(_localizer["GenderUpdatedSuccess"]) : BadRequest(_localizer["GenderUpdateError"]);
     }
 
     // Cập nhật ngày sinh
@@ -92,10 +99,11 @@ public class UpdateUserController : ControllerBase
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
         if (string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest("không được để trống.");
+            return BadRequest(_localizer["UserNotFound"]);
 
-        var result = await _userService.UpdateDateOfBirthAsync(userResponse.Username,request);
-        return result ? Ok("Ngày sinh đã được cập nhật.") : BadRequest("Có lỗi xảy ra khi cập nhật ngày sinh.");
+
+        var result = await _userService.UpdateDateOfBirthAsync(userResponse.Username, request);
+        return result ? Ok(_localizer["DateOfBirthUpdatedSuccess"]) : BadRequest(_localizer["DateOfBirthUpdateError"]);
     }
 
     // Cập nhật thông tin người dùng chung
@@ -105,60 +113,12 @@ public class UpdateUserController : ControllerBase
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
         if (string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest("không được để trống.");
+            return BadRequest(_localizer["UserNotFound"]);
+
 
         var result = await _userService.GeneralUpdateAsync(userResponse.Username,request);
-        return result
-            ? Ok("Thông tin người dùng đã được cập nhật.")
-            : BadRequest("Có lỗi xảy ra khi cập nhật thông tin.");
+        return result ? Ok(_localizer["UserInfoUpdatedSuccess"]) : BadRequest(_localizer["UserInfoUpdateError"]);
     }
 
-    // Kiểm tra mật khẩu hiện tại
-    [HttpPost("check-password")]
-    public async Task<IActionResult> CheckPassword([FromBody] CheckPasswordRequest request)
-    {
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
-
-        if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest("Tên người dùng và mật khẩu hiện tại không được để trống.");
-
-        var result = await _userService.VerifyCurrentPasswordAsync(userResponse.Username,request);
-        return result ? Ok("Mật khẩu đúng.") : BadRequest("Mật khẩu không đúng.");
-    }
-
-    // Gửi mã OTP
-    [HttpPost("send-otp")]
-    public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.Username))
-            return BadRequest("Tên người dùng không được để trống.");
-
-        var user = await _userService.FindUserByUserNameAsync(request.Username);
-
-        if (user == null) return BadRequest("Yêu cầu không hợp lệ.");
-#pragma warning disable CS8604 // Possible null reference argument.
-        var code = await _emailService.CreatePostcodeAsync(user.Email);
-#pragma warning restore CS8604 // Possible null reference argument.
-
-        var result = await _emailService.SendEmailAsync(
-            new EmailRequest
-            {
-                Code = code.Code,
-                Subject = "Validate Email Code",
-                ToEmail = user.Email
-            });
-        return result ? Ok("Mã OTP đã được gửi.") : BadRequest("Có lỗi xảy ra khi gửi mã OTP.");
-    }
-
-    // Xác thực mã OTP
-    [HttpPost("verify-otp")]
-    public async Task<IActionResult> VerifyOtp([FromBody] ValidatePostcodeRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Postcode))
-            return BadRequest("Tên người dùng và mã OTP không được để trống.");
-
-        var result = await _emailService.ValidatePostcodeAsync(request);
-        return result is not null ? Ok("Mã OTP xác thực thành công.") : BadRequest("Mã OTP không hợp lệ.");
-    }
+    
 }

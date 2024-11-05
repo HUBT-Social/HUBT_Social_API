@@ -6,6 +6,7 @@ namespace HUBT_Social_API.Features.Auth.Services.Interfaces;
 public interface IUserService
 {
     Task<AUser?> FindUserByUserNameAsync(string userName);
+    Task<AUser?> FindUserByEmailAsync(string email);
     Task<bool> PromoteUserAccountAsync(string userName, string roleName);
 
     // Phương thức cập nhật từng trường riêng lẻ

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Localization;
 namespace HUBT_Social_API.Features.Chat.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/chat")]
 public class ChatController : ControllerBase
 {
     private readonly IChatService _chatService;

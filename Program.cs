@@ -48,7 +48,7 @@ namespace HUBT_Social_API;
             var app = builder.Build();
 
             // Cấu hình HTTP request pipeline
-            if (app.Environment.IsDevelopment())
+            // if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
