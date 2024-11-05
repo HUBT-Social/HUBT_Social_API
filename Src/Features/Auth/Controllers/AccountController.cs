@@ -8,7 +8,7 @@ using Microsoft.Extensions.Localization;
 namespace HUBT_Social_API.Features.Auth.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 public class AccountController : ControllerBase
 {
     private readonly IAuthService _authService;

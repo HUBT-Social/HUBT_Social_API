@@ -7,7 +7,7 @@ using Microsoft.Extensions.Localization;
 namespace HUBT_Social_API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/update-user")]
 public class UpdateUserController : ControllerBase
 {
     private readonly IEmailService _emailService;
