@@ -2,13 +2,14 @@
 
 namespace HUBT_Social_API.Features.Auth.Dtos.Request.LoginRequest;
 
-public class LoginByStudentCodeRequest : ILoginRequest
+public class LoginByUserNameRequest : ILoginRequest
 {
-    [Required] public string StudentCode { get; set; } = string.Empty;
+    [Required] 
+    public string UserName { get; set; } = string.Empty;
 
     [Required]
     [DataType(DataType.Password)]
     public string Password { get; set; } = string.Empty;
 
-    public string Identifier => StudentCode;
+    public string Identifier => UserName;
 }

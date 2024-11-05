@@ -19,11 +19,14 @@ public class UserService : IUserService
     public async Task<AUser?> FindUserByUserNameAsync(string userName)
     {
         if (string.IsNullOrWhiteSpace(userName))
-            throw new ArgumentException("Tên người dùng không được để trống.", nameof(userName));
-
-#pragma warning disable CS8603
+            return null;
         return await _userManager.FindByNameAsync(userName);
-#pragma warning restore CS8603
+    }
+    public async Task<AUser?> FindUserByEmailAsync(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return null;
+        return await _userManager.FindByEmailAsync(email);
     }
 
     public async Task<bool> PromoteUserAccountAsync(string userName, string roleName)

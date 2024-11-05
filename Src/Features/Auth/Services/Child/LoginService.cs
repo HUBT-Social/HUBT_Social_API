@@ -25,7 +25,7 @@ public class LoginService : ILoginService
 
         var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, false, false);
         return result.Succeeded
-            ? (result, await _userManager.FindByNameAsync(model.Identifier))
+            ? (result, user)
             : (result, null);
     }
 
@@ -43,7 +43,6 @@ public class LoginService : ILoginService
         else
         {
             user = await _userManager.FindByNameAsync(identifier.Identifier);
-            if (!await _userManager.CheckPasswordAsync(user, identifier.Password)) return null;
         }
 
         return user;
