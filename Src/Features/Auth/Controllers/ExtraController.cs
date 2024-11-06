@@ -1,3 +1,4 @@
+using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
@@ -52,11 +53,16 @@ public partial class AccountController : ControllerBase
 
         var user = await _userService.FindUserByUserNameAsync(request.Username);
 
-        if (user == null) return BadRequest(_localizer["InvalidRequestError"]);
-#pragma warning disable CS8604 // Possible null reference argument.
-        var code = await _emailService.CreatePostcodeAsync(user.Email);
-#pragma warning restore CS8604 // Possible null reference argument.
+        if (user == null || user.Email == null) return BadRequest(_localizer["InvalidRequestError"]);
 
+
+        Postcode? code = await _emailService.CreatePostcodeAsync(user.Email);
+        if (code == null) return BadRequest(
+                new
+                {
+                    message = _localizer["InvalidCredentials"]
+                }
+            );
         var result = await _emailService.SendEmailAsync(
             new EmailRequest
             {

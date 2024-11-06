@@ -29,7 +29,7 @@ public class AuthService : IAuthService
         return await _loginService.LoginAsync(model);
     }
 
-    public async Task<AUser> VerifyCodeAsync(ValidatePostcodeRequest request)
+    public async Task<AUser?> VerifyCodeAsync(ValidatePostcodeRequest request)
     {
         return await _emailService.ValidatePostcodeAsync(request);
     }
@@ -39,7 +39,7 @@ public class AuthService : IAuthService
         return await _registerService.RegisterAsync(model);
     }
 
-    public async Task<TempUserRegister> GetTempUser(string email)
+    public async Task<TempUserRegister?> GetTempUser(string email)
     {
         return await _registerService.GetTempUser(email);
     }

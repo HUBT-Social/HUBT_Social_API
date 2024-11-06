@@ -7,7 +7,7 @@ namespace HUBT_Social_API.Features.Auth.Models;
 public class AUser : MongoIdentityUser<Guid>
 {
     public string StudentImageURL { get; set; } = string.Empty;
-
+    public string DefaultUserImage { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
 
     public string FirstName { get; set; } = string.Empty;
@@ -17,4 +17,9 @@ public class AUser : MongoIdentityUser<Guid>
     public bool IsMale { get; set; } = false;
 
     public DateTime DateOfBirth { get; set; }
+
+    public AUser()
+    {
+        DefaultUserImage = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1730901747/v5elptamoonvux5xth0a.jpg";
+    }
 }

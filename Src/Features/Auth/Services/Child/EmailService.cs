@@ -55,21 +55,28 @@ public class EmailService : IEmailService
         }
     }
 
-    public async Task<Postcode> CreatePostcodeAsync(string receiver)
+    public async Task<Postcode?> CreatePostcodeAsync(string receiver)
     {
         var code = GenerateOtp();
-        var postcode = new Postcode
+
+        Postcode? postcode = await _postcode.Find(
+            pc => pc.Email == receiver
+            ).FirstOrDefaultAsync();
+
+        if (postcode is not null) return null; 
+
+        var newPostcode = new Postcode
         {
             Code = code,
             Email = receiver,
             ExpireTime = DateTime.UtcNow
         };
 
-        await _postcode.InsertOneAsync(postcode);
-        return postcode;
+        await _postcode.InsertOneAsync(newPostcode);
+        return newPostcode;
     }
 
-    public async Task<AUser> ValidatePostcodeAsync(ValidatePostcodeRequest postcodeRequest)
+    public async Task<AUser?> ValidatePostcodeAsync(ValidatePostcodeRequest postcodeRequest)
     {
         AUser? user = await _userManager.FindByEmailAsync(postcodeRequest.Email);
         if (user == null) return null;

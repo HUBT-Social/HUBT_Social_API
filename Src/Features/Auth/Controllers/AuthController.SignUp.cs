@@ -1,3 +1,4 @@
+using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,13 @@ public partial class AccountController
         // Gửi mã OTP qua email để xác thực
         try
         {
-            var code = await _emailService.CreatePostcodeAsync(request.Email);
+            Postcode? code = await _emailService.CreatePostcodeAsync(request.Email);
+            if (code == null) return BadRequest(
+                new
+                {
+                    message = _localizer["InvalidCredentials"]
+                }
+            );
 
             await _emailService.SendEmailAsync(new EmailRequest
                 { Code = code.Code, Subject = _localizer["EmailVerificationCodeSubject"], ToEmail = request.Email });

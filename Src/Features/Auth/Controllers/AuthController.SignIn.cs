@@ -1,3 +1,4 @@
+using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.LoginRequest;
@@ -14,28 +15,25 @@ public partial class AccountController
 
         if (result.RequiresTwoFactor && user?.Email is not null)
         {
-            try
-            {
-                var code = await _emailService.CreatePostcodeAsync(user.Email);
+            
+            Postcode? code = await _emailService.CreatePostcodeAsync(user.Email);
+            if (code == null) return BadRequest(
+                new
+                {
+                    message = _localizer["InvalidCredentials"]
+                }
+            );
 
-                await _emailService.SendEmailAsync(
-                    new EmailRequest
-                    {
-                        Code = code.Code,
-                        Subject = _localizer["EmailVerificationCodeSubject"],
-                        ToEmail = user.Email
-                    });
-            }
-            catch (Exception)
-            {
-                return StatusCode(
-                    500,
-                    new {
-                        message = _localizer["UnableToSendOTP"]
-                    }
-                );
-            }
-
+            await _emailService.SendEmailAsync(
+                new EmailRequest
+                {
+                    Code = code.Code,
+                    Subject = _localizer["EmailVerificationCodeSubject"],
+                    ToEmail = user.Email
+                }
+            );
+            
+            
             return Ok(
                 new
                 {
@@ -58,7 +56,7 @@ public partial class AccountController
                     message =_localizer["LoginNotAllowed"]
                 }
             );
-        if (result.Succeeded)
+        if (result.Succeeded && user is not null)
         {
             var token = await _tokenService.GenerateTokenAsync(user);
 

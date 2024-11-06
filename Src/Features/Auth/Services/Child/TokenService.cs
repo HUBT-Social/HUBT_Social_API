@@ -63,15 +63,15 @@ public class TokenService : ITokenService
         if (string.IsNullOrEmpty(userIdClaim))
             return new UserResponse { Success = false, Message = "Can't find the owner of this token" };
 
-        var user = await _userManager.FindByIdAsync(userIdClaim);
+        AUser? user = await _userManager.FindByIdAsync(userIdClaim);
         if (user == null)
             return new UserResponse { Success = false, Message = "Can't find the owner of this token" };
-        var nameParts = user.FullName.Split(' ');
+        
 
         return new UserResponse
         {
-            Email = user.Email, Username = user.UserName, LastName = nameParts[0],
-            FirstName = string.Join(" ", nameParts.Skip(1)), Success = true
+            Email = user.Email, Username = user.UserName, LastName = user.LastName,
+            FirstName = user.FirstName, Success = true
         };
     }
 
