@@ -11,21 +11,24 @@ public partial class AccountController
     {
         if (!ModelState.IsValid)
             return BadRequest(
-                new AuthResponse(
-                    _localizer["InvalidInformation"]
-                )
+                new
+                {
+                    message = _localizer["InvalidInformation"]
+                }
             );
         if (await _registerService.CheckUserAccountExit(request))
             return BadRequest(
-                new AuthResponse(
-                    _localizer["UserAlreadyExists"]
-                )
+                new
+                {
+                    message = _localizer["UserAlreadyExists"]
+                }
             );
         if (!await _registerService.AddToTempUser(request))
             return BadRequest(
-                new AuthResponse(
-                    _localizer["UnableToStoreInDatabase"]
-                )
+                new
+                {
+                    message = _localizer["UnableToStoreInDatabase"]
+                }
             );
 
         // Gửi mã OTP qua email để xác thực
@@ -40,16 +43,18 @@ public partial class AccountController
         {
             return StatusCode(
                 500,
-                new AuthResponse(
-                    _localizer["UnableToSendOTP"]
-                )
+                new
+                {
+                    message = _localizer["UnableToSendOTP"]
+                }
             );
         }
 
         return Ok(
-            new AuthResponse(
-                _localizer["RegistrationSuccess"]
-            )
+            new
+            {
+                message = _localizer["RegistrationSuccess"]
+            }
         );
     }
 }

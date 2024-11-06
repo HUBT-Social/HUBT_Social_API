@@ -1,6 +1,7 @@
 using System.Globalization;
 using HUBT_Social_API.Core.Configurations;
 using HUBT_Social_API.Features.Chat.ChatHubs;
+using HUBT_Social_API.Src.Core.Configurations;
 using Microsoft.AspNetCore.Localization;
 
 namespace HUBT_Social_API;
@@ -13,7 +14,7 @@ namespace HUBT_Social_API;
             // Cấu hình Swagger
             builder.Services.AddAuthorization();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGenService();
 
             // Cấu hình localization, JWT, Identity, MongoDB, SignalR, Cloudinary và SMTP
             builder.Services.ConfigureLocalization();

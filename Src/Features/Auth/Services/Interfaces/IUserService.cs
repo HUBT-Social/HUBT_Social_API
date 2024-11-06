@@ -18,6 +18,10 @@ public interface IUserService
     Task<bool> UpdateGenderAsync(string userName, UpdateGenderRequest request);
     Task<bool> UpdateDateOfBirthAsync(string userName, UpdateDateOfBornRequest request);
 
+    Task<bool> EnableTwoFactor(string userName);
+
+    Task<bool> DisableTwoFactor(string userName);
+
     // Phương thức cập nhật tổng quát
     Task<bool> GeneralUpdateAsync(string userName, GeneralUpdateRequest request);
 }

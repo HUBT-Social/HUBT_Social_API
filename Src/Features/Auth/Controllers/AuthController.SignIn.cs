@@ -12,7 +12,7 @@ public partial class AccountController
     {
         var (result, user) = await _authService.LoginAsync(model);
 
-        if (result.Succeeded && user?.Email is not null)
+        if (result.RequiresTwoFactor && user?.Email is not null)
         {
             try
             {
@@ -30,41 +30,52 @@ public partial class AccountController
             {
                 return StatusCode(
                     500,
-                    new AuthResponse(
-                        _localizer["UnableToSendOTP"]
-                    )
+                    new {
+                        message = _localizer["UnableToSendOTP"]
+                    }
                 );
             }
 
             return Ok(
-                new AuthResponse(
-                    _localizer["StepOneVerificationSuccess"]
-                )
+                new
+                {
+                    message = _localizer["StepOneVerificationSuccess"]
+                }
+
             );
         }
 
         if (result.IsLockedOut)
             return BadRequest(
-                new AuthResponse(
-                    _localizer["AccountLocked"]
-                )
+                new {
+                    message = _localizer["AccountLocked"]
+                }
             );
         if (result.IsNotAllowed)
             return BadRequest(
-                new AuthResponse(
-                    _localizer["LoginNotAllowed"]
-                )
+                new
+                {
+                    message =_localizer["LoginNotAllowed"]
+                }
             );
-        if (result.RequiresTwoFactor)
-            return BadRequest(
-                new AuthResponse(
-                    _localizer["TwoFactorRequired"]
-                )
+        if (result.Succeeded)
+        {
+            var token = await _tokenService.GenerateTokenAsync(user);
+
+            return Ok(
+                new
+                {
+                    message = _localizer["VerificationSuccess"],
+                    accessToken = token
+                }
             );
+        }
+            
         return BadRequest(
-            new AuthResponse(
-                _localizer["InvalidCredentials"]
-            )
+            new
+            {
+                message = _localizer["InvalidCredentials"]
+            }
         );
     }
 

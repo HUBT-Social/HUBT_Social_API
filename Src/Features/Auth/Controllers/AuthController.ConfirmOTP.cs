@@ -12,43 +12,53 @@ public partial class AccountController
     {
         if (!ModelState.IsValid)
             return BadRequest(
-                new AuthResponse(
-                    _localizer["InvalidInformation"]
-                )
+                new
+                {
+                    message = _localizer["InvalidInformation"]
+                }
             );
+
+        
+        var tempUser = await _authService.GetTempUser(request.Email);
+        if (tempUser == null)
+            return Unauthorized(
+                new
+                {
+                    message = _localizer["OTPVerificationFailed"]
+                });
+
+        var (result, registeredUser) = await _authService.RegisterAsync(new RegisterRequest
+        {
+            Email = tempUser.Email,
+            Password = tempUser.Password,
+            UserName = tempUser.UserName
+        });
+
+        if (!result.Succeeded || registeredUser is null)
+            return Unauthorized(
+                new
+                {
+                    message = _localizer["OTPVerificationFailed"]
+                });
 
         var user = await _authService.VerifyCodeAsync(request);
         if (user == null)
         {
-            var tempUser = await _authService.GetTempUser(request.Email);
-            if (tempUser == null)
-                return Unauthorized(
-                    new AuthResponse(
-                        _localizer["OTPVerificationFailed"]
-                    ));
-
-            var (result, registeredUser) = await _authService.RegisterAsync(new RegisterRequest
-            {
-                Email = tempUser.Email,
-                Password = tempUser.Password,
-                UserName = tempUser.UserName
-            });
-
-            if (!result.Succeeded)
-                return Unauthorized(
-                    new AuthResponse(
-                        _localizer["OTPVerificationFailed"]
-                    ));
-            user = registeredUser;
+            return Unauthorized(
+                    new
+                    {
+                        message = _localizer["OTPVerificationFailed"]
+                    });
         }
 
         var token = await _tokenService.GenerateTokenAsync(user);
 
         return Ok(
-            new AuthResponse(
-                _localizer["VerificationSuccess"],
-                new { Token = token }
-            )
+            new
+            {
+                message = _localizer["VerificationSuccess"],
+                accessToken = token
+            }
         );
     }
 
@@ -57,27 +67,31 @@ public partial class AccountController
     {
         if (!ModelState.IsValid)
             return BadRequest(
-                new AuthResponse(
-                    _localizer["InvalidInformation"]
-                )
+                new
+                {
+                    message = _localizer["InvalidInformation"]
+                }
             );
 
         var user = await _authService.VerifyCodeAsync(request);
         if (user == null)
         {
             return Unauthorized(
-                    new AuthResponse(
-                        _localizer["OTPVerificationFailed"]
-                    ));
+                new
+                {
+                    message = _localizer["OTPVerificationFailed"]
+                }        
+            );
         }
 
         var token = await _tokenService.GenerateTokenAsync(user);
 
         return Ok(
-            new AuthResponse(
-                _localizer["VerificationSuccess"],
-                new { Token = token }
-            )
+            new
+            {
+                message = _localizer["VerificationSuccess"],
+                accessToken = token
+            }
         );
     }
 

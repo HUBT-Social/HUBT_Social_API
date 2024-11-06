@@ -2,6 +2,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.VisualBasic;
 
 namespace HUBT_Social_API.Features.Auth.Services.Child;
 
@@ -153,6 +154,31 @@ public class UserService : IUserService
 
         var result = await _userManager.UpdateAsync(user);
         return result.Succeeded;
+    }
+
+    public async Task<bool> EnableTwoFactor(string userName)
+    {
+        AUser? user = await _userManager.FindByNameAsync(userName);
+        if (user == null) return false;
+
+        user.TwoFactorEnabled = true;
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded) return false;
+
+        return true;
+    }
+
+    public async Task<bool> DisableTwoFactor(string userName)
+    {
+
+        AUser? user = await _userManager.FindByNameAsync(userName);
+        if (user == null) return false;
+
+        user.TwoFactorEnabled = false;
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded) return false;
+
+        return true;
     }
 
 

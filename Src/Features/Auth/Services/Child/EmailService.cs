@@ -69,17 +69,21 @@ public class EmailService : IEmailService
         return postcode;
     }
 
-    public async Task<AUser?> ValidatePostcodeAsync(ValidatePostcodeRequest postcodeRequest)
+    public async Task<AUser> ValidatePostcodeAsync(ValidatePostcodeRequest postcodeRequest)
     {
-        var user = await _userManager.FindByEmailAsync(postcodeRequest.Email);
+        AUser? user = await _userManager.FindByEmailAsync(postcodeRequest.Email);
         if (user == null) return null;
 
         var userPostcode = await _postcode
             .Find(ps => ps.Code == postcodeRequest.Postcode && ps.Email == postcodeRequest.Email)
             .FirstOrDefaultAsync();
 
-        
         if (userPostcode == null) return null;
+
+        user.EmailConfirmed = true;
+        IdentityResult result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded) return null;
 
         return user;
     }

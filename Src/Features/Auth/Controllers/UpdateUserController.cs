@@ -1,14 +1,15 @@
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
-using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 
 namespace HUBT_Social_API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/user-update")]
+[Authorize]
 public class UpdateUserController : ControllerBase
 {
     private readonly IEmailService _emailService;
@@ -120,5 +121,31 @@ public class UpdateUserController : ControllerBase
         return result ? Ok(_localizer["UserInfoUpdatedSuccess"]) : BadRequest(_localizer["UserInfoUpdateError"]);
     }
 
-    
+    [HttpPut("two-factor-enable")]
+    public async Task<IActionResult> EnableTwoFactor()
+    {
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+
+        if (string.IsNullOrWhiteSpace(userResponse.Username))
+            return BadRequest(_localizer["UserNotFound"]);
+
+
+        bool result = await _userService.EnableTwoFactor(userResponse.Username);
+        return result ? Ok(_localizer["UserInfoUpdatedSuccess"]) : BadRequest(_localizer["UserInfoUpdateError"]);
+    }
+    [HttpPut("two-factor-disable")]
+    public async Task<IActionResult> DisableTwoFactor()
+    {
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+
+        if (string.IsNullOrWhiteSpace(userResponse.Username))
+            return BadRequest(_localizer["UserNotFound"]);
+
+
+        bool result = await _userService.DisableTwoFactor(userResponse.Username);
+        return result ? Ok(_localizer["UserInfoUpdatedSuccess"]) : BadRequest(_localizer["UserInfoUpdateError"]);
+    }
+
 }
