@@ -39,7 +39,7 @@ public partial class AccountController
             if (code == null) return BadRequest(
                 new
                 {
-                    message = _localizer["InvalidCredentials"]
+                    message = _localizer["InvalidCredentials"].Value
                 }
             );
 

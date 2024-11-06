@@ -20,7 +20,7 @@ public partial class AccountController
             if (code == null) return BadRequest(
                 new
                 {
-                    message = _localizer["InvalidCredentials"]
+                    message = _localizer["InvalidCredentials"].Value
                 }
             );
 
@@ -28,7 +28,7 @@ public partial class AccountController
                 new EmailRequest
                 {
                     Code = code.Code,
-                    Subject = _localizer["EmailVerificationCodeSubject"],
+                    Subject = _localizer["EmailVerificationCodeSubject"].Value,
                     ToEmail = user.Email
                 }
             );
