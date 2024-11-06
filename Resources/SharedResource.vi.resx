@@ -278,7 +278,7 @@
     <comment/>
   </data>
   <data name="EmailUpdateError" xml:space="preserve">
-    <value>Có lỗi xảy ra khi cập nhật email.</value>
+    <value>Không thể cập nhật email</value>
     <comment/>
   </data>
   <data name="PasswordCannotBeEmpty" xml:space="preserve">
@@ -371,6 +371,22 @@
   </data>
   <data name="UserNotFound" xml:space="preserve">
     <value>Không tìm thấy người dùng</value>
+    <comment/>
+  </data>
+  <data name="UserInfoUpdatedSuccess" xml:space="preserve">
+    <value>Thông tin đã được cập nhật</value>
+    <comment/>
+  </data>
+  <data name="UserInfoUpdateError" xml:space="preserve">
+    <value>Có lỗi xảy ra khi cập nhật thông tin.</value>
+    <comment/>
+  </data>
+  <data name="PasswordCheckEmptyError" xml:space="preserve">
+    <value>Mật khẩu không được để trống.</value>
+    <comment/>
+  </data>
+  <data name="OtpVerifyEmptyError" xml:space="preserve">
+    <value>Mã xác thực không được để trống.</value>
     <comment/>
   </data>
 </root>

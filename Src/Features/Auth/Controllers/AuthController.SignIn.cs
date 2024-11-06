@@ -37,7 +37,7 @@ public partial class AccountController
             return Ok(
                 new
                 {
-                    message = _localizer["StepOneVerificationSuccess"]
+                    message = _localizer["StepOneVerificationSuccess"].Value
                 }
 
             );
@@ -46,14 +46,14 @@ public partial class AccountController
         if (result.IsLockedOut)
             return BadRequest(
                 new {
-                    message = _localizer["AccountLocked"]
+                    message = _localizer["AccountLocked"].Value
                 }
             );
         if (result.IsNotAllowed)
             return BadRequest(
                 new
                 {
-                    message =_localizer["LoginNotAllowed"]
+                    message =_localizer["LoginNotAllowed"].Value
                 }
             );
         if (result.Succeeded && user is not null)
@@ -63,7 +63,7 @@ public partial class AccountController
             return Ok(
                 new
                 {
-                    message = _localizer["VerificationSuccess"],
+                    message = _localizer["VerificationSuccess"].Value,
                     accessToken = token
                 }
             );
@@ -72,7 +72,7 @@ public partial class AccountController
         return BadRequest(
             new
             {
-                message = _localizer["InvalidCredentials"]
+                message = _localizer["InvalidCredentials"].Value
             }
         );
     }
