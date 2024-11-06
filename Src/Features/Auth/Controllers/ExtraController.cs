@@ -52,14 +52,14 @@ public partial class AccountController : ControllerBase
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
 
 
-        if (userResponse == null || userResponse.Email == null) return BadRequest(_localizer["InvalidRequestError"]);
+        if (userResponse == null || userResponse.Email == null) return BadRequest(_localizer["InvalidRequestError"].Value);
 
 
         Postcode? code = await _emailService.CreatePostcodeAsync(userResponse.Email);
         if (code == null) return BadRequest(
                 new
                 {
-                    message = _localizer["InvalidCredentials"]
+                    message = _localizer["InvalidCredentials"].Value
                 }
             );
         var result = await _emailService.SendEmailAsync(
