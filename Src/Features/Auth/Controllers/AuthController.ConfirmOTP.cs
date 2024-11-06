@@ -14,7 +14,7 @@ public partial class AccountController
             return BadRequest(
                 new
                 {
-                    message = _localizer["InvalidInformation"]
+                    message = _localizer["InvalidInformation"].Value
                 }
             );
 
@@ -24,7 +24,7 @@ public partial class AccountController
             return Unauthorized(
                 new
                 {
-                    message = _localizer["OTPVerificationFailed"]
+                    message = _localizer["OTPVerificationFailed"].Value
                 });
 
         var (result, registeredUser) = await _authService.RegisterAsync(new RegisterRequest
@@ -38,7 +38,7 @@ public partial class AccountController
             return Unauthorized(
                 new
                 {
-                    message = _localizer["OTPVerificationFailed"]
+                    message = _localizer["OTPVerificationFailed"].Value
                 });
 
         var user = await _authService.VerifyCodeAsync(request);
@@ -47,7 +47,7 @@ public partial class AccountController
             return Unauthorized(
                     new
                     {
-                        message = _localizer["OTPVerificationFailed"]
+                        message = _localizer["OTPVerificationFailed"].Value
                     });
         }
 
@@ -56,7 +56,7 @@ public partial class AccountController
         return Ok(
             new
             {
-                message = _localizer["VerificationSuccess"],
+                message = _localizer["VerificationSuccess"].Value,
                 accessToken = token
             }
         );
@@ -69,7 +69,7 @@ public partial class AccountController
             return BadRequest(
                 new
                 {
-                    message = _localizer["InvalidInformation"]
+                    message = _localizer["InvalidInformation"].Value
                 }
             );
 
@@ -79,7 +79,7 @@ public partial class AccountController
             return Unauthorized(
                 new
                 {
-                    message = _localizer["OTPVerificationFailed"]
+                    message = _localizer["OTPVerificationFailed"].Value
                 }        
             );
         }
@@ -89,7 +89,7 @@ public partial class AccountController
         return Ok(
             new
             {
-                message = _localizer["VerificationSuccess"],
+                message = _localizer["VerificationSuccess"].Value,
                 accessToken = token
             }
         );

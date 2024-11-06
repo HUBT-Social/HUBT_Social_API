@@ -13,21 +13,21 @@ public partial class AccountController
             return BadRequest(
                 new
                 {
-                    message = _localizer["InvalidInformation"]
+                    message = _localizer["InvalidInformation"].Value
                 }
             );
         if (await _registerService.CheckUserAccountExit(request))
             return BadRequest(
                 new
                 {
-                    message = _localizer["UserAlreadyExists"]
+                    message = _localizer["UserAlreadyExists"].Value
                 }
             );
         if (!await _registerService.AddToTempUser(request))
             return BadRequest(
                 new
                 {
-                    message = _localizer["UnableToStoreInDatabase"]
+                    message = _localizer["UnableToStoreInDatabase"].Value
                 }
             );
 
@@ -37,7 +37,7 @@ public partial class AccountController
             var code = await _emailService.CreatePostcodeAsync(request.Email);
 
             await _emailService.SendEmailAsync(new EmailRequest
-                { Code = code.Code, Subject = _localizer["EmailVerificationCodeSubject"], ToEmail = request.Email });
+                { Code = code.Code, Subject = _localizer["EmailVerificationCodeSubject"].Value, ToEmail = request.Email });
         }
         catch (Exception)
         {
@@ -45,7 +45,7 @@ public partial class AccountController
                 500,
                 new
                 {
-                    message = _localizer["UnableToSendOTP"]
+                    message = _localizer["UnableToSendOTP"].Value
                 }
             );
         }
@@ -53,7 +53,7 @@ public partial class AccountController
         return Ok(
             new
             {
-                message = _localizer["RegistrationSuccess"]
+                message = _localizer["RegistrationSuccess"].Value
             }
         );
     }

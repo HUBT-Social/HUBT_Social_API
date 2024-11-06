@@ -1,9 +1,11 @@
 ﻿using AspNetCore.Identity.MongoDbCore.Models;
+using MongoDB.Bson.Serialization.Attributes;
 using MongoDbGenericRepository.Attributes;
 
 namespace HUBT_Social_API.Features.Auth.Models;
 
 [CollectionName("user")]
+[BsonIgnoreExtraElements]
 public class AUser : MongoIdentityUser<Guid>
 {
     public string StudentImageURL { get; set; } = string.Empty;

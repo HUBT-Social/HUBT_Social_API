@@ -37,45 +37,56 @@ public partial class AccountController : ControllerBase
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
 
         if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest(_localizer["PasswordCheckEmptyError"]);
+            return BadRequest(_localizer["PasswordCheckEmptyError"].Value);
 
         var result = await _userService.VerifyCurrentPasswordAsync(userResponse.Username,request);
-        return result ? Ok(_localizer["PasswordCorrect"]) : BadRequest(_localizer["PasswordIncorrect"]);
+        return result ? Ok(_localizer["PasswordCorrect"].Value) : BadRequest(_localizer["PasswordIncorrect"].Value);
     }
 
     // Gửi mã OTP
     [HttpPost("send-otp")]
-    public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
+    public async Task<IActionResult> SendOtp()
     {
-        if (string.IsNullOrWhiteSpace(request.Username))
-            return BadRequest(_localizer["UsernameEmptyError"]);
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
 
-        var user = await _userService.FindUserByUserNameAsync(request.Username);
 
-        if (user == null) return BadRequest(_localizer["InvalidRequestError"]);
+        if (userResponse.Email == null) return BadRequest(_localizer["UserNotFound"].Value);
 #pragma warning disable CS8604 // Possible null reference argument.
-        var code = await _emailService.CreatePostcodeAsync(user.Email);
+        var code = await _emailService.CreatePostcodeAsync(userResponse.Email);
 #pragma warning restore CS8604 // Possible null reference argument.
 
         var result = await _emailService.SendEmailAsync(
             new EmailRequest
             {
                 Code = code.Code,
-                Subject = _localizer["EmailVerificationSubject"],
-                ToEmail = user.Email
+                Subject = _localizer["EmailVerificationCodeSubject"].Value,
+                ToEmail = userResponse.Email
             });
-        return result ? Ok(_localizer["OtpSentSuccess"]) : BadRequest(_localizer["OtpSendError"]);
+        return result ? Ok(_localizer["OtpSent"].Value) : BadRequest(_localizer["OtpSendError"].Value);
     }
 
     // Xác thực mã OTP
     [HttpPost("verify-otp")]
-    public async Task<IActionResult> VerifyOtp([FromBody] ValidatePostcodeRequest request)
+    public async Task<IActionResult> VerifyOtp([FromBody] OTPRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Postcode))
-            return BadRequest(_localizer["OtpVerifyEmptyError"]);
+        if (string.IsNullOrWhiteSpace(request.Postcode))
+            return BadRequest(_localizer["OtpVerifyEmptyError"].Value);
 
-        var result = await _emailService.ValidatePostcodeAsync(request);
-        return result is not null ? Ok(_localizer["OtpVerifySuccess"]) : BadRequest(_localizer["OtpInvalid"]);
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        UserResponse? userResponse = await _tokenService.GetCurrentUser(token);
+
+
+        if (userResponse.Email == null) return BadRequest(_localizer["UserNotFound"].Value);
+        
+
+        var result = await _emailService.ValidatePostcodeAsync(new ValidatePostcodeRequest
+        {
+            Postcode = request.Postcode,
+            Email = userResponse.Email,
+        });
+
+        return result is not null ? Ok(_localizer["OtpVerificationSuccess"].Value) : BadRequest(_localizer["OtpInvalid"].Value);
     }
     //Tim tai khoan de dang nhap, bang username or password
     [HttpPost("search-user-by-usename-or-email")]
