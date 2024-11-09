@@ -18,10 +18,7 @@ public partial class AccountController
             
             Postcode? code = await _emailService.CreatePostcodeAsync(user.Email);
             if (code == null) return BadRequest(
-                new
-                {
-                    message = _localizer["InvalidCredentials"].Value
-                }
+                _localizer["InvalidCredentials"].Value
             );
 
             await _emailService.SendEmailAsync(
@@ -35,26 +32,23 @@ public partial class AccountController
             
             
             return Ok(
-                new
+                new 
                 {
-                    message = _localizer["StepOneVerificationSuccess"].Value
+                    twoFactor = true,
+                    message = _localizer["StepOneVerificationSuccess"].Value,
+                    accessToken = ""
                 }
-
+                
             );
         }
 
         if (result.IsLockedOut)
             return BadRequest(
-                new {
-                    message = _localizer["AccountLocked"].Value
-                }
+                    _localizer["AccountLocked"].Value
             );
         if (result.IsNotAllowed)
             return BadRequest(
-                new
-                {
-                    message =_localizer["LoginNotAllowed"].Value
-                }
+                _localizer["LoginNotAllowed"].Value
             );
         if (result.Succeeded && user is not null)
         {
@@ -63,6 +57,7 @@ public partial class AccountController
             return Ok(
                 new
                 {
+                    twoFactor = false,
                     message = _localizer["VerificationSuccess"].Value,
                     accessToken = token
                 }
@@ -70,10 +65,7 @@ public partial class AccountController
         }
             
         return BadRequest(
-            new
-            {
-                message = _localizer["InvalidCredentials"].Value
-            }
+            _localizer["InvalidCredentials"].Value      
         );
     }
 

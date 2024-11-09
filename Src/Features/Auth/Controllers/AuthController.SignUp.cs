@@ -11,37 +11,17 @@ public partial class AccountController
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         if (!ModelState.IsValid)
-            return BadRequest(
-                new
-                {
-                    message = _localizer["InvalidInformation"].Value
-                }
-            );
+            return BadRequest(_localizer["InvalidInformation"].Value);
         if (await _registerService.CheckUserAccountExit(request))
-            return BadRequest(
-                new
-                {
-                    message = _localizer["UserAlreadyExists"].Value
-                }
-            );
+            return BadRequest(_localizer["UserAlreadyExists"].Value);
         if (!await _registerService.AddToTempUser(request))
-            return BadRequest(
-                new
-                {
-                    message = _localizer["UnableToStoreInDatabase"].Value
-                }
-            );
+            return BadRequest(_localizer["UnableToStoreInDatabase"].Value);
 
         // Gửi mã OTP qua email để xác thực
         try
         {
             Postcode? code = await _emailService.CreatePostcodeAsync(request.Email);
-            if (code == null) return BadRequest(
-                new
-                {
-                    message = _localizer["InvalidCredentials"].Value
-                }
-            );
+            if (code == null) return BadRequest(_localizer["InvalidCredentials"].Value);
 
             await _emailService.SendEmailAsync(new EmailRequest
                 { Code = code.Code, Subject = _localizer["EmailVerificationCodeSubject"].Value, ToEmail = request.Email });
@@ -50,18 +30,12 @@ public partial class AccountController
         {
             return StatusCode(
                 500,
-                new
-                {
-                    message = _localizer["UnableToSendOTP"].Value
-                }
+                _localizer["UnableToSendOTP"].Value
             );
         }
 
         return Ok(
-            new
-            {
-                message = _localizer["RegistrationSuccess"].Value
-            }
+             _localizer["RegistrationSuccess"].Value
         );
     }
 }

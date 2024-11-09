@@ -7,25 +7,20 @@ namespace HUBT_Social_API.Features.Auth.Controllers;
 
 public partial class AccountController
 {
-    [HttpPost("sign-up/confirm-code")]
+    [HttpPost("sign-up/auth2")]
     public async Task<IActionResult> ConfirmCodeSignUp([FromBody] ValidatePostcodeRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(
-                new
-                {
-                    message = _localizer["InvalidInformation"].Value
-                }
+                _localizer["InvalidInformation"].Value
             );
 
         
         var tempUser = await _authService.GetTempUser(request.Email);
         if (tempUser == null)
             return Unauthorized(
-                new
-                {
-                    message = _localizer["OTPVerificationFailed"].Value
-                });
+                 _localizer["OTPVerificationFailed"].Value
+                );
 
         var (result, registeredUser) = await _authService.RegisterAsync(new RegisterRequest
         {
@@ -36,19 +31,15 @@ public partial class AccountController
 
         if (!result.Succeeded || registeredUser is null)
             return Unauthorized(
-                new
-                {
-                    message = _localizer["OTPVerificationFailed"].Value
-                });
+                    _localizer["OTPVerificationFailed"].Value
+                );
 
         var user = await _authService.VerifyCodeAsync(request);
         if (user == null)
         {
             return Unauthorized(
-                    new
-                    {
-                        message = _localizer["OTPVerificationFailed"].Value
-                    });
+                    _localizer["OTPVerificationFailed"].Value
+                    );
         }
 
         var token = await _tokenService.GenerateTokenAsync(user);
@@ -62,25 +53,19 @@ public partial class AccountController
         );
     }
 
-    [HttpPost("sign-in/confirm-code")]
+    [HttpPost("sign-in/auth2")]
     public async Task<IActionResult> ConfirmCodeSignIn([FromBody] ValidatePostcodeRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(
-                new
-                {
-                    message = _localizer["InvalidInformation"].Value
-                }
+                  _localizer["InvalidInformation"].Value
             );
 
         var user = await _authService.VerifyCodeAsync(request);
         if (user == null)
         {
             return Unauthorized(
-                new
-                {
-                    message = _localizer["OTPVerificationFailed"].Value
-                }        
+                _localizer["OTPVerificationFailed"].Value        
             );
         }
 

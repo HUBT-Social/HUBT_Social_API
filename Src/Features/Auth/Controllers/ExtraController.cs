@@ -10,7 +10,7 @@ using Microsoft.Extensions.Localization;
 namespace HUBT_Social_API.Controllers;
 
 [ApiController]
-[Route("api/auth2")]
+[Route("api/auth")]
 public partial class AccountController : ControllerBase
 {
     private readonly IEmailService _emailService;   
