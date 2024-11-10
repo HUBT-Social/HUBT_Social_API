@@ -6,8 +6,8 @@ namespace HUBT_Social_API.Features.Auth.Dtos.Collections;
 [CollectionName("Postcode")]
 public class Postcode
 {
-    [BsonId] [BsonElement("Email")] public string Email { get; set; } = string.Empty;
-
+    [BsonId] [BsonElement("UserAgent")] public string UserAgent { get; set; } = string.Empty;
+    [BsonElement("Email")] public string Email { get; set; } = string.Empty;
     [BsonElement("Code")] public string Code { get; set; } = string.Empty;
 
     [BsonElement("ExpireTime")]

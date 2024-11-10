@@ -11,12 +11,13 @@ public partial class AccountController
     [HttpPost("sign-in")]
     public async Task<IActionResult> LoginAsync(LoginByUserNameRequest model)
     {
+        string? userAgent = Request.Headers["User-Agent"].ToString();
         var (result, user) = await _authService.LoginAsync(model);
 
         if (result.RequiresTwoFactor && user?.Email is not null)
         {
             
-            Postcode? code = await _emailService.CreatePostcodeAsync(user.Email);
+            Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,user.Email);
             if (code == null) return BadRequest(
                 _localizer["InvalidCredentials"].Value
             );
@@ -32,11 +33,11 @@ public partial class AccountController
             
             
             return Ok(
-                new 
+                new LoginResponse 
                 {
-                    twoFactor = true,
-                    message = _localizer["StepOneVerificationSuccess"].Value,
-                    accessToken = ""
+                    RequiresTwoFactor = result.RequiresTwoFactor,
+                    Message = _localizer["StepOneVerificationSuccess"].Value,
+                    AccessToken = ""
                 }
                 
             );
@@ -55,11 +56,11 @@ public partial class AccountController
             var token = await _tokenService.GenerateTokenAsync(user);
 
             return Ok(
-                new
+                new LoginResponse
                 {
-                    twoFactor = false,
-                    message = _localizer["VerificationSuccess"].Value,
-                    accessToken = token
+                    RequiresTwoFactor = false,
+                    Message = _localizer["VerificationSuccess"].Value,
+                    AccessToken = token
                 }
             );
         }

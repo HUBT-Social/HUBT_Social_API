@@ -10,6 +10,8 @@ public partial class AccountController
     [HttpPost("sign-up")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
+        string? userAgent = Request.Headers["User-Agent"].ToString();
+
         if (!ModelState.IsValid)
             return BadRequest(_localizer["InvalidInformation"].Value);
         if (await _registerService.CheckUserAccountExit(request))
@@ -20,7 +22,7 @@ public partial class AccountController
         // Gửi mã OTP qua email để xác thực
         try
         {
-            Postcode? code = await _emailService.CreatePostcodeAsync(request.Email);
+            Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,request.Email);
             if (code == null) return BadRequest(_localizer["InvalidCredentials"].Value);
 
             await _emailService.SendEmailAsync(new EmailRequest

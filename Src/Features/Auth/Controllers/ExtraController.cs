@@ -48,6 +48,7 @@ public partial class AccountController : ControllerBase
     [HttpPost("send-otp")]
     public async Task<IActionResult> SendOtp()
     {
+        string userAgent = Request.Headers["User-Agent"].ToString();
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
 
@@ -55,7 +56,7 @@ public partial class AccountController : ControllerBase
         if (userResponse == null || userResponse.Email == null) return BadRequest(_localizer["InvalidRequestError"].Value);
 
 
-        Postcode? code = await _emailService.CreatePostcodeAsync(userResponse.Email);
+        Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,userResponse.Email);
         if (code == null) return BadRequest(
                 new
                 {
