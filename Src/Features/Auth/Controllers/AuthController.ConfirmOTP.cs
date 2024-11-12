@@ -1,3 +1,4 @@
+using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.LoginRequest;
@@ -7,19 +8,19 @@ namespace HUBT_Social_API.Features.Auth.Controllers;
 
 public partial class AccountController
 {
-    [HttpPost("sign-up/auth2")]
+    [HttpPost("sign-up/verify-two-factor")]
     public async Task<IActionResult> ConfirmCodeSignUp([FromBody] ValidatePostcodeRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(
-                _localizer["InvalidInformation"].Value
+                LocalValue.Get(KeyStore.InvalidInformation)
             );
 
         
         var tempUser = await _authService.GetTempUser(request.Email);
         if (tempUser == null)
             return Unauthorized(
-                 _localizer["OTPVerificationFailed"].Value
+                 LocalValue.Get(KeyStore.OTPVerificationFailed)
                 );
 
         var (result, registeredUser) = await _authService.RegisterAsync(new RegisterRequest
@@ -31,14 +32,14 @@ public partial class AccountController
 
         if (!result.Succeeded || registeredUser is null)
             return Unauthorized(
-                    _localizer["OTPVerificationFailed"].Value
+                    LocalValue.Get(KeyStore.OTPVerificationFailed)
                 );
 
         var user = await _authService.VerifyCodeAsync(request);
         if (user == null)
         {
             return Unauthorized(
-                    _localizer["OTPVerificationFailed"].Value
+                    LocalValue.Get(KeyStore.OTPVerificationFailed)
                     );
         }
 
@@ -47,25 +48,25 @@ public partial class AccountController
         return Ok(
             new
             {
-                message = _localizer["VerificationSuccess"].Value,
+                message = LocalValue.Get(KeyStore.VerificationSuccess),
                 accessToken = token
             }
         );
     }
 
-    [HttpPost("sign-in/auth2")]
+    [HttpPost("sign-in/verify-two-factor")]
     public async Task<IActionResult> ConfirmCodeSignIn([FromBody] ValidatePostcodeRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(
-                  _localizer["InvalidInformation"].Value
+                  LocalValue.Get(KeyStore.InvalidInformation)
             );
 
         var user = await _authService.VerifyCodeAsync(request);
         if (user == null)
         {
             return Unauthorized(
-                _localizer["OTPVerificationFailed"].Value        
+                LocalValue.Get(KeyStore.OTPVerificationFailed)        
             );
         }
 
@@ -74,7 +75,7 @@ public partial class AccountController
         return Ok(
             new
             {
-                message = _localizer["VerificationSuccess"].Value,
+                message = LocalValue.Get(KeyStore.VerificationSuccess),
                 accessToken = token
             }
         );

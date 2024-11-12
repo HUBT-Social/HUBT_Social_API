@@ -1,3 +1,4 @@
+using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
@@ -38,10 +39,10 @@ public partial class AccountController : ControllerBase
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
 
         if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest(_localizer["PasswordCheckEmptyError"].Value);
+            return BadRequest(LocalValue.Get(KeyStore.PasswordCheckEmptyError));
 
         var result = await _userService.VerifyCurrentPasswordAsync(userResponse.Username,request);
-        return result ? Ok(_localizer["PasswordCorrect"].Value) : BadRequest(_localizer["PasswordIncorrect"].Value);
+        return result ? Ok(LocalValue.Get(KeyStore.PasswordCorrect)) : BadRequest(LocalValue.Get(KeyStore.PasswordIncorrect));
     }
 
     // Gửi mã OTP
@@ -52,38 +53,38 @@ public partial class AccountController : ControllerBase
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
 
 
-        if (userResponse == null || userResponse.Email == null) return BadRequest(_localizer["InvalidRequestError"].Value);
+        if (userResponse == null || userResponse.Email == null) return BadRequest(LocalValue.Get(KeyStore.InvalidRequestError));
 
 
         Postcode? code = await _emailService.CreatePostcodeAsync(userResponse.Email);
         if (code == null) return BadRequest(
                 new
                 {
-                    message = _localizer["InvalidCredentials"].Value
+                    message = LocalValue.Get(KeyStore.InvalidCredentials)
                 }
             );
         var result = await _emailService.SendEmailAsync(
             new EmailRequest
             {
                 Code = code.Code,
-                Subject = _localizer["EmailVerificationCodeSubject"].Value,
+                Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
                 ToEmail = userResponse.Email
             });
-        return result ? Ok(_localizer["OtpSent"].Value) : BadRequest(_localizer["OtpSendError"].Value);
+        return result ? Ok(LocalValue.Get(KeyStore.OtpSent)) : BadRequest(LocalValue.Get(KeyStore.OtpSendError));
     }
 
     // Xác thực mã OTP
-    [HttpPost("verify-otp")]
+    [HttpPost("verify-two-factor")]
     public async Task<IActionResult> VerifyOtp([FromBody] OTPRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Postcode))
-            return BadRequest(_localizer["OtpVerifyEmptyError"].Value);
+            return BadRequest(LocalValue.Get(KeyStore.OtpVerifyEmptyError));
 
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse? userResponse = await _tokenService.GetCurrentUser(token);
 
 
-        if (userResponse.Email == null) return BadRequest(_localizer["UserNotFound"].Value);
+        if (userResponse.Email == null) return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
         
 
         var result = await _emailService.ValidatePostcodeAsync(new ValidatePostcodeRequest
@@ -92,7 +93,7 @@ public partial class AccountController : ControllerBase
             Email = userResponse.Email,
         });
 
-        return result is not null ? Ok(_localizer["OtpVerificationSuccess"].Value) : BadRequest(_localizer["OtpInvalid"].Value);
+        return result is not null ? Ok(LocalValue.Get(KeyStore.OtpVerificationSuccess)) : BadRequest(LocalValue.Get(KeyStore.OtpInvalid));
     }
     //Tim tai khoan de dang nhap, bang username or password
     [HttpPost("search-user-by-usename-or-email")]
@@ -115,7 +116,7 @@ public partial class AccountController : ControllerBase
         }
 
         if (user == null)
-            return NotFound(_localizer["UserNotFound"].Value);
+            return NotFound(LocalValue.Get(KeyStore.UserNotFound));
 
         return Ok(user);
     }

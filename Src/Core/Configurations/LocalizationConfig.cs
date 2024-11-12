@@ -1,5 +1,7 @@
 using System.Globalization;
+using HUBT_Social_API.Core.Settings;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 
 namespace HUBT_Social_API.Core.Configurations;
@@ -36,6 +38,7 @@ public static class LocalizationConfig
         // Áp dụng middleware localization
         var options = app.ApplicationServices.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
         app.UseRequestLocalization(options);
+        LocalValue.Initialize(app.ApplicationServices.GetRequiredService<IStringLocalizer<SharedResource>>());
         return app;
     }
 }

@@ -1,3 +1,4 @@
+using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
@@ -18,14 +19,14 @@ public partial class AccountController
             
             Postcode? code = await _emailService.CreatePostcodeAsync(user.Email);
             if (code == null) return BadRequest(
-                _localizer["InvalidCredentials"].Value
+                LocalValue.Get(KeyStore.InvalidCredentials)
             );
 
             await _emailService.SendEmailAsync(
                 new EmailRequest
                 {
                     Code = code.Code,
-                    Subject = _localizer["EmailVerificationCodeSubject"].Value,
+                    Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
                     ToEmail = user.Email
                 }
             );
@@ -35,7 +36,7 @@ public partial class AccountController
                 new 
                 {
                     twoFactor = true,
-                    message = _localizer["StepOneVerificationSuccess"].Value,
+                    message = LocalValue.Get(KeyStore.StepOneVerificationSuccess),
                     accessToken = ""
                 }
                 
@@ -44,11 +45,11 @@ public partial class AccountController
 
         if (result.IsLockedOut)
             return BadRequest(
-                    _localizer["AccountLocked"].Value
+                    LocalValue.Get(KeyStore.AccountLocked)
             );
         if (result.IsNotAllowed)
             return BadRequest(
-                _localizer["LoginNotAllowed"].Value
+                LocalValue.Get(KeyStore.LoginNotAllowed)
             );
         if (result.Succeeded && user is not null)
         {
@@ -58,14 +59,14 @@ public partial class AccountController
                 new
                 {
                     twoFactor = false,
-                    message = _localizer["VerificationSuccess"].Value,
+                    message = LocalValue.Get(KeyStore.VerificationSuccess),
                     accessToken = token
                 }
             );
         }
             
         return BadRequest(
-            _localizer["InvalidCredentials"].Value      
+            LocalValue.Get(KeyStore.InvalidCredentials)      
         );
     }
 
