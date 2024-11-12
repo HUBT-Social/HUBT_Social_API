@@ -17,7 +17,12 @@ public partial class AccountController
 
         string? currentEmail = await _emailService.GetValidateEmail(userAgent);
         if (currentEmail == null) return BadRequest(
-                _localizer["InvalidInformation"].Value
+            new LoginResponse
+            {
+                RequiresTwoFactor = false,
+                Message = _localizer["InvalidInformation"].Value,
+                AccessToken = ""
+            }
             );
 
         ValidatePostcodeRequest request = new()
@@ -30,14 +35,24 @@ public partial class AccountController
 
         if (!ModelState.IsValid)
             return BadRequest(
-                _localizer["InvalidInformation"].Value
+                new LoginResponse
+                {
+                    RequiresTwoFactor = false,
+                    Message = _localizer["InvalidInformation"].Value,
+                    AccessToken = ""
+                }
             );
 
         
         TempUserRegister? tempUser = await _authService.GetTempUser(request.Email);
         if (tempUser == null)
             return Unauthorized(
-                 _localizer["OTPVerificationFailed"].Value
+                 new LoginResponse
+                 {
+                     RequiresTwoFactor = false,
+                     Message = _localizer["OTPVerificationFailed"].Value,
+                     AccessToken = ""
+                 }
                 );
 
         var (result, registeredUser) = await _authService.RegisterAsync(new RegisterRequest
@@ -48,16 +63,23 @@ public partial class AccountController
         });
 
         if (!result.Succeeded || registeredUser is null)
-            return Unauthorized(
-                    _localizer["OTPVerificationFailed"].Value
-                );
+            return Unauthorized(new LoginResponse
+            {
+                RequiresTwoFactor = false,
+                Message = _localizer["OTPVerificationFailed"].Value,
+                AccessToken = ""
+            });
 
         AUser? user = await _authService.VerifyCodeAsync(request);
         if (user == null)
         {
-            return Unauthorized(
-                    _localizer["OTPVerificationFailed"].Value
-                    );
+            return Unauthorized(new LoginResponse
+            {
+                RequiresTwoFactor = false,
+                Message = _localizer["OTPVerificationFailed"].Value,
+                AccessToken = ""
+            }
+            );
         }
 
         string token = await _tokenService.GenerateTokenAsync(user);

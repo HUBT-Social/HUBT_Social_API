@@ -19,7 +19,12 @@ public partial class AccountController
             
             Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,user.Email);
             if (code == null) return BadRequest(
-                _localizer["InvalidCredentials"].Value
+                new LoginResponse
+                {
+                    RequiresTwoFactor = true,
+                    Message = _localizer["InvalidCredentials"].Value,
+                    AccessToken = ""
+                }        
             );
 
             await _emailService.SendEmailAsync(
@@ -35,7 +40,7 @@ public partial class AccountController
             return Ok(
                 new LoginResponse 
                 {
-                    RequiresTwoFactor = result.RequiresTwoFactor,
+                    RequiresTwoFactor = true,
                     Message = _localizer["StepOneVerificationSuccess"].Value,
                     AccessToken = ""
                 }
@@ -44,16 +49,25 @@ public partial class AccountController
         }
 
         if (result.IsLockedOut)
-            return BadRequest(
-                    _localizer["AccountLocked"].Value
+            return BadRequest(new LoginResponse
+            {
+                RequiresTwoFactor = false,
+                Message = _localizer["AccountLocked"].Value,
+                AccessToken = ""
+            }       
             );
         if (result.IsNotAllowed)
             return BadRequest(
-                _localizer["LoginNotAllowed"].Value
+                new LoginResponse
+                {
+                    RequiresTwoFactor = false,
+                    Message = _localizer["LoginNotAllowed"].Value,
+                    AccessToken = ""
+                }
             );
         if (result.Succeeded && user is not null)
         {
-            var token = await _tokenService.GenerateTokenAsync(user);
+            string? token = await _tokenService.GenerateTokenAsync(user);
 
             return Ok(
                 new LoginResponse
@@ -66,7 +80,13 @@ public partial class AccountController
         }
             
         return BadRequest(
-            _localizer["InvalidCredentials"].Value      
+            new LoginResponse
+            {
+                RequiresTwoFactor = true,
+                Message = _localizer["InvalidCredentials"].Value,
+                AccessToken = ""
+            }
+
         );
     }
 

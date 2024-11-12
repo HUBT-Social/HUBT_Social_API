@@ -57,11 +57,8 @@ public partial class AccountController : ControllerBase
 
 
         Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,userResponse.Email);
-        if (code == null) return BadRequest(
-                new
-                {
-                    message = _localizer["InvalidCredentials"].Value
-                }
+        if (code == null) return BadRequest(              
+                   _localizer["InvalidCredentials"].Value
             );
         var result = await _emailService.SendEmailAsync(
             new EmailRequest
