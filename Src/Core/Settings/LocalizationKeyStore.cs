@@ -83,5 +83,8 @@ namespace HUBT_Social_API.Core.Settings
         // Các key cho lỗi OTP và password
         public const string PasswordCheckEmptyError = "PasswordCheckEmptyError";
         public const string OtpVerifyEmptyError = "OtpVerifyEmptyError";
+
+        public const string InvalidImageData  = "InvalidImageData";
+        public const string InvalidFileData = "InvalidFileData";
     }
 }
