@@ -2,7 +2,7 @@
 
 public class LoginResponse
 {
-    public string AccessToken { get; set; } = string.Empty;
+    public object? UserToken { get; set; } = null;
 
     public string Message { get; set; } = string.Empty;
     public bool RequiresTwoFactor { get; set; }

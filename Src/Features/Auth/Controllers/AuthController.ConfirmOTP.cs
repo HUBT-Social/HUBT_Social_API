@@ -20,8 +20,7 @@ public partial class AccountController
             new LoginResponse
             {
                 RequiresTwoFactor = false,
-                Message = _localizer["InvalidInformation"].Value,
-                AccessToken = ""
+                Message = _localizer["InvalidInformation"].Value
             }
             );
 
@@ -38,8 +37,7 @@ public partial class AccountController
                 new LoginResponse
                 {
                     RequiresTwoFactor = false,
-                    Message = _localizer["InvalidInformation"].Value,
-                    AccessToken = ""
+                    Message = _localizer["InvalidInformation"].Value
                 }
             );
 
@@ -50,8 +48,7 @@ public partial class AccountController
                  new LoginResponse
                  {
                      RequiresTwoFactor = false,
-                     Message = _localizer["OTPVerificationFailed"].Value,
-                     AccessToken = ""
+                     Message = _localizer["OTPVerificationFailed"].Value
                  }
                 );
 
@@ -66,8 +63,7 @@ public partial class AccountController
             return Unauthorized(new LoginResponse
             {
                 RequiresTwoFactor = false,
-                Message = _localizer["OTPVerificationFailed"].Value,
-                AccessToken = ""
+                Message = _localizer["OTPVerificationFailed"].Value
             });
 
         AUser? user = await _authService.VerifyCodeAsync(request);
@@ -76,20 +72,19 @@ public partial class AccountController
             return Unauthorized(new LoginResponse
             {
                 RequiresTwoFactor = false,
-                Message = _localizer["OTPVerificationFailed"].Value,
-                AccessToken = ""
+                Message = _localizer["OTPVerificationFailed"].Value
             }
             );
         }
 
-        string token = await _tokenService.GenerateTokenAsync(user);
+        TokenResponse token = await _tokenService.GenerateTokenAsync(user);
 
         return Ok(
             new LoginResponse
             {
                 RequiresTwoFactor = false,
                 Message = _localizer["VerificationSuccess"].Value,
-                AccessToken = token
+                UserToken = token
             }
         );
     }
@@ -101,7 +96,11 @@ public partial class AccountController
 
         string? currentEmail = await _emailService.GetValidateEmail(userAgent);
         if (currentEmail == null) return BadRequest(
-                _localizer["InvalidInformation"].Value
+            new LoginResponse
+            {
+                RequiresTwoFactor = false,
+                Message = _localizer["InvalidInformation"].Value
+            }
             );
 
         ValidatePostcodeRequest request = new()
@@ -113,25 +112,35 @@ public partial class AccountController
 
         if (!ModelState.IsValid)
             return BadRequest(
-                  _localizer["InvalidInformation"].Value
+                new LoginResponse
+                {
+                    RequiresTwoFactor = false,
+                    Message = _localizer["InvalidInformation"].Value
+                }
+                
             );
 
         var user = await _authService.VerifyCodeAsync(request);
         if (user == null)
         {
             return Unauthorized(
-                _localizer["OTPVerificationFailed"].Value        
+                new LoginResponse
+                {
+                    RequiresTwoFactor = false,
+                    Message = _localizer["OTPVerificationFailed"].Value
+                }
+                        
             );
         }
 
-        var token = await _tokenService.GenerateTokenAsync(user);
+        TokenResponse token = await _tokenService.GenerateTokenAsync(user);
 
         return Ok(
             new LoginResponse
             {
                 RequiresTwoFactor = false,
                 Message = _localizer["VerificationSuccess"].Value,
-                AccessToken = token
+                UserToken = token
             }
         );
     }

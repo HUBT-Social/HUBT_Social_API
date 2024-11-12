@@ -4,6 +4,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 
@@ -116,6 +117,19 @@ public partial class AccountController : ControllerBase
             return NotFound(_localizer["UserNotFound"].Value);
 
         return Ok(user);
+    }
+
+    [HttpGet("token-is-validate")]
+    public IActionResult ValidateToken()
+    {
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        DecodeTokenResponse result = _tokenService.ValidateToken(token);
+        if (result.Success)
+        {
+            return Ok(result.Message);
+        }
+
+        return BadRequest(result.Message);
     }
 
 }

@@ -22,8 +22,7 @@ public partial class AccountController
                 new LoginResponse
                 {
                     RequiresTwoFactor = true,
-                    Message = _localizer["InvalidCredentials"].Value,
-                    AccessToken = ""
+                    Message = _localizer["InvalidCredentials"].Value
                 }        
             );
 
@@ -31,8 +30,7 @@ public partial class AccountController
                 new EmailRequest
                 {
                     Code = code.Code,
-                    Subject = _localizer["EmailVerificationCodeSubject"].Value,
-                    ToEmail = user.Email
+                    Subject = _localizer["EmailVerificationCodeSubject"].Value
                 }
             );
             
@@ -41,8 +39,7 @@ public partial class AccountController
                 new LoginResponse 
                 {
                     RequiresTwoFactor = true,
-                    Message = _localizer["StepOneVerificationSuccess"].Value,
-                    AccessToken = ""
+                    Message = _localizer["StepOneVerificationSuccess"].Value
                 }
                 
             );
@@ -52,8 +49,7 @@ public partial class AccountController
             return BadRequest(new LoginResponse
             {
                 RequiresTwoFactor = false,
-                Message = _localizer["AccountLocked"].Value,
-                AccessToken = ""
+                Message = _localizer["AccountLocked"].Value
             }       
             );
         if (result.IsNotAllowed)
@@ -62,19 +58,18 @@ public partial class AccountController
                 {
                     RequiresTwoFactor = false,
                     Message = _localizer["LoginNotAllowed"].Value,
-                    AccessToken = ""
                 }
             );
         if (result.Succeeded && user is not null)
         {
-            string? token = await _tokenService.GenerateTokenAsync(user);
+            TokenResponse token = await _tokenService.GenerateTokenAsync(user);
 
             return Ok(
                 new LoginResponse
                 {
                     RequiresTwoFactor = false,
                     Message = _localizer["VerificationSuccess"].Value,
-                    AccessToken = token
+                    UserToken = token
                 }
             );
         }
@@ -83,8 +78,7 @@ public partial class AccountController
             new LoginResponse
             {
                 RequiresTwoFactor = true,
-                Message = _localizer["InvalidCredentials"].Value,
-                AccessToken = ""
+                Message = _localizer["InvalidCredentials"].Value
             }
 
         );

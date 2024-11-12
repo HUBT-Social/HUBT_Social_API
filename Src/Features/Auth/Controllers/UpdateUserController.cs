@@ -1,9 +1,11 @@
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
+using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace HUBT_Social_API.Controllers;
 
@@ -24,7 +26,23 @@ public class UpdateUserController : ControllerBase
         _tokenService = tokenService;
     }
 
-    // Cập nhật email
+
+    [HttpGet("get-user")]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        if (!string.IsNullOrWhiteSpace(userResponse.Username))
+        {
+            AUser? user = await _userService.FindUserByUserNameAsync(userResponse.Username);
+            return Ok(user);
+        }
+        
+        return BadRequest(_localizer["EmailCannotBeEmpty"].Value);
+
+        
+    }
+
     [HttpPost("update-email")]
     public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request)
     {

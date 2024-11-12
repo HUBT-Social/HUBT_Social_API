@@ -13,7 +13,7 @@ public static class MongoDbConfiguration
         var client = new MongoClient(configuration.GetConnectionString("AuthService"));
         var database = client.GetDatabase("HUBT_Management");
 
-        services.AddScoped<IMongoCollection<RefreshToken>>(s => database.GetCollection<RefreshToken>("RefreshTokens"));
+        services.AddScoped<IMongoCollection<UserToken>>(s => database.GetCollection<UserToken>("RefreshTokens"));
         services.AddScoped<IMongoCollection<Postcode>>(s => database.GetCollection<Postcode>("Postcode"));
         services.AddScoped<IMongoCollection<TempUserRegister>>(s =>
             database.GetCollection<TempUserRegister>("TempUserRegister"));

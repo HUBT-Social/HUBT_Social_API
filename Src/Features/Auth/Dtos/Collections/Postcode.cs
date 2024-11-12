@@ -10,7 +10,6 @@ public class Postcode
     [BsonElement("Email")] public string Email { get; set; } = string.Empty;
     [BsonElement("Code")] public string Code { get; set; } = string.Empty;
 
-    [BsonElement("ExpireTime")]
-    [BsonDateTimeOptions]
+    [BsonElement("ExpireTime"),BsonDateTimeOptions]
     public DateTime ExpireTime { get; set; }
 }

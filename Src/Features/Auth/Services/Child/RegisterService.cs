@@ -105,11 +105,9 @@ public class RegisterService : IRegisterService
             // Thêm Claims cho người dùng
             var claims = new List<Claim>
             {
-                new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new(ClaimTypes.Name, user.UserName),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new(ClaimTypes.Role, defaultRole),
                 new(ClaimTypes.Email, user.Email)
             };
 
