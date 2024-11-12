@@ -5,7 +5,7 @@ namespace HUBT_Social_API.Features.Auth.Services.Interfaces;
 
 public interface ITokenService
 {
-    Task<string> GenerateTokenAsync(AUser user);
+    Task<TokenResponse> GenerateTokenAsync(AUser user);
     DecodeTokenResponse ValidateToken(string accessToken);
     Task<UserResponse> GetCurrentUser(string accessToken);
 }

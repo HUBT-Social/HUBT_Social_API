@@ -55,18 +55,29 @@ public class EmailService : IEmailService
         }
     }
 
-    public async Task<Postcode?> CreatePostcodeAsync(string receiver)
+    public async Task<Postcode?> CreatePostcodeAsync(string userAgent,string receiver)
     {
         var code = GenerateOtp();
 
         Postcode? postcode = await _postcode.Find(
-            pc => pc.Email == receiver
+            pc => pc.Email == receiver && pc.UserAgent == userAgent
             ).FirstOrDefaultAsync();
 
-        if (postcode is not null) return null; 
-
-        var newPostcode = new Postcode
+        if (postcode is not null)
         {
+            var updatePostcode = Builders<Postcode>.Update.Set(pc => pc.Code , code)
+                .Set(pc=> pc.ExpireTime , DateTime.UtcNow);
+            postcode.Code = code;
+            await _postcode.UpdateOneAsync(
+                pc => pc.Email == receiver && pc.UserAgent == userAgent
+                ,updatePostcode);
+
+            return postcode;
+        }; 
+
+        Postcode newPostcode = new()
+        {
+            UserAgent = userAgent,
             Code = code,
             Email = receiver,
             ExpireTime = DateTime.UtcNow
@@ -81,8 +92,8 @@ public class EmailService : IEmailService
         AUser? user = await _userManager.FindByEmailAsync(postcodeRequest.Email);
         if (user == null) return null;
 
-        var userPostcode = await _postcode
-            .Find(ps => ps.Code == postcodeRequest.Postcode && ps.Email == postcodeRequest.Email)
+        Postcode userPostcode = await _postcode
+            .Find(ps => ps.Code == postcodeRequest.Postcode && ps.Email == postcodeRequest.Email && ps.UserAgent == postcodeRequest.UserAgent)
             .FirstOrDefaultAsync();
 
         if (userPostcode == null) return null;
@@ -118,5 +129,16 @@ public class EmailService : IEmailService
     private string? GetEnvironmentVariable(string key)
     {
         return Environment.GetEnvironmentVariable(key);
+    }
+
+    public async Task<string?> GetValidateEmail(string userAgent)
+    {
+        Postcode postcode = await _postcode
+            .Find(ps => ps.UserAgent == userAgent)
+            .FirstOrDefaultAsync();
+
+        if (postcode == null) return null;
+
+        return postcode.Email;
     }
 }

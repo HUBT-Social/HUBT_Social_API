@@ -16,13 +16,13 @@ namespace HUBT_Social_API.Features.Auth.Services.Child;
 public class TokenService : ITokenService
 {
     private readonly JwtSetting _jwtSetting;
-    private readonly IMongoCollection<RefreshToken> _refreshToken;
+    private readonly IMongoCollection<UserToken> _refreshToken;
     private readonly UserManager<AUser> _userManager;
 
     public TokenService(
         UserManager<AUser> userManager,
         IOptions<JwtSetting> jwtSettings,
-        IMongoCollection<RefreshToken> refreshTokenCollection
+        IMongoCollection<UserToken> refreshTokenCollection
     )
     {
         _userManager = userManager;
@@ -31,7 +31,7 @@ public class TokenService : ITokenService
     }
 
     // Tạo JWT token và handle Refresh Token
-    public async Task<string> GenerateTokenAsync(AUser user)
+    public async Task<TokenResponse> GenerateTokenAsync(AUser user)
     {
         List<Claim> claims = new();
 
@@ -48,7 +48,13 @@ public class TokenService : ITokenService
         // Xử lý Refresh Token: Cập nhật hoặc tạo mới
         await HandleRefreshTokenAsync(user, token, refreshToken);
 
-        return token;
+        return new TokenResponse
+        {
+            AccessToken = token,
+            RefreshToken = refreshToken,
+            ExpiresIn = _jwtSetting.TokenExpirationInMinutes,
+            TokenType = "bearer"
+        };
     }
 
 
@@ -96,7 +102,7 @@ public class TokenService : ITokenService
             {
                 if (token.ValidTo < DateTime.UtcNow)
                     return new DecodeTokenResponse { Success = false, Message = "Token is expired" };
-                return new DecodeTokenResponse { Success = true, ClaimsPrincipal = principal };
+                return new DecodeTokenResponse { Success = true, ClaimsPrincipal = principal , Message = "Token is valid"};
             }
 
             return new DecodeTokenResponse { Success = false, Message = "Token is not match our Algorithms" };
@@ -114,17 +120,22 @@ public class TokenService : ITokenService
 
         if (existingRefreshToken == null)
         {
-            await _refreshToken.InsertOneAsync(new RefreshToken
-                { AccessToken = accessToken, RefreshTo = refreshToken, UserId = user.Id.ToString() });
+            await _refreshToken.InsertOneAsync(new UserToken
+                { 
+                AccessToken = accessToken,
+                RefreshTo = refreshToken,
+                UserId = user.Id.ToString(),
+                ExpireTime = DateTime.UtcNow.AddMinutes(_jwtSetting.TokenExpirationInMinutes)
+            });
         }
         else
         {
-            var update = Builders<RefreshToken>.Update.Set(t => t.AccessToken, accessToken)
-                .Set(t => t.RefreshTo, refreshToken);
+            var update = Builders<UserToken>.Update.Set(t => t.AccessToken, accessToken)
+                .Set(t => t.RefreshTo, refreshToken)
+                .Set(t=> t.ExpireTime, DateTime.UtcNow.AddMinutes(_jwtSetting.TokenExpirationInMinutes));
             await _refreshToken.UpdateOneAsync(t => t.UserId == existingRefreshToken.UserId, update);
         }
 
-        ;
     }
 
     // Tạo JWT Token

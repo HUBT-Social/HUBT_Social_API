@@ -5,6 +5,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 
@@ -16,17 +17,15 @@ public partial class AccountController : ControllerBase
 {
     private readonly IEmailService _emailService;   
     private readonly IUserService _userService;
-    private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly ITokenService _tokenService;
     private readonly IAuthService _authService;
 
     
 
-    public AccountController(IUserService userService, IEmailService emailService, IStringLocalizer<SharedResource> localizer,IAuthService authService,ITokenService tokenService)
+    public AccountController(IUserService userService, IEmailService emailService,IAuthService authService,ITokenService tokenService)
     {
         _userService = userService;
         _emailService = emailService;
-        _localizer = localizer;
         _authService = authService;
         _tokenService = tokenService;
     }
@@ -49,6 +48,7 @@ public partial class AccountController : ControllerBase
     [HttpPost("send-otp")]
     public async Task<IActionResult> SendOtp()
     {
+        string userAgent = Request.Headers["User-Agent"].ToString();
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
 
@@ -56,12 +56,9 @@ public partial class AccountController : ControllerBase
         if (userResponse == null || userResponse.Email == null) return BadRequest(LocalValue.Get(KeyStore.InvalidRequestError));
 
 
-        Postcode? code = await _emailService.CreatePostcodeAsync(userResponse.Email);
-        if (code == null) return BadRequest(
-                new
-                {
-                    message = LocalValue.Get(KeyStore.InvalidCredentials)
-                }
+        Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,userResponse.Email);
+        if (code == null) return BadRequest(              
+                   LocalValue.Get(KeyStore.InvalidCredentials)
             );
         var result = await _emailService.SendEmailAsync(
             new EmailRequest
@@ -119,6 +116,19 @@ public partial class AccountController : ControllerBase
             return NotFound(LocalValue.Get(KeyStore.UserNotFound));
 
         return Ok(user);
+    }
+
+    [HttpGet("token-is-validate")]
+    public IActionResult ValidateToken()
+    {
+        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        DecodeTokenResponse result = _tokenService.ValidateToken(token);
+        if (result.Success)
+        {
+            return Ok(result.Message);
+        }
+
+        return BadRequest(result.Message);
     }
 
 }
