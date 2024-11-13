@@ -10,12 +10,10 @@ namespace HUBT_Social_API.Features.Chat.Controllers;
 public class ChatRoomController : ControllerBase
 {
     private readonly IChatRoomService _chatRoomService;
-    private readonly IStringLocalizer<ChatRoomController> _localizer;
 
-    public ChatRoomController(IChatRoomService chatRoomService, IStringLocalizer<ChatRoomController> localizer)
+    public ChatRoomController(IChatRoomService chatRoomService)
     {
         _chatRoomService = chatRoomService;
-        _localizer = localizer;
     }
 
     /// <summary>

@@ -102,7 +102,7 @@ public class TokenService : ITokenService
             {
                 if (token.ValidTo < DateTime.UtcNow)
                     return new DecodeTokenResponse { Success = false, Message = "Token is expired" };
-                return new DecodeTokenResponse { Success = true, ClaimsPrincipal = principal , Message = "Token is valid"};
+                return new DecodeTokenResponse { Success = true, ClaimsPrincipal = principal , Message = LocalValue.Get(KeyStore.TokenValid)};
             }
 
             return new DecodeTokenResponse { Success = false, Message = "Token is not match our Algorithms" };

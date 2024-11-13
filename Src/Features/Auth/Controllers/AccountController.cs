@@ -13,16 +13,14 @@ public partial class AccountController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IEmailService _emailService;
-    private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly IRegisterService _registerService;
     private readonly ITokenService _tokenService;
     
 
-    public AccountController(IAuthService authService,ITokenService tokenService, IStringLocalizer<SharedResource> localizer, IEmailService emailService, IRegisterService registerService)
+    public AccountController(IAuthService authService,ITokenService tokenService, IEmailService emailService, IRegisterService registerService)
     {
         _authService = authService;
         _tokenService = tokenService;
-        _localizer = localizer;
         _emailService = emailService;
         _registerService = registerService;
     }

@@ -1,3 +1,4 @@
+using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
@@ -16,13 +17,11 @@ public class UpdateUserController : ControllerBase
 {
     private readonly IEmailService _emailService;
     private readonly IUserService _userService;
-    private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly ITokenService _tokenService;
-    public UpdateUserController(IUserService userService, IEmailService emailService, IStringLocalizer<SharedResource> localizer,ITokenService tokenService)
+    public UpdateUserController(IUserService userService, IEmailService emailService, ITokenService tokenService)
     {
         _userService = userService;
         _emailService = emailService;
-        _localizer = localizer;
         _tokenService = tokenService;
     }
 
@@ -38,7 +37,7 @@ public class UpdateUserController : ControllerBase
             return Ok(user);
         }
         
-        return BadRequest(_localizer["EmailCannotBeEmpty"].Value);
+        return BadRequest(LocalValue.Get(KeyStore.EmailCannotBeEmpty));
 
         
     }
@@ -50,10 +49,10 @@ public class UpdateUserController : ControllerBase
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
 
         if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.Email))
-            return BadRequest(_localizer["EmailCannotBeEmpty"].Value);
+            return BadRequest(LocalValue.Get(KeyStore.EmailCannotBeEmpty));
 
         var result = await _userService.UpdateEmailAsync(userResponse.Username,request);
-        return result ? Ok(_localizer["EmailUpdated"].Value) : BadRequest(_localizer["EmailUpdateError"].Value);
+        return result ? Ok(LocalValue.Get(KeyStore.EmailUpdated)) : BadRequest(LocalValue.Get(KeyStore.EmailUpdateError));
     }
 
     // Cập nhật mật khẩu
@@ -63,11 +62,11 @@ public class UpdateUserController : ControllerBase
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
         if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.NewPassword))
-            return BadRequest(_localizer["PasswordCannotBeEmpty"].Value);
+            return BadRequest(LocalValue.Get(KeyStore.PasswordCannotBeEmpty));
             
 
         var result = await _userService.UpdatePasswordAsync(userResponse.Username, request);
-        return result ? Ok(_localizer["PasswordUpdated"].Value) : BadRequest(_localizer["PasswordUpdateError"].Value);
+        return result ? Ok(LocalValue.Get(KeyStore.PasswordUpdated)) : BadRequest(LocalValue.Get(KeyStore.PasswordUpdateError));
     }
 
     // Cập nhật tên người dùng
@@ -77,10 +76,10 @@ public class UpdateUserController : ControllerBase
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
         if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
-            return BadRequest(_localizer["UsernameCannotBeEmpty"].Value);
+            return BadRequest(LocalValue.Get(KeyStore.UsernameCannotBeEmpty));
 
         var result = await _userService.UpdateNameAsync(userResponse.Username, request);
-        return result ? Ok(_localizer["NameUpdated"].Value) : BadRequest(_localizer["NameUpdateError"].Value);
+        return result ? Ok(LocalValue.Get(KeyStore.NameUpdated)) : BadRequest(LocalValue.Get(KeyStore.NameUpdateError));
     }
 
     // Cập nhật số điện thoại
@@ -90,11 +89,11 @@ public class UpdateUserController : ControllerBase
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
         if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.PhoneNumber))
-            return BadRequest(_localizer["UserNotFound"].Value);
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
 
 
         var result = await _userService.UpdatePhoneNumberAsync(userResponse.Username,request);
-        return result ? Ok(_localizer["PhoneNumberUpdated"].Value) : BadRequest(_localizer["PhoneNumberUpdateError"].Value);
+        return result ? Ok(LocalValue.Get(KeyStore.PhoneNumberUpdated)) : BadRequest(LocalValue.Get(KeyStore.PhoneNumberUpdateError));
     }
 
     // Cập nhật giới tính
@@ -104,11 +103,11 @@ public class UpdateUserController : ControllerBase
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
         if (string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest(_localizer["UserNotFound"].Value);
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
 
 
         var result = await _userService.UpdateGenderAsync(userResponse.Username, request);
-        return result ? Ok(_localizer["GenderUpdated"].Value) : BadRequest(_localizer["GenderUpdateError"].Value);
+        return result ? Ok(LocalValue.Get(KeyStore.GenderUpdated)) : BadRequest(LocalValue.Get(KeyStore.GenderUpdateError));
     }
 
     // Cập nhật ngày sinh
@@ -118,11 +117,11 @@ public class UpdateUserController : ControllerBase
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
         if (string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest(_localizer["UserNotFound"].Value);
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
 
 
         var result = await _userService.UpdateDateOfBirthAsync(userResponse.Username, request);
-        return result ? Ok(_localizer["DateOfBirthUpdated"].Value) : BadRequest(_localizer["DateOfBirthUpdateError"].Value);
+        return result ? Ok(LocalValue.Get(KeyStore.DateOfBirthUpdated)) : BadRequest(LocalValue.Get(KeyStore.DateOfBirthUpdateError));
     }
 
     // Cập nhật thông tin người dùng chung
@@ -132,11 +131,11 @@ public class UpdateUserController : ControllerBase
         string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
         if (string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest(_localizer["UserNotFound"].Value);
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
 
 
         var result = await _userService.GeneralUpdateAsync(userResponse.Username,request);
-        return result ? Ok(_localizer["GeneralUpdateSuccess"].Value) : BadRequest(_localizer["GeneralUpdateError"].Value);
+        return result ? Ok(LocalValue.Get(KeyStore.GeneralUpdateSuccess)) : BadRequest(LocalValue.Get(KeyStore.GeneralUpdateError));
     }
 
     [HttpPut("two-factor-enable")]
@@ -146,11 +145,11 @@ public class UpdateUserController : ControllerBase
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
 
         if (string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest(_localizer["UserNotFound"].Value);
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
 
 
         bool result = await _userService.EnableTwoFactor(userResponse.Username);
-        return result ? Ok(_localizer["UserInfoUpdatedSuccess"].Value) : BadRequest(_localizer["UserInfoUpdateError"].Value);
+        return result ? Ok(LocalValue.Get(KeyStore.UserInfoUpdatedSuccess)) : BadRequest(LocalValue.Get(KeyStore.UserInfoUpdateError));
     }
     [HttpPut("two-factor-disable")]
     public async Task<IActionResult> DisableTwoFactor()
@@ -159,11 +158,11 @@ public class UpdateUserController : ControllerBase
         UserResponse userResponse = await _tokenService.GetCurrentUser(token);
 
         if (string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest(_localizer["UserNotFound"].Value);
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
 
 
         bool result = await _userService.DisableTwoFactor(userResponse.Username);
-        return result ? Ok(_localizer["UserInfoUpdatedSuccess"].Value) : BadRequest(_localizer["UserInfoUpdateError"].Value);
+        return result ? Ok(LocalValue.Get(KeyStore.UserInfoUpdatedSuccess)) : BadRequest(LocalValue.Get(KeyStore.UserInfoUpdateError));
     }
 
 }

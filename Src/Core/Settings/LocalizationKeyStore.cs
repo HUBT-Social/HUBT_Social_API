@@ -86,5 +86,7 @@ namespace HUBT_Social_API.Core.Settings
 
         public const string InvalidImageData  = "InvalidImageData";
         public const string InvalidFileData = "InvalidFileData";
+
+        public const string TokenValid =  "TokenValid";
     }
 }

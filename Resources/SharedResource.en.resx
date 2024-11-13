@@ -389,5 +389,9 @@
     <value>OTP code cannot be empty.</value>
     <comment/>
   </data>
+  <data name="TokenValid" xml:space="preserve">
+    <value>Token is valid.</value>
+    <comment/>
+  </data>
 
 </root>

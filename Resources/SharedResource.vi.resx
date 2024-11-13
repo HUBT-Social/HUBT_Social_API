@@ -389,4 +389,8 @@
     <value>Mã xác thực không được để trống.</value>
     <comment/>
   </data>
+  <data name="TokenValid" xml:space="preserve">
+    <value>Token hợp lệ.</value>
+    <comment/>
+  </data>
 </root>

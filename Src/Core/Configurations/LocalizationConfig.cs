@@ -15,27 +15,32 @@ public static class LocalizationConfig
 
         services.Configure<RequestLocalizationOptions>(options =>
         {
-            var supportedCultures = new[]
+            // Các ngôn ngữ được hỗ trợ
+            var supportedCultures = new[] 
             {
-                new CultureInfo("vi"),
-                new CultureInfo("en")
-                //  Thêm các ngôn ngữ khác ở đây
+                new CultureInfo("vi"), // Tiếng Việt
+                new CultureInfo("en")  // Tiếng Anh
+                // Có thể thêm các ngôn ngữ khác ở đây nếu cần
             };
-            const string defaultCulture = "en";
 
+            const string defaultCulture = "en"; // Ngôn ngữ mặc định là tiếng Anh
+
+            // Cấu hình ngôn ngữ mặc định và ngôn ngữ hỗ trợ
             options.DefaultRequestCulture = new RequestCulture(defaultCulture);
             options.SupportedCultures = supportedCultures;
             options.SupportedUICultures = supportedCultures; // Các UI cultures hỗ trợ
 
-            // Chọn ngôn ngữ dựa trên query string (https://ip/login?culture=en), cookie hoặc header 'Accept-Language'
-            options.RequestCultureProviders.Insert(0, new QueryStringRequestCultureProvider());
+            // Xử lý lựa chọn ngôn ngữ từ query string, cookie hoặc header 'Accept-Language'
+            options.RequestCultureProviders.Insert(0, new QueryStringRequestCultureProvider()); // Đọc từ query string
+            options.RequestCultureProviders.Insert(0, new CookieRequestCultureProvider()); // Đọc từ cookie
+            options.RequestCultureProviders.Insert(0, new AcceptLanguageHeaderRequestCultureProvider()); // Đọc từ header 'Accept-Language'
         });
+
         return services;
     }
 
     public static IApplicationBuilder UseLocalization(this IApplicationBuilder app)
     {
-        // Áp dụng middleware localization
         var options = app.ApplicationServices.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
         app.UseRequestLocalization(options);
         LocalValue.Initialize(app.ApplicationServices.GetRequiredService<IStringLocalizer<SharedResource>>());

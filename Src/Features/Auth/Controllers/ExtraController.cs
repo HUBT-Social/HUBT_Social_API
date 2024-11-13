@@ -17,15 +17,17 @@ public partial class AccountController : ControllerBase
 {
     private readonly IEmailService _emailService;   
     private readonly IUserService _userService;
+    private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly ITokenService _tokenService;
     private readonly IAuthService _authService;
 
     
 
-    public AccountController(IUserService userService, IEmailService emailService,IAuthService authService,ITokenService tokenService)
+    public AccountController(IUserService userService, IEmailService emailService, IStringLocalizer<SharedResource> localizer,IAuthService authService,ITokenService tokenService)
     {
         _userService = userService;
         _emailService = emailService;
+        _localizer = localizer;
         _authService = authService;
         _tokenService = tokenService;
     }
@@ -125,7 +127,7 @@ public partial class AccountController : ControllerBase
         DecodeTokenResponse result = _tokenService.ValidateToken(token);
         if (result.Success)
         {
-            return Ok(result.Message);
+            return Ok(_localizer["TokenValid"].Value);
         }
 
         return BadRequest(result.Message);

@@ -12,12 +12,10 @@ namespace HUBT_Social_API.Features.Chat.Controllers;
 public class ChatController : ControllerBase
 {
     private readonly IChatService _chatService;
-    private readonly IStringLocalizer<ChatController> _localizer;
 
-    public ChatController(IChatService chatService, IStringLocalizer<ChatController> localizer)
+    public ChatController(IChatService chatService)
     {
         _chatService = chatService;
-        _localizer = localizer;
     }
 
     [HttpPost("send-message")]
