@@ -32,8 +32,6 @@ public static class LocalizationConfig
 
             // Xử lý lựa chọn ngôn ngữ từ query string, cookie hoặc header 'Accept-Language'
             options.RequestCultureProviders.Insert(0, new QueryStringRequestCultureProvider()); // Đọc từ query string
-            options.RequestCultureProviders.Insert(0, new CookieRequestCultureProvider()); // Đọc từ cookie
-            options.RequestCultureProviders.Insert(0, new AcceptLanguageHeaderRequestCultureProvider()); // Đọc từ header 'Accept-Language'
         });
 
         return services;
