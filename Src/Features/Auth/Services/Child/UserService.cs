@@ -10,6 +10,15 @@ public class UserService : IUserService
 {
     private readonly RoleManager<ARole> _roleManager;
     private readonly UserManager<AUser> _userManager;
+    // Define a dictionary to rank roles
+    private readonly Dictionary<string, int> _roleHierarchy = new Dictionary<string, int>
+    {
+        { "ADMIN", 4 },
+        { "HEAD", 3 },
+        { "TEACHER", 2 },
+        { "STUDENT", 1 },
+        { "USER", 0}
+    };
 
     public UserService(UserManager<AUser> userManager, RoleManager<ARole> roleManager)
     {
@@ -29,30 +38,55 @@ public class UserService : IUserService
             return null;
         return await _userManager.FindByEmailAsync(email);
     }
+    
 
-    public async Task<bool> PromoteUserAccountAsync(string userName, string roleName)
+    public async Task<bool> PromoteUserAccountAsync(string currentUserName, string targetUserName, string roleName)
     {
-        if (string.IsNullOrEmpty(userName))
-            throw new ArgumentNullException(nameof(userName), "Tên người dùng không thể null hoặc rỗng.");
+        // Validate the role name
+        if (!IsValidRole(roleName) || string.IsNullOrEmpty(targetUserName))
+            return false;
 
-        if (string.IsNullOrEmpty(roleName) ||
-            (roleName != "USER" && roleName != "TEACHER" && roleName != "HEAD" && roleName != "ADMIN"))
-            throw new ArgumentException("Giá trị vai trò không hợp lệ.", nameof(roleName));
+        // Get the current user and target user
+        var currentUser = await _userManager.FindByNameAsync(currentUserName);
+        var targetUser = await _userManager.FindByNameAsync(targetUserName);
+        if (currentUser == null || targetUser == null)
+            return false;
 
-        var user = await _userManager.FindByNameAsync(userName);
-        if (user != null)
+        // Get roles of current and target users
+        var currentUserRoles = await _userManager.GetRolesAsync(currentUser);
+        var targetUserRoles = await _userManager.GetRolesAsync(targetUser);
+
+        // Get highest role of each user
+        var currentUserHighestRole = GetHighestRole(currentUserRoles);
+        var targetUserHighestRole = GetHighestRole(targetUserRoles);
+
+        // Check if current user has a higher role than target user
+        if (_roleHierarchy[currentUserHighestRole] <= _roleHierarchy[targetUserHighestRole])
+            return false; // Current user doesn't have a higher role
+
+        // Ensure role exists, then add role to target user
+        await EnsureRoleExistsAsync(roleName);
+        var result = await _userManager.AddToRoleAsync(targetUser, roleName);
+
+        return result.Succeeded;
+    }
+
+    // Method to get the highest role of a user based on hierarchy
+    private string GetHighestRole(IList<string> roles)
+    {
+        return roles.OrderByDescending(role => _roleHierarchy.GetValueOrDefault(role, 0)).FirstOrDefault();
+    }
+
+    // Existing helper methods
+    private bool IsValidRole(string roleName) => _roleHierarchy.ContainsKey(roleName);
+
+    private async Task EnsureRoleExistsAsync(string roleName)
+    {
+        if (!await _roleManager.RoleExistsAsync(roleName))
         {
-            if (!await _roleManager.RoleExistsAsync(roleName))
-            {
-                var role = new ARole { Name = roleName };
-                await _roleManager.CreateAsync(role);
-            }
-
-            var result = await _userManager.AddToRoleAsync(user, roleName);
-            return result.Succeeded;
+            var role = new ARole { Name = roleName };
+            await _roleManager.CreateAsync(role);
         }
-
-        return false;
     }
 
     public async Task<bool> UpdateEmailAsync(string userName, UpdateEmailRequest request)
@@ -181,6 +215,4 @@ public class UserService : IUserService
         return true;
     }
 
-
-    // Tương tự cho các phương thức PromoteToTeacherAsync, VerifyCodeAsync, v.v.
 }

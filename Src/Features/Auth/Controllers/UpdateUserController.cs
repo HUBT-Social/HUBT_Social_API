@@ -1,11 +1,14 @@
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
+using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
+using HUBT_Social_API.Features.Auth.Services;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace HUBT_Social_API.Controllers;
@@ -25,13 +28,11 @@ public class UpdateUserController : ControllerBase
         _tokenService = tokenService;
     }
 
-
     [HttpGet("get-user")]
     public async Task<IActionResult> GetCurrentUser()
     {
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
-        if (!string.IsNullOrWhiteSpace(userResponse.Username))
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (userResponse.Success && !string.IsNullOrWhiteSpace(userResponse.Username))
         {
             AUser? user = await _userService.FindUserByUserNameAsync(userResponse.Username);
             return Ok(user);
@@ -41,12 +42,40 @@ public class UpdateUserController : ControllerBase
 
         
     }
+    [HttpPost("promote")]
+    public async Task<IActionResult> PromoteUserAccount([FromBody] PromoteUserRequest request)
+    {
+        // Extract token and get current user information
+        var userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (userResponse == null || string.IsNullOrWhiteSpace(userResponse.Username))
+        {
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+        }
+
+        // Validate request data
+        if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.RoleName))
+        {
+            return BadRequest("Invalid request data.");
+        }
+
+        // Attempt to promote the target user
+        var result = await _userService.PromoteUserAccountAsync(userResponse.Username, request.UserName, request.RoleName);
+
+        if (result)
+        {
+            return Ok(LocalValue.Get(KeyStore.UserInfoUpdatedSuccess));
+        }
+        else
+        {
+            return BadRequest(LocalValue.Get(KeyStore.UserInfoUpdateError));
+        }
+    }
+    
 
     [HttpPost("update-email")]
     public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request)
     {
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
 
         if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.Email))
             return BadRequest(LocalValue.Get(KeyStore.EmailCannotBeEmpty));
@@ -59,8 +88,8 @@ public class UpdateUserController : ControllerBase
     [HttpPost("update-password")]
     public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
     {
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+
         if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.NewPassword))
             return BadRequest(LocalValue.Get(KeyStore.PasswordCannotBeEmpty));
             
@@ -73,8 +102,8 @@ public class UpdateUserController : ControllerBase
     [HttpPost("update-name")]
     public async Task<IActionResult> UpdateName([FromBody] UpdateNameRequest request)
     {
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+
         if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
             return BadRequest(LocalValue.Get(KeyStore.UsernameCannotBeEmpty));
 
@@ -86,8 +115,8 @@ public class UpdateUserController : ControllerBase
     [HttpPost("update-phone-number")]
     public async Task<IActionResult> UpdatePhoneNumber([FromBody] UpdatePhoneNumberRequest request)
     {
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+
         if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.PhoneNumber))
             return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
 
@@ -100,8 +129,8 @@ public class UpdateUserController : ControllerBase
     [HttpPost("update-gender")]
     public async Task<IActionResult> UpdateGender([FromBody] UpdateGenderRequest request)
     {
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+
         if (string.IsNullOrWhiteSpace(userResponse.Username))
             return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
 
@@ -114,8 +143,8 @@ public class UpdateUserController : ControllerBase
     [HttpPost("update-date-of-birth")]
     public async Task<IActionResult> UpdateDateOfBirth([FromBody] UpdateDateOfBornRequest request)
     {
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+
         if (string.IsNullOrWhiteSpace(userResponse.Username))
             return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
 
@@ -128,8 +157,8 @@ public class UpdateUserController : ControllerBase
     [HttpPost("general-update")]
     public async Task<IActionResult> GeneralUpdate([FromBody] GeneralUpdateRequest request)
     {
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+
         if (string.IsNullOrWhiteSpace(userResponse.Username))
             return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
 
@@ -141,8 +170,8 @@ public class UpdateUserController : ControllerBase
     [HttpPut("two-factor-enable")]
     public async Task<IActionResult> EnableTwoFactor()
     {
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+
 
         if (string.IsNullOrWhiteSpace(userResponse.Username))
             return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
@@ -154,8 +183,7 @@ public class UpdateUserController : ControllerBase
     [HttpPut("two-factor-disable")]
     public async Task<IActionResult> DisableTwoFactor()
     {
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
 
         if (string.IsNullOrWhiteSpace(userResponse.Username))
             return BadRequest(LocalValue.Get(KeyStore.UserNotFound));

@@ -88,5 +88,6 @@ namespace HUBT_Social_API.Core.Settings
         public const string InvalidFileData = "InvalidFileData";
 
         public const string TokenValid =  "TokenValid";
+        public const string DefaultUserImage = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1730901747/v5elptamoonvux5xth0a.jpg";
     }
 }

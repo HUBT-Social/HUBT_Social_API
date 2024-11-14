@@ -27,7 +27,11 @@ public partial class AccountController
             if (code == null) return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
 
             await _emailService.SendEmailAsync(new EmailRequest
-                { Code = code.Code, Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject), ToEmail = request.Email });
+                { 
+                    Code = code.Code, 
+                    Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject), 
+                    ToEmail = request.Email 
+                });
         }
         catch (Exception)
         {

@@ -4,6 +4,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
+using HUBT_Social_API.Features.Auth.Services;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -36,8 +37,7 @@ public partial class AccountController : ControllerBase
     [HttpPost("check-password")]
     public async Task<IActionResult> CheckPassword([FromBody] CheckPasswordRequest request)
     {
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
 
         if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(userResponse.Username))
             return BadRequest(LocalValue.Get(KeyStore.PasswordCheckEmptyError));
@@ -51,8 +51,7 @@ public partial class AccountController : ControllerBase
     public async Task<IActionResult> SendOtp()
     {
         string userAgent = Request.Headers["User-Agent"].ToString();
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
 
 
         if (userResponse == null || userResponse.Email == null) return BadRequest(LocalValue.Get(KeyStore.InvalidRequestError));
@@ -78,9 +77,9 @@ public partial class AccountController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(request.Postcode))
             return BadRequest(LocalValue.Get(KeyStore.OtpVerifyEmptyError));
+        string userAgent = Request.Headers["User-Agent"].ToString();
 
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse? userResponse = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
 
 
         if (userResponse.Email == null) return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
@@ -90,6 +89,7 @@ public partial class AccountController : ControllerBase
         {
             Postcode = request.Postcode,
             Email = userResponse.Email,
+            UserAgent = userAgent
         });
 
         return result is not null ? Ok(LocalValue.Get(KeyStore.OtpVerificationSuccess)) : BadRequest(LocalValue.Get(KeyStore.OtpInvalid));

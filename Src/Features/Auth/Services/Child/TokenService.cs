@@ -67,17 +67,20 @@ public class TokenService : ITokenService
         var userIdClaim = decodeValue.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim))
-            return new UserResponse { Success = false, Message = "Can't find the owner of this token" };
+            return new UserResponse { Success = false, Message = LocalValue.Get(KeyStore.UserNotFound) };
 
         AUser? user = await _userManager.FindByIdAsync(userIdClaim);
         if (user == null)
-            return new UserResponse { Success = false, Message = "Can't find the owner of this token" };
+            return new UserResponse { Success = false, Message = LocalValue.Get(KeyStore.UserNotFound) };
         
 
         return new UserResponse
         {
-            Email = user.Email, Username = user.UserName, LastName = user.LastName,
-            FirstName = user.FirstName, Success = true
+            Email = user.Email, 
+            Username = user.UserName, 
+            LastName = user.LastName,
+            FirstName = user.FirstName, 
+            Success = true
         };
     }
 
