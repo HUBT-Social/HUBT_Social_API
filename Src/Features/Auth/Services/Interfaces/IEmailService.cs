@@ -10,4 +10,6 @@ public interface IEmailService
     Task<Postcode?> CreatePostcodeAsync(string userAgent,string reciver);
     Task<AUser?> ValidatePostcodeAsync(ValidatePostcodeRequest postcode);
     Task<string?> GetValidateEmail(string userAgent);
+
+    bool MaskEmail(string email, out string maskEmail);
 }

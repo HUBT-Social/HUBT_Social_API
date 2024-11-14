@@ -145,4 +145,29 @@ public class EmailService : IEmailService
 
         return postcode.Email;
     }
+
+    public bool MaskEmail(string email,out string maskEmail)
+    {
+        string[] emailParts = email.Split('@');
+        maskEmail = null;
+
+        if (emailParts.Length == 2)
+        {
+            string username = emailParts[0];
+            string domain = emailParts[1];
+
+            string maskedUsername = username.Substring(0,3) + new string('*', Math.Max(0, username.Length));
+
+            var domainParts = domain.Split('.');
+            string maskedDomain = new('*', domainParts[0].Length);
+
+            maskEmail = $"{maskedUsername}@{maskedDomain}.{domainParts[1]}";
+            return true;
+        }
+
+
+        return false;
+
+        
+    }
 }

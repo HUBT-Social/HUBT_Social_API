@@ -132,5 +132,17 @@ public partial class AccountController : ControllerBase
 
         return BadRequest(result.Message);
     }
+    [HttpGet("get-mask-email")]
+    public async Task<IActionResult> GetCurrentEmail()
+    {
+        string userAgent = Request.Headers["User-Agent"].ToString();
 
+        string? currentEmail = await _emailService.GetValidateEmail(userAgent);
+
+        
+        if (currentEmail != null)
+            return _emailService.MaskEmail(currentEmail, out string maskEmail) ? Ok(maskEmail) : BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+            
+        return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+    }
 }
