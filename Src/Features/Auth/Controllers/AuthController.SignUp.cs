@@ -11,7 +11,7 @@ public partial class AccountController
     [HttpPost("sign-up")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        string? userAgent = Request.Headers["User-Agent"].ToString();
+        string? userAgent = Request.Headers.UserAgent.ToString();
 
         if (!ModelState.IsValid)
             return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));

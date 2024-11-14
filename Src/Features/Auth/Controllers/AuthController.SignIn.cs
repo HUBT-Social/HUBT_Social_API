@@ -12,7 +12,7 @@ public partial class AccountController
     [HttpPost("sign-in")]
     public async Task<IActionResult> LoginAsync(LoginByUserNameRequest model)
     {
-        string? userAgent = Request.Headers["User-Agent"].ToString();
+        string? userAgent = Request.Headers.UserAgent.ToString();
         var (result, user) = await _authService.LoginAsync(model);
 
         if (result.RequiresTwoFactor && user?.Email is not null)

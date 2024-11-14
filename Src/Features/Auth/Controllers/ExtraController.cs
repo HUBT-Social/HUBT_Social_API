@@ -36,13 +36,14 @@ public partial class AccountController : ControllerBase
     [HttpPost("check-password")]
     public async Task<IActionResult> CheckPassword([FromBody] CheckPasswordRequest request)
     {
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+        AUser? userResponse = await _tokenService.GetCurrentUser(token);
 
-        if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(userResponse.Username))
+        if (request.CurrentPassword != null || userResponse != null || userResponse != null)
+            
             return BadRequest(LocalValue.Get(KeyStore.PasswordCheckEmptyError));
 
-        var result = await _userService.VerifyCurrentPasswordAsync(userResponse.Username,request);
+        var result = await _userService.VerifyCurrentPasswordAsync(userResponse.UserName,request);
         return result ? Ok(LocalValue.Get(KeyStore.PasswordCorrect)) : BadRequest(LocalValue.Get(KeyStore.PasswordIncorrect));
     }
 
@@ -50,9 +51,9 @@ public partial class AccountController : ControllerBase
     [HttpPost("send-otp")]
     public async Task<IActionResult> SendOtp()
     {
-        string userAgent = Request.Headers["User-Agent"].ToString();
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
+        string userAgent = Request.Headers.UserAgent.ToString();
+        string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+        AUser? userResponse = await _tokenService.GetCurrentUser(token);
 
 
         if (userResponse == null || userResponse.Email == null) return BadRequest(LocalValue.Get(KeyStore.InvalidRequestError));
@@ -79,11 +80,11 @@ public partial class AccountController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Postcode))
             return BadRequest(LocalValue.Get(KeyStore.OtpVerifyEmptyError));
 
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        UserResponse? userResponse = await _tokenService.GetCurrentUser(token);
+        string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+        AUser? userResponse = await _tokenService.GetCurrentUser(token);
 
 
-        if (userResponse.Email == null) return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+        if (userResponse == null || userResponse.Email == null) return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
         
 
         var result = await _emailService.ValidatePostcodeAsync(new ValidatePostcodeRequest
@@ -101,7 +102,7 @@ public partial class AccountController : ControllerBase
         // Kiểm tra đầu vào có phải là email không
         bool isEmail = request.UserNameOrEmail.Contains("@");
 
-        AUser? user;
+        Features.Auth.Models.AUser? user;
 
         if (isEmail)
         {
@@ -120,22 +121,11 @@ public partial class AccountController : ControllerBase
         return Ok(user);
     }
 
-    [HttpGet("token-is-validate")]
-    public IActionResult ValidateToken()
-    {
-        string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        DecodeTokenResponse result = _tokenService.ValidateToken(token);
-        if (result.Success)
-        {
-            return Ok(_localizer["TokenValid"].Value);
-        }
-
-        return BadRequest(result.Message);
-    }
+    
     [HttpGet("get-mask-email")]
     public async Task<IActionResult> GetCurrentEmail()
     {
-        string userAgent = Request.Headers["User-Agent"].ToString();
+        string userAgent = Request.Headers.UserAgent.ToString();
 
         string? currentEmail = await _emailService.GetValidateEmail(userAgent);
 

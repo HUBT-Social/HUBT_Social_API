@@ -14,7 +14,7 @@ public partial class AccountController
     [HttpPost("sign-up/verify-two-factor")]
     public async Task<IActionResult> ConfirmCodeSignUp([FromBody] OTPRequest code)
     {
-        string userAgent = Request.Headers["User-Agent"].ToString();
+        string userAgent = Request.Headers.UserAgent.ToString();
 
         string? currentEmail = await _emailService.GetValidateEmail(userAgent);
         if (currentEmail == null) return BadRequest(
@@ -93,7 +93,7 @@ public partial class AccountController
     [HttpPost("sign-in/verify-two-factor")]
     public async Task<IActionResult> ConfirmCodeSignIn([FromBody] OTPRequest code)
     {
-        string userAgent = Request.Headers["User-Agent"].ToString();
+        string userAgent = Request.Headers.UserAgent.ToString();
 
         string? currentEmail = await _emailService.GetValidateEmail(userAgent);
         if (currentEmail == null) return BadRequest(

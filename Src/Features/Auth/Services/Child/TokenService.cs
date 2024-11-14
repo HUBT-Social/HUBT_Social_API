@@ -58,36 +58,35 @@ public class TokenService : ITokenService
     }
 
 
-    public async Task<UserResponse> GetCurrentUser(string accessToken)
+    public async Task<AUser?> GetCurrentUser(string accessToken)
     {
-        var decodeValue = ValidateToken(accessToken);
+        var decodeValue = await ValidateTokens(accessToken);
         if (!decodeValue.Success)
-            return new UserResponse { Success = false, Message = decodeValue.Message };
+            return null;
 
         var userIdClaim = decodeValue.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim))
-            return new UserResponse { Success = false, Message = "Can't find the owner of this token" };
+            return null;
 
         AUser? user = await _userManager.FindByIdAsync(userIdClaim);
-        if (user == null)
-            return new UserResponse { Success = false, Message = "Can't find the owner of this token" };
+        if (user != null)
+            return user;
+        
+        
+        return null;
         
 
-        return new UserResponse
-        {
-            Email = user.Email, Username = user.UserName, LastName = user.LastName,
-            FirstName = user.FirstName, Success = true
-        };
+        
     }
 
-    public DecodeTokenResponse ValidateToken(string accessToken)
+    private DecodeTokenResponse ValidateToken(string accessToken, string secretKey)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var tokenKey = Encoding.UTF8.GetBytes(_jwtSetting.SecretKey);
+        JwtSecurityTokenHandler tokenHandler = new();
+        byte[] tokenKey = Encoding.UTF8.GetBytes(secretKey);
         try
         {
-            var principal = tokenHandler.ValidateToken(accessToken, new TokenValidationParameters
+            ClaimsPrincipal principal = tokenHandler.ValidateToken(accessToken, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 ValidateIssuer = true,
@@ -96,7 +95,7 @@ public class TokenService : ITokenService
                 IssuerSigningKey = new SymmetricSecurityKey(tokenKey),
                 ValidIssuer = _jwtSetting.Issuer,
                 ValidAudience = _jwtSetting.Audience
-            }, out var securityToken);
+            }, out SecurityToken? securityToken);
 
             if (securityToken is JwtSecurityToken token && token.Header.Alg.Equals(SecurityAlgorithms.HmacSha256))
             {
@@ -112,7 +111,27 @@ public class TokenService : ITokenService
             return new DecodeTokenResponse { Success = false, Message = ex.Message };
         }
     }
+    public async Task<DecodeTokenResponse> ValidateTokens(string accessToken)
+    {
+        DecodeTokenResponse accessTokenResponse = ValidateToken(accessToken, _jwtSetting.SecretKey);
+        if (accessTokenResponse.Success)
+        {
+            return accessTokenResponse; 
+        }
+        UserToken userToken = await _refreshToken.Find(t => t.AccessToken == accessToken).FirstOrDefaultAsync();
 
+        DecodeTokenResponse refreshTokenResponse = ValidateToken(userToken.RefreshTo, _jwtSetting.RefreshSecretKey);
+        if (refreshTokenResponse.Success)
+        {
+            AUser? user = await _userManager.FindByIdAsync(userToken.UserId);
+            if (user != null)
+            {
+                await GenerateTokenAsync(user);
+            }
+        }
+
+        return refreshTokenResponse;
+    }
 
     private async Task HandleRefreshTokenAsync(AUser user, string accessToken, string refreshToken)
     {
@@ -125,14 +144,14 @@ public class TokenService : ITokenService
                 AccessToken = accessToken,
                 RefreshTo = refreshToken,
                 UserId = user.Id.ToString(),
-                ExpireTime = DateTime.UtcNow.AddMinutes(_jwtSetting.TokenExpirationInMinutes)
+                ExpireTime = DateTime.UtcNow.AddDays(_jwtSetting.RefreshTokenExpirationInDays)
             });
         }
         else
         {
             var update = Builders<UserToken>.Update.Set(t => t.AccessToken, accessToken)
                 .Set(t => t.RefreshTo, refreshToken)
-                .Set(t=> t.ExpireTime, DateTime.UtcNow.AddMinutes(_jwtSetting.TokenExpirationInMinutes));
+                .Set(t=> t.ExpireTime, DateTime.UtcNow.AddDays(_jwtSetting.RefreshTokenExpirationInDays));
             await _refreshToken.UpdateOneAsync(t => t.UserId == existingRefreshToken.UserId, update);
         }
 
@@ -178,4 +197,6 @@ public class TokenService : ITokenService
             () => DateTime.UtcNow.AddDays(_jwtSetting.RefreshTokenExpirationInDays)
         );
     }
+
+
 }
