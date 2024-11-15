@@ -39,10 +39,10 @@ public partial class AccountController : ControllerBase
     {
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
 
-        if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(userResponse.Username))
+        if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(userResponse.User.UserName))
             return BadRequest(LocalValue.Get(KeyStore.PasswordCheckEmptyError));
 
-        var result = await _userService.VerifyCurrentPasswordAsync(userResponse.Username,request);
+        var result = await _userService.VerifyCurrentPasswordAsync(userResponse.User.UserName,request);
         return result ? Ok(LocalValue.Get(KeyStore.PasswordCorrect)) : BadRequest(LocalValue.Get(KeyStore.PasswordIncorrect));
     }
 
@@ -54,10 +54,10 @@ public partial class AccountController : ControllerBase
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
 
 
-        if (userResponse == null || userResponse.Email == null) return BadRequest(LocalValue.Get(KeyStore.InvalidRequestError));
+        if (userResponse == null || userResponse.User.Email == null) return BadRequest(LocalValue.Get(KeyStore.InvalidRequestError));
 
 
-        Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,userResponse.Email);
+        Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,userResponse.User.Email);
         if (code == null) return BadRequest(              
                    LocalValue.Get(KeyStore.InvalidCredentials)
             );
@@ -66,7 +66,7 @@ public partial class AccountController : ControllerBase
             {
                 Code = code.Code,
                 Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
-                ToEmail = userResponse.Email
+                ToEmail = userResponse.User.Email
             });
         return result ? Ok(LocalValue.Get(KeyStore.OtpSent)) : BadRequest(LocalValue.Get(KeyStore.OtpSendError));
     }
@@ -82,13 +82,13 @@ public partial class AccountController : ControllerBase
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
 
 
-        if (userResponse.Email == null) return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+        if (userResponse.User.Email == null) return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
         
 
         var result = await _emailService.ValidatePostcodeAsync(new ValidatePostcodeRequest
         {
             Postcode = request.Postcode,
-            Email = userResponse.Email,
+            Email = userResponse.User.Email,
             UserAgent = userAgent
         });
 
@@ -135,14 +135,20 @@ public partial class AccountController : ControllerBase
     [HttpGet("get-mask-email")]
     public async Task<IActionResult> GetCurrentEmail()
     {
-        string userAgent = Request.Headers["User-Agent"].ToString();
-
-        string? currentEmail = await _emailService.GetValidateEmail(userAgent);
-
+        // Lấy User-Agent từ header, nếu không có thì báo lỗi
+        if (!Request.Headers.TryGetValue("User-Agent", out var userAgent))
+            return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
         
-        if (currentEmail != null)
-            return _emailService.MaskEmail(currentEmail, out string maskEmail) ? Ok(maskEmail) : BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
-            
-        return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+        // Lấy email đã xác thực của người dùng dựa trên User-Agent
+        string? currentEmail = await _emailService.GetValidateEmail(userAgent);
+        if (string.IsNullOrEmpty(currentEmail))
+            return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+        
+        // Thực hiện mask email, nếu thất bại trả về lỗi
+        if (!_emailService.MaskEmail(currentEmail, out string maskedEmail))
+            return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+        
+        return Ok(maskedEmail);
     }
+
 }

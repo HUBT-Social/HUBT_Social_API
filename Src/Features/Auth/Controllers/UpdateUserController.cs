@@ -27,39 +27,84 @@ public class UpdateUserController : ControllerBase
         _emailService = emailService;
         _tokenService = tokenService;
     }
+    // Phương thức trợ giúp chung
+    private async Task<IActionResult> HandleUserUpdate<TRequest>(string successMessage, string errorMessage, Func<string, TRequest, Task<bool>> updateFunc, TRequest request)
+    {
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (string.IsNullOrWhiteSpace(userResponse.User.UserName))
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+
+        var result = await updateFunc(userResponse.User.UserName, request);
+        return result ? Ok(LocalValue.Get(successMessage)) : BadRequest(LocalValue.Get(errorMessage));
+    }
+    [HttpPost("update-email")]
+    public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request) =>
+        await HandleUserUpdate(KeyStore.EmailUpdated, KeyStore.EmailUpdateError, _userService.UpdateEmailAsync, request);
+
+    [HttpPost("update-password")]
+    public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request) =>
+        await HandleUserUpdate(KeyStore.PasswordUpdated, KeyStore.PasswordUpdateError, _userService.UpdatePasswordAsync, request);
+
+    [HttpPost("update-name")]
+    public async Task<IActionResult> UpdateName([FromBody] UpdateNameRequest request) =>
+        await HandleUserUpdate(KeyStore.NameUpdated, KeyStore.NameUpdateError, _userService.UpdateNameAsync, request);
+
+    [HttpPost("update-phone-number")]
+    public async Task<IActionResult> UpdatePhoneNumber([FromBody] UpdatePhoneNumberRequest request) =>
+        await HandleUserUpdate(KeyStore.PhoneNumberUpdated, KeyStore.PhoneNumberUpdateError, _userService.UpdatePhoneNumberAsync, request);
+
+    [HttpPost("update-gender")]
+    public async Task<IActionResult> UpdateGender([FromBody] UpdateGenderRequest request) =>
+        await HandleUserUpdate(KeyStore.GenderUpdated, KeyStore.GenderUpdateError, _userService.UpdateGenderAsync, request);
+
+    [HttpPost("update-date-of-birth")]
+    public async Task<IActionResult> UpdateDateOfBirth([FromBody] UpdateDateOfBornRequest request) =>
+        await HandleUserUpdate(KeyStore.DateOfBirthUpdated, KeyStore.DateOfBirthUpdateError, _userService.UpdateDateOfBirthAsync, request);
+
+    [HttpPost("general-update")]
+    public async Task<IActionResult> GeneralUpdate([FromBody] GeneralUpdateRequest request) =>
+        await HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, request);
+
+    [HttpPut("two-factor-enable")]
+    public async Task<IActionResult> EnableTwoFactor() =>
+        await HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.EnableTwoFactor(userName), new object());
+
+    [HttpPut("two-factor-disable")]
+    public async Task<IActionResult> DisableTwoFactor() =>
+        await HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.DisableTwoFactor(userName), new object());
 
     [HttpGet("get-user")]
     public async Task<IActionResult> GetCurrentUser()
     {
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-        if (userResponse.Success && !string.IsNullOrWhiteSpace(userResponse.Username))
+        if (userResponse.Success)
         {
-            AUser? user = await _userService.FindUserByUserNameAsync(userResponse.Username);
+            AUser? user = await _userService.FindUserByUserNameAsync(userResponse.User.UserName);
             return Ok(user);
         }
         
-        return BadRequest(LocalValue.Get(KeyStore.EmailCannotBeEmpty));
+        return BadRequest(userResponse.Message);
 
         
     }
     [HttpPost("promote")]
     public async Task<IActionResult> PromoteUserAccount([FromBody] PromoteUserRequest request)
     {
-        // Extract token and get current user information
-        var userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-        if (userResponse == null || string.IsNullOrWhiteSpace(userResponse.Username))
-        {
-            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
-        }
-
         // Validate request data
         if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.RoleName))
         {
             return BadRequest("Invalid request data.");
         }
 
+        // Extract token and get current user information
+        var userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (!userResponse.Success)
+        {
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+        }
+
         // Attempt to promote the target user
-        var result = await _userService.PromoteUserAccountAsync(userResponse.Username, request.UserName, request.RoleName);
+        var result = await _userService.PromoteUserAccountAsync(userResponse.User.UserName, request.UserName, request.RoleName);
 
         if (result)
         {
@@ -71,126 +116,5 @@ public class UpdateUserController : ControllerBase
         }
     }
     
-
-    [HttpPost("update-email")]
-    public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request)
-    {
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-
-        if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.Email))
-            return BadRequest(LocalValue.Get(KeyStore.EmailCannotBeEmpty));
-
-        var result = await _userService.UpdateEmailAsync(userResponse.Username,request);
-        return result ? Ok(LocalValue.Get(KeyStore.EmailUpdated)) : BadRequest(LocalValue.Get(KeyStore.EmailUpdateError));
-    }
-
-    // Cập nhật mật khẩu
-    [HttpPost("update-password")]
-    public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
-    {
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-
-        if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.NewPassword))
-            return BadRequest(LocalValue.Get(KeyStore.PasswordCannotBeEmpty));
-            
-
-        var result = await _userService.UpdatePasswordAsync(userResponse.Username, request);
-        return result ? Ok(LocalValue.Get(KeyStore.PasswordUpdated)) : BadRequest(LocalValue.Get(KeyStore.PasswordUpdateError));
-    }
-
-    // Cập nhật tên người dùng
-    [HttpPost("update-name")]
-    public async Task<IActionResult> UpdateName([FromBody] UpdateNameRequest request)
-    {
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-
-        if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
-            return BadRequest(LocalValue.Get(KeyStore.UsernameCannotBeEmpty));
-
-        var result = await _userService.UpdateNameAsync(userResponse.Username, request);
-        return result ? Ok(LocalValue.Get(KeyStore.NameUpdated)) : BadRequest(LocalValue.Get(KeyStore.NameUpdateError));
-    }
-
-    // Cập nhật số điện thoại
-    [HttpPost("update-phone-number")]
-    public async Task<IActionResult> UpdatePhoneNumber([FromBody] UpdatePhoneNumberRequest request)
-    {
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-
-        if (string.IsNullOrWhiteSpace(userResponse.Username) || string.IsNullOrWhiteSpace(request.PhoneNumber))
-            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
-
-
-        var result = await _userService.UpdatePhoneNumberAsync(userResponse.Username,request);
-        return result ? Ok(LocalValue.Get(KeyStore.PhoneNumberUpdated)) : BadRequest(LocalValue.Get(KeyStore.PhoneNumberUpdateError));
-    }
-
-    // Cập nhật giới tính
-    [HttpPost("update-gender")]
-    public async Task<IActionResult> UpdateGender([FromBody] UpdateGenderRequest request)
-    {
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-
-        if (string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
-
-
-        var result = await _userService.UpdateGenderAsync(userResponse.Username, request);
-        return result ? Ok(LocalValue.Get(KeyStore.GenderUpdated)) : BadRequest(LocalValue.Get(KeyStore.GenderUpdateError));
-    }
-
-    // Cập nhật ngày sinh
-    [HttpPost("update-date-of-birth")]
-    public async Task<IActionResult> UpdateDateOfBirth([FromBody] UpdateDateOfBornRequest request)
-    {
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-
-        if (string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
-
-
-        var result = await _userService.UpdateDateOfBirthAsync(userResponse.Username, request);
-        return result ? Ok(LocalValue.Get(KeyStore.DateOfBirthUpdated)) : BadRequest(LocalValue.Get(KeyStore.DateOfBirthUpdateError));
-    }
-
-    // Cập nhật thông tin người dùng chung
-    [HttpPost("general-update")]
-    public async Task<IActionResult> GeneralUpdate([FromBody] GeneralUpdateRequest request)
-    {
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-
-        if (string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
-
-
-        var result = await _userService.GeneralUpdateAsync(userResponse.Username,request);
-        return result ? Ok(LocalValue.Get(KeyStore.GeneralUpdateSuccess)) : BadRequest(LocalValue.Get(KeyStore.GeneralUpdateError));
-    }
-
-    [HttpPut("two-factor-enable")]
-    public async Task<IActionResult> EnableTwoFactor()
-    {
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-
-
-        if (string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
-
-
-        bool result = await _userService.EnableTwoFactor(userResponse.Username);
-        return result ? Ok(LocalValue.Get(KeyStore.UserInfoUpdatedSuccess)) : BadRequest(LocalValue.Get(KeyStore.UserInfoUpdateError));
-    }
-    [HttpPut("two-factor-disable")]
-    public async Task<IActionResult> DisableTwoFactor()
-    {
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-
-        if (string.IsNullOrWhiteSpace(userResponse.Username))
-            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
-
-
-        bool result = await _userService.DisableTwoFactor(userResponse.Username);
-        return result ? Ok(LocalValue.Get(KeyStore.UserInfoUpdatedSuccess)) : BadRequest(LocalValue.Get(KeyStore.UserInfoUpdateError));
-    }
 
 }

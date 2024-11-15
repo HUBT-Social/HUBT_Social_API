@@ -62,27 +62,32 @@ public class TokenService : ITokenService
     {
         var decodeValue = ValidateToken(accessToken);
         if (!decodeValue.Success)
-            return new UserResponse { Success = false, Message = decodeValue.Message };
+        {
+            return new UserResponse 
+            { 
+                Success = false, 
+                Message = decodeValue.Message 
+            };
+        }
 
         var userIdClaim = decodeValue.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim))
-            return new UserResponse { Success = false, Message = LocalValue.Get(KeyStore.UserNotFound) };
-
-        AUser? user = await _userManager.FindByIdAsync(userIdClaim);
-        if (user == null)
-            return new UserResponse { Success = false, Message = LocalValue.Get(KeyStore.UserNotFound) };
-        
-
-        return new UserResponse
         {
-            Email = user.Email, 
-            Username = user.UserName, 
-            LastName = user.LastName,
-            FirstName = user.FirstName, 
-            Success = true
-        };
+            return new UserResponse 
+            { 
+                Success = false, 
+                Message = LocalValue.Get(KeyStore.UserNotFound) 
+            };
+        }
+
+        // Kiểm tra người dùng bằng userId
+        AUser? user = await _userManager.FindByIdAsync(userIdClaim);
+        return user == null 
+            ? new UserResponse { Success = false, Message = LocalValue.Get(KeyStore.UserNotFound) }
+            : new UserResponse { Success = true, User = user };
     }
+
 
     public DecodeTokenResponse ValidateToken(string accessToken)
     {
