@@ -1,4 +1,5 @@
 ﻿using AspNetCore.Identity.MongoDbCore.Models;
+using HUBT_Social_API.Core.Settings;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDbGenericRepository.Attributes;
 
@@ -22,6 +23,6 @@ public class AUser : MongoIdentityUser<Guid>
 
     public AUser()
     {
-        DefaultUserImage = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1730901747/v5elptamoonvux5xth0a.jpg";
+        DefaultUserImage = KeyStore.DefaultUserImage;
     }
 }

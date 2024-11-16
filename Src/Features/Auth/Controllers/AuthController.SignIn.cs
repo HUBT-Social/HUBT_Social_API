@@ -31,7 +31,8 @@ public partial class AccountController
                 new EmailRequest
                 {
                     Code = code.Code,
-                    Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject)
+                    Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
+                    ToEmail = user.Email
                 }
             );
             

@@ -7,7 +7,7 @@ public interface IUserService
 {
     Task<AUser?> FindUserByUserNameAsync(string userName);
     Task<AUser?> FindUserByEmailAsync(string email);
-    Task<bool> PromoteUserAccountAsync(string userName, string roleName);
+    Task<bool> PromoteUserAccountAsync(string currentUserName, string targetUserName, string roleName);
 
     // Phương thức cập nhật từng trường riêng lẻ
     Task<bool> UpdateEmailAsync(string userName, UpdateEmailRequest request);

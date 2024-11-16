@@ -18,6 +18,11 @@ public class EmailService : IEmailService
     private readonly SMPTSetting _emailSetting;
     private readonly IMongoCollection<Postcode> _postcode;
     private readonly UserManager<AUser> _userManager;
+    private readonly string _smtpHost;
+    private readonly int _smtpPort;
+    private readonly string _smtpEmail;
+    private readonly string _smtpPassword;
+    
 
     public EmailService(IOptions<SMPTSetting> setting, IMongoCollection<Postcode> postcode,
         UserManager<AUser> userManager)
@@ -25,6 +30,11 @@ public class EmailService : IEmailService
         _emailSetting = setting.Value;
         _postcode = postcode;
         _userManager = userManager;
+        // Lấy thông tin từ môi trường hoặc cài đặt mặc định
+        _smtpHost = GetEnvironmentVariable("SMTP_HOST") ?? _emailSetting.Host;
+        _smtpPort = int.Parse(GetEnvironmentVariable("SMTP_PORT") ?? _emailSetting.Port);
+        _smtpEmail = GetEnvironmentVariable("SMTP_USERNAME") ?? _emailSetting.Email;
+        _smtpPassword = GetEnvironmentVariable("SMTP_PASSWORD") ?? _emailSetting.Password;
     }
 
     public async Task<bool> SendEmailAsync(EmailRequest emailRequest)
@@ -34,14 +44,8 @@ public class EmailService : IEmailService
             var email = CreateEmailMessage(emailRequest);
             using var smtpClient = new SmtpClient();
 
-            // Lấy thông tin từ môi trường hoặc cài đặt mặc định
-            var smtpHost = GetEnvironmentVariable("SMTP_HOST") ?? _emailSetting.Host;
-            var smtpPort = int.Parse(GetEnvironmentVariable("SMTP_PORT") ?? _emailSetting.Port);
-            var smtpEmail = GetEnvironmentVariable("SMTP_USERNAME") ?? _emailSetting.Email;
-            var smtpPassword = GetEnvironmentVariable("SMTP_PASSWORD") ?? _emailSetting.Password;
-
-            await smtpClient.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
-            await smtpClient.AuthenticateAsync(smtpEmail, smtpPassword);
+            await smtpClient.ConnectAsync(_smtpHost, _smtpPort, SecureSocketOptions.StartTls);
+            await smtpClient.AuthenticateAsync(_smtpEmail, _smtpPassword);
             await smtpClient.SendAsync(email);
             await smtpClient.DisconnectAsync(true);
 

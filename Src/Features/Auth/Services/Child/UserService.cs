@@ -1,8 +1,9 @@
+using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.VisualBasic;
+using Microsoft.Extensions.Logging;
 
 namespace HUBT_Social_API.Features.Auth.Services.Child;
 
@@ -10,177 +11,182 @@ public class UserService : IUserService
 {
     private readonly RoleManager<ARole> _roleManager;
     private readonly UserManager<AUser> _userManager;
+    private readonly ILogger<UserService> _logger;
 
-    public UserService(UserManager<AUser> userManager, RoleManager<ARole> roleManager)
+    private readonly Dictionary<string, int> _roleHierarchy = new Dictionary<string, int>
+    {
+        { "ADMIN", 4 },
+        { "HEAD", 3 },
+        { "TEACHER", 2 },
+        { "STUDENT", 1 },
+        { "USER", 0 }
+    };
+
+    public UserService(UserManager<AUser> userManager, RoleManager<ARole> roleManager, ILogger<UserService> logger)
     {
         _userManager = userManager;
         _roleManager = roleManager;
+        _logger = logger;
     }
 
-    public async Task<AUser?> FindUserByUserNameAsync(string userName)
+    private async Task<AUser?> GetUserByNameAsync(string userName)
     {
-        if (string.IsNullOrWhiteSpace(userName))
-            return null;
+        if (string.IsNullOrWhiteSpace(userName)) return null;
         return await _userManager.FindByNameAsync(userName);
     }
+
+    public async Task<AUser?> FindUserByUserNameAsync(string userName) => await GetUserByNameAsync(userName);
+
     public async Task<AUser?> FindUserByEmailAsync(string email)
     {
-        if (string.IsNullOrWhiteSpace(email))
-            return null;
+        if (string.IsNullOrWhiteSpace(email)) return null;
         return await _userManager.FindByEmailAsync(email);
     }
 
-    public async Task<bool> PromoteUserAccountAsync(string userName, string roleName)
+    public async Task<bool> PromoteUserAccountAsync(string currentUserName, string targetUserName, string roleName)
     {
-        if (string.IsNullOrEmpty(userName))
-            throw new ArgumentNullException(nameof(userName), "Tên người dùng không thể null hoặc rỗng.");
-
-        if (string.IsNullOrEmpty(roleName) ||
-            (roleName != "USER" && roleName != "TEACHER" && roleName != "HEAD" && roleName != "ADMIN"))
-            throw new ArgumentException("Giá trị vai trò không hợp lệ.", nameof(roleName));
-
-        var user = await _userManager.FindByNameAsync(userName);
-        if (user != null)
+        try
         {
-            if (!await _roleManager.RoleExistsAsync(roleName))
-            {
-                var role = new ARole { Name = roleName };
-                await _roleManager.CreateAsync(role);
-            }
+            if (!IsValidRole(roleName) || string.IsNullOrEmpty(targetUserName)) return false;
 
-            var result = await _userManager.AddToRoleAsync(user, roleName);
+            var currentUser = await GetUserByNameAsync(currentUserName);
+            var targetUser = await GetUserByNameAsync(targetUserName);
+            if (currentUser == null || targetUser == null) return false;
+
+            var currentUserRoles = await _userManager.GetRolesAsync(currentUser);
+            var targetUserRoles = await _userManager.GetRolesAsync(targetUser);
+
+            var currentUserHighestRole = GetHighestRole(currentUserRoles);
+            var targetUserHighestRole = GetHighestRole(targetUserRoles);
+
+            if (_roleHierarchy[currentUserHighestRole] <= _roleHierarchy[targetUserHighestRole])
+                return false;
+
+            await EnsureRoleExistsAsync(roleName);
+            var result = await _userManager.AddToRoleAsync(targetUser, roleName);
+
             return result.Succeeded;
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error promoting user account for {TargetUserName} by {CurrentUserName}", targetUserName, currentUserName);
+            return false;
+        }
+    }
 
-        return false;
+    private string GetHighestRole(IList<string> roles)
+    {
+        return roles.OrderByDescending(role => _roleHierarchy.GetValueOrDefault(role, 0)).FirstOrDefault();
+    }
+
+    private bool IsValidRole(string roleName) => _roleHierarchy.ContainsKey(roleName);
+
+    private async Task EnsureRoleExistsAsync(string roleName)
+    {
+        if (!await _roleManager.RoleExistsAsync(roleName))
+        {
+            var role = new ARole { Name = roleName };
+            await _roleManager.CreateAsync(role);
+        }
+    }
+
+    private async Task<bool> UpdateUserPropertyAsync(AUser user, Action<AUser> updateAction)
+    {
+        try
+        {
+            updateAction(user);
+            var result = await _userManager.UpdateAsync(user);
+            return result.Succeeded;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating user {UserName}", user.UserName);
+            return false;
+        }
     }
 
     public async Task<bool> UpdateEmailAsync(string userName, UpdateEmailRequest request)
     {
-        var user = await _userManager.FindByNameAsync(userName);
-        if (user == null) return false;
-
-        user.Email = request.Email;
-        var result = await _userManager.UpdateAsync(user);
-        return result.Succeeded;
+        var user = await GetUserByNameAsync(userName);
+        return user != null && await UpdateUserPropertyAsync(user, u => u.Email = request.Email);
     }
 
     public async Task<bool> VerifyCurrentPasswordAsync(string userName, CheckPasswordRequest request)
     {
-        var user = await _userManager.FindByNameAsync(userName);
-        if (user == null) return false;
-
-        // Kiểm tra mật khẩu hiện tại
-        var passwordCheck = await _userManager.CheckPasswordAsync(user, request.CurrentPassword);
-        return passwordCheck; // Trả về true nếu mật khẩu đúng, ngược lại là false
+        var user = await GetUserByNameAsync(userName);
+        return user != null && await _userManager.CheckPasswordAsync(user, request.CurrentPassword);
     }
 
     public async Task<bool> UpdatePasswordAsync(string userName, UpdatePasswordRequest request)
     {
-        var user = await _userManager.FindByNameAsync(userName);
-        if (user == null) return false;
+        try
+        {
+            var user = await GetUserByNameAsync(userName);
+            if (user == null) return false;
 
-        // Tạo token đặt lại mật khẩu
-        var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, resetToken, request.NewPassword);
 
-        // Đặt lại mật khẩu với token và mật khẩu mới
-        var result = await _userManager.ResetPasswordAsync(user, resetToken, request.NewPassword);
-        return result.Succeeded;
+            return result.Succeeded;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating password for {UserName}", userName);
+            return false;
+        }
     }
 
     public async Task<bool> UpdateNameAsync(string userName, UpdateNameRequest request)
     {
-        var user = await _userManager.FindByNameAsync(userName);
-        if (user == null) return false;
-
-        user.FirstName = request.FirstName;
-        user.LastName = request.LastName;
-        var result = await _userManager.UpdateAsync(user);
-        return result.Succeeded;
+        var user = await GetUserByNameAsync(userName);
+        return user != null && await UpdateUserPropertyAsync(user, u =>
+        {
+            u.FirstName = request.FirstName;
+            u.LastName = request.LastName;
+        });
     }
 
     public async Task<bool> UpdatePhoneNumberAsync(string userName, UpdatePhoneNumberRequest request)
     {
-        var user = await _userManager.FindByNameAsync(userName);
-        if (user == null) return false;
-
-        user.PhoneNumber = request.PhoneNumber;
-        var result = await _userManager.UpdateAsync(user);
-        return result.Succeeded;
+        var user = await GetUserByNameAsync(userName);
+        return user != null && await UpdateUserPropertyAsync(user, u => u.PhoneNumber = request.PhoneNumber);
     }
 
     public async Task<bool> UpdateGenderAsync(string userName, UpdateGenderRequest request)
     {
-        var user = await _userManager.FindByNameAsync(userName);
-        if (user == null) return false;
-
-        user.IsMale = request.IsMale;
-        var result = await _userManager.UpdateAsync(user);
-        return result.Succeeded;
+        var user = await GetUserByNameAsync(userName);
+        return user != null && await UpdateUserPropertyAsync(user, u => u.IsMale = request.IsMale);
     }
 
     public async Task<bool> UpdateDateOfBirthAsync(string userName, UpdateDateOfBornRequest request)
     {
-        var user = await _userManager.FindByNameAsync(userName);
-        if (user == null) return false;
-
-        user.DateOfBirth = request.DateOfBirth;
-        var result = await _userManager.UpdateAsync(user);
-        return result.Succeeded;
+        var user = await GetUserByNameAsync(userName);
+        return user != null && await UpdateUserPropertyAsync(user, u => u.DateOfBirth = request.DateOfBirth);
     }
 
     public async Task<bool> GeneralUpdateAsync(string userName, GeneralUpdateRequest request)
     {
-        var user = await _userManager.FindByNameAsync(userName);
-        if (user == null) return false;
-
-        // Cập nhật các trường nếu có thay đổi
-        if (!string.IsNullOrEmpty(request.Email))
-            user.Email = request.Email;
-
-        if (!string.IsNullOrEmpty(request.FirstName))
-            user.FirstName = request.FirstName;
-
-        if (!string.IsNullOrEmpty(request.LastName))
-            user.LastName = request.LastName;
-
-        if (!string.IsNullOrEmpty(request.PhoneNumber))
-            user.PhoneNumber = request.PhoneNumber;
-
-        user.IsMale = request.IsMale;
-
-        if (request.DateOfBirth != DateTime.MinValue)
-            user.DateOfBirth = request.DateOfBirth;
-
-        var result = await _userManager.UpdateAsync(user);
-        return result.Succeeded;
+        var user = await GetUserByNameAsync(userName);
+        return user != null && await UpdateUserPropertyAsync(user, u =>
+        {
+            if (!string.IsNullOrEmpty(request.Email)) u.Email = request.Email;
+            if (!string.IsNullOrEmpty(request.FirstName)) u.FirstName = request.FirstName;
+            if (!string.IsNullOrEmpty(request.LastName)) u.LastName = request.LastName;
+            if (!string.IsNullOrEmpty(request.PhoneNumber)) u.PhoneNumber = request.PhoneNumber;
+            u.IsMale = request.IsMale;
+            if (request.DateOfBirth != DateTime.MinValue) u.DateOfBirth = request.DateOfBirth;
+        });
     }
 
     public async Task<bool> EnableTwoFactor(string userName)
     {
-        AUser? user = await _userManager.FindByNameAsync(userName);
-        if (user == null) return false;
-
-        user.TwoFactorEnabled = true;
-        var result = await _userManager.UpdateAsync(user);
-        if (!result.Succeeded) return false;
-
-        return true;
+        var user = await GetUserByNameAsync(userName);
+        return user != null && await UpdateUserPropertyAsync(user, u => u.TwoFactorEnabled = true);
     }
 
     public async Task<bool> DisableTwoFactor(string userName)
     {
-
-        AUser? user = await _userManager.FindByNameAsync(userName);
-        if (user == null) return false;
-
-        user.TwoFactorEnabled = false;
-        var result = await _userManager.UpdateAsync(user);
-        if (!result.Succeeded) return false;
-
-        return true;
+        var user = await GetUserByNameAsync(userName);
+        return user != null && await UpdateUserPropertyAsync(user, u => u.TwoFactorEnabled = false);
     }
-
-
-    // Tương tự cho các phương thức PromoteToTeacherAsync, VerifyCodeAsync, v.v.
 }

@@ -58,26 +58,34 @@ public class TokenService : ITokenService
     }
 
 
-    public async Task<AUser?> GetCurrentUser(string accessToken)
+    public async Task<UserResponse> GetCurrentUser(string accessToken)
     {
         var decodeValue = await ValidateTokens(accessToken);
         if (!decodeValue.Success)
-            return null;
+        {
+            return new UserResponse 
+            { 
+                Success = false, 
+                Message = decodeValue.Message 
+            };
+        }
 
         var userIdClaim = decodeValue.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim))
-            return null;
+        {
+            return new UserResponse 
+            { 
+                Success = false, 
+                Message = LocalValue.Get(KeyStore.UserNotFound) 
+            };
+        }
 
+        // Kiểm tra người dùng bằng userId
         AUser? user = await _userManager.FindByIdAsync(userIdClaim);
-        if (user != null)
-            return user;
-        
-        
-        return null;
-        
-
-        
+        return user == null 
+            ? new UserResponse { Success = false, Message = LocalValue.Get(KeyStore.UserNotFound) }
+            : new UserResponse { Success = true, User = user };
     }
 
     private DecodeTokenResponse ValidateToken(string accessToken, string secretKey)

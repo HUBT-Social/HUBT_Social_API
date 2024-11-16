@@ -4,6 +4,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
+using HUBT_Social_API.Features.Auth.Services;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -36,8 +37,7 @@ public partial class AccountController : ControllerBase
     [HttpPost("check-password")]
     public async Task<IActionResult> CheckPassword([FromBody] CheckPasswordRequest request)
     {
-        string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-        AUser? userResponse = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
 
         if (request.CurrentPassword != null || userResponse != null || userResponse != null)
             
@@ -51,15 +51,14 @@ public partial class AccountController : ControllerBase
     [HttpPost("send-otp")]
     public async Task<IActionResult> SendOtp()
     {
-        string userAgent = Request.Headers.UserAgent.ToString();
-        string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-        AUser? userResponse = await _tokenService.GetCurrentUser(token);
+        string userAgent = Request.Headers["User-Agent"].ToString();
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
 
 
-        if (userResponse == null || userResponse.Email == null) return BadRequest(LocalValue.Get(KeyStore.InvalidRequestError));
+        if (userResponse == null || userResponse.User.Email == null) return BadRequest(LocalValue.Get(KeyStore.InvalidRequestError));
 
 
-        Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,userResponse.Email);
+        Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,userResponse.User.Email);
         if (code == null) return BadRequest(              
                    LocalValue.Get(KeyStore.InvalidCredentials)
             );
@@ -68,7 +67,7 @@ public partial class AccountController : ControllerBase
             {
                 Code = code.Code,
                 Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
-                ToEmail = userResponse.Email
+                ToEmail = userResponse.User.Email
             });
         return result ? Ok(LocalValue.Get(KeyStore.OtpSent)) : BadRequest(LocalValue.Get(KeyStore.OtpSendError));
     }
@@ -79,9 +78,9 @@ public partial class AccountController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(request.Postcode))
             return BadRequest(LocalValue.Get(KeyStore.OtpVerifyEmptyError));
+        string userAgent = Request.Headers["User-Agent"].ToString();
 
-        string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-        AUser? userResponse = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
 
 
         if (userResponse == null || userResponse.Email == null) return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
@@ -90,7 +89,8 @@ public partial class AccountController : ControllerBase
         var result = await _emailService.ValidatePostcodeAsync(new ValidatePostcodeRequest
         {
             Postcode = request.Postcode,
-            Email = userResponse.Email,
+            Email = userResponse.User.Email,
+            UserAgent = userAgent
         });
 
         return result is not null ? Ok(LocalValue.Get(KeyStore.OtpVerificationSuccess)) : BadRequest(LocalValue.Get(KeyStore.OtpInvalid));
@@ -128,11 +128,14 @@ public partial class AccountController : ControllerBase
         string userAgent = Request.Headers.UserAgent.ToString();
 
         string? currentEmail = await _emailService.GetValidateEmail(userAgent);
-
+        if (string.IsNullOrEmpty(currentEmail))
+            return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
         
-        if (currentEmail != null)
-            return _emailService.MaskEmail(currentEmail, out string maskEmail) ? Ok(maskEmail) : BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
-            
-        return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+        // Thực hiện mask email, nếu thất bại trả về lỗi
+        if (!_emailService.MaskEmail(currentEmail, out string maskedEmail))
+            return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+        
+        return Ok(maskedEmail);
     }
+
 }
