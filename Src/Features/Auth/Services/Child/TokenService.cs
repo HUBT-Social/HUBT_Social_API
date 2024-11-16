@@ -61,7 +61,7 @@ public class TokenService : ITokenService
 
     public async Task<UserResponse> GetCurrentUser(string accessToken)
     {
-        var decodeValue = await ValidateTokens(accessToken);
+        var decodeValue = ValidateToken(accessToken,_jwtSetting.SecretKey);
         if (!decodeValue.Success)
         {
             return new UserResponse 
@@ -137,7 +137,8 @@ public class TokenService : ITokenService
                 {
                     AccessTokenIsValid = accessTokenResponse.Success,
                     RefreshTokenIsValid = refreshTokenResponse.Success,
-                    NewTokens = await GenerateTokenAsync(user)
+                    NewTokens = await GenerateTokenAsync(user),
+                    Message = refreshTokenResponse.Message
                 };
             }
         }
@@ -146,7 +147,8 @@ public class TokenService : ITokenService
         {
             AccessTokenIsValid = accessTokenResponse.Success,
             RefreshTokenIsValid = refreshTokenResponse.Success,
-            NewTokens = null
+            NewTokens = null,
+            Message = refreshTokenResponse.Message
         };
     }
 
