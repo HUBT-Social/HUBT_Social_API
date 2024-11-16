@@ -4,6 +4,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Models;
+using HUBT_Social_API.Src.Features.Auth.Dtos.Reponse;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HUBT_Social_API.Features.Auth.Controllers;
@@ -17,13 +18,13 @@ public partial class AccountController
     {
         string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
 
-        DecodeTokenResponse result = await _tokenService.ValidateTokens(token);
-        if (result.Success)
+        ValidateTokenResponse result = await _tokenService.ValidateTokens(token);
+        if (token != null)
         {
-            return Ok(LocalValue.Get(KeyStore.TokenValid));
+            return Ok(result);
         }
 
-        return BadRequest(result.Message);
+        return BadRequest(result);
     }
 
     [HttpPost("refresh-token")]
@@ -31,11 +32,11 @@ public partial class AccountController
     {
         string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
 
-        AUser? user = await _tokenService.GetCurrentUser(token);
+        UserResponse userResponse = await _tokenService.GetCurrentUser(token);
 
-        if (user is not null)
+        if (userResponse.User is not null)
         {
-            TokenResponse tokenResponse = await _tokenService.GenerateTokenAsync(user);
+            TokenResponse tokenResponse = await _tokenService.GenerateTokenAsync(userResponse.User);
             return Ok(tokenResponse);
         }
 

@@ -6,6 +6,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.Src.Features.Auth.Dtos.Reponse;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -119,13 +120,11 @@ public class TokenService : ITokenService
             return new DecodeTokenResponse { Success = false, Message = ex.Message };
         }
     }
-    public async Task<DecodeTokenResponse> ValidateTokens(string accessToken)
+    public async Task<ValidateTokenResponse> ValidateTokens(string accessToken)
     {
+        
         DecodeTokenResponse accessTokenResponse = ValidateToken(accessToken, _jwtSetting.SecretKey);
-        if (accessTokenResponse.Success)
-        {
-            return accessTokenResponse; 
-        }
+        
         UserToken userToken = await _refreshToken.Find(t => t.AccessToken == accessToken).FirstOrDefaultAsync();
 
         DecodeTokenResponse refreshTokenResponse = ValidateToken(userToken.RefreshTo, _jwtSetting.RefreshSecretKey);
@@ -134,11 +133,21 @@ public class TokenService : ITokenService
             AUser? user = await _userManager.FindByIdAsync(userToken.UserId);
             if (user != null)
             {
-                await GenerateTokenAsync(user);
+                return new ValidateTokenResponse
+                {
+                    AccessTokenIsValid = accessTokenResponse.Success,
+                    RefreshTokenIsValid = refreshTokenResponse.Success,
+                    NewTokens = await GenerateTokenAsync(user)
+                };
             }
         }
 
-        return refreshTokenResponse;
+        return new ValidateTokenResponse
+        {
+            AccessTokenIsValid = accessTokenResponse.Success,
+            RefreshTokenIsValid = refreshTokenResponse.Success,
+            NewTokens = null
+        };
     }
 
     private async Task HandleRefreshTokenAsync(AUser user, string accessToken, string refreshToken)

@@ -30,9 +30,9 @@ public partial class AccountController
             await _emailService.SendEmailAsync(
                 new EmailRequest
                 {
+                    ToEmail =  code.Email,
                     Code = code.Code,
-                    Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
-                    ToEmail = user.Email
+                    Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject)
                 }
             );
             

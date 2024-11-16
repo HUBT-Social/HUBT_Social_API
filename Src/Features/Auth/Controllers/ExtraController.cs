@@ -39,11 +39,11 @@ public partial class AccountController : ControllerBase
     {
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
 
-        if (request.CurrentPassword != null || userResponse != null || userResponse != null)
+        if (request.CurrentPassword == null || userResponse.User == null || userResponse.User.UserName == null)
             
             return BadRequest(LocalValue.Get(KeyStore.PasswordCheckEmptyError));
 
-        var result = await _userService.VerifyCurrentPasswordAsync(userResponse.UserName,request);
+        var result = await _userService.VerifyCurrentPasswordAsync(userResponse.User.UserName,request);
         return result ? Ok(LocalValue.Get(KeyStore.PasswordCorrect)) : BadRequest(LocalValue.Get(KeyStore.PasswordIncorrect));
     }
 
@@ -51,11 +51,11 @@ public partial class AccountController : ControllerBase
     [HttpPost("send-otp")]
     public async Task<IActionResult> SendOtp()
     {
-        string userAgent = Request.Headers["User-Agent"].ToString();
+        string userAgent = Request.Headers.UserAgent.ToString();
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
 
 
-        if (userResponse == null || userResponse.User.Email == null) return BadRequest(LocalValue.Get(KeyStore.InvalidRequestError));
+        if (userResponse == null || userResponse.User == null|| userResponse.User.Email == null) return BadRequest(LocalValue.Get(KeyStore.InvalidRequestError));
 
 
         Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,userResponse.User.Email);
@@ -83,7 +83,7 @@ public partial class AccountController : ControllerBase
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
 
 
-        if (userResponse == null || userResponse.Email == null) return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+        if (userResponse == null || userResponse.User == null|| userResponse.User.Email == null) return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
         
 
         var result = await _emailService.ValidatePostcodeAsync(new ValidatePostcodeRequest
@@ -132,10 +132,12 @@ public partial class AccountController : ControllerBase
             return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
         
         // Thực hiện mask email, nếu thất bại trả về lỗi
-        if (!_emailService.MaskEmail(currentEmail, out string maskedEmail))
-            return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+        if (_emailService.MaskEmail(currentEmail, out string maskedEmail))
+            return Ok(maskedEmail);
+
+        return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
         
-        return Ok(maskedEmail);
+        
     }
 
 }
