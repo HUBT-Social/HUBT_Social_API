@@ -4,6 +4,7 @@ using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace HUBT_Social_API.Features.Auth.Services.Child;
 
@@ -110,6 +111,11 @@ public class UserService : IUserService
         var user = await GetUserByNameAsync(userName);
         return user != null && await UpdateUserPropertyAsync(user, u => u.Email = request.Email);
     }
+    public async Task<bool> UpdateAvatarUrlAsync(string userName, UpdateAvatarUrlRequest request)
+    {
+        var user = await GetUserByNameAsync(userName);
+        return user != null && await UpdateUserPropertyAsync(user, u => u.AvataUrl = request.AvatarUrl);
+    }
 
     public async Task<bool> VerifyCurrentPasswordAsync(string userName, CheckPasswordRequest request)
     {
@@ -155,7 +161,7 @@ public class UserService : IUserService
     public async Task<bool> UpdateGenderAsync(string userName, UpdateGenderRequest request)
     {
         var user = await GetUserByNameAsync(userName);
-        return user != null && await UpdateUserPropertyAsync(user, u => u.IsMale = request.IsMale);
+        return user != null && await UpdateUserPropertyAsync(user, u => u.Gender = request.Gender);
     }
 
     public async Task<bool> UpdateDateOfBirthAsync(string userName, UpdateDateOfBornRequest request)
@@ -169,11 +175,12 @@ public class UserService : IUserService
         var user = await GetUserByNameAsync(userName);
         return user != null && await UpdateUserPropertyAsync(user, u =>
         {
+            if (!string.IsNullOrEmpty(request.AvatarUrl)) u.AvataUrl = request.AvatarUrl;
             if (!string.IsNullOrEmpty(request.Email)) u.Email = request.Email;
             if (!string.IsNullOrEmpty(request.FirstName)) u.FirstName = request.FirstName;
             if (!string.IsNullOrEmpty(request.LastName)) u.LastName = request.LastName;
             if (!string.IsNullOrEmpty(request.PhoneNumber)) u.PhoneNumber = request.PhoneNumber;
-            u.IsMale = request.IsMale;
+            if (!string.IsNullOrEmpty(request.Gender.ToString())) u.Gender = request.Gender;
             if (request.DateOfBirth != DateTime.MinValue) u.DateOfBirth = request.DateOfBirth;
         });
     }

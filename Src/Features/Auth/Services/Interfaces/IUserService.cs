@@ -1,3 +1,4 @@
+using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
 
@@ -10,6 +11,7 @@ public interface IUserService
     Task<bool> PromoteUserAccountAsync(string currentUserName, string targetUserName, string roleName);
 
     // Phương thức cập nhật từng trường riêng lẻ
+    Task<bool> UpdateAvatarUrlAsync(string userName, UpdateAvatarUrlRequest request);
     Task<bool> UpdateEmailAsync(string userName, UpdateEmailRequest request);
     Task<bool> VerifyCurrentPasswordAsync(string userName, CheckPasswordRequest request);
     Task<bool> UpdatePasswordAsync(string userName, UpdatePasswordRequest request);

@@ -393,5 +393,12 @@
     <value>Token is valid.</value>
     <comment/>
   </data>
-
+  <data name="AvatarUpdated" xml:space="preserve">
+    <value>Avatar Updated.</value>
+    <comment/>
+  </data>
+  <data name="AvatarUpdateError" xml:space="preserve">
+    <value>Error Updated Avatar.</value>
+    <comment/>
+  </data>
 </root>

@@ -393,4 +393,12 @@
     <value>Token hợp lệ.</value>
     <comment/>
   </data>
+  <data name="AvatarUpdated" xml:space="preserve">
+    <value>Avatar đã được cập nhật.</value>
+    <comment/>
+  </data>
+  <data name="AvatarUpdateError" xml:space="preserve">
+    <value>Cập nhật ảnh đại diện thất bại.</value>
+    <comment/>
+  </data>
 </root>

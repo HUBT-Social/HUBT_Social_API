@@ -1,4 +1,5 @@
 using HUBT_Social_API.Core.Settings;
+using HUBT_Social_API.Features.Auth.Controllers;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
@@ -16,16 +17,12 @@ namespace HUBT_Social_API.Controllers;
 [ApiController]
 [Route("api/user-update")]
 [Authorize]
-public class UpdateUserController : ControllerBase
+public class UpdateUserController : BaseAccountController
 {
-    private readonly IEmailService _emailService;
-    private readonly IUserService _userService;
-    private readonly ITokenService _tokenService;
-    public UpdateUserController(IUserService userService, IEmailService emailService, ITokenService tokenService)
+    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService)
+    :base (null,tokenService,emailService,null,userService)
     {
-        _userService = userService;
-        _emailService = emailService;
-        _tokenService = tokenService;
+
     }
     // Phương thức trợ giúp chung
     private async Task<IActionResult> HandleUserUpdate<TRequest>(string successMessage, string errorMessage, Func<string, TRequest, Task<bool>> updateFunc, TRequest request)
@@ -37,6 +34,9 @@ public class UpdateUserController : ControllerBase
         var result = await updateFunc(userResponse.User.UserName, request);
         return result ? Ok(LocalValue.Get(successMessage)) : BadRequest(LocalValue.Get(errorMessage));
     }
+    [HttpPost("update-avatar-url")]
+    public async Task<IActionResult> UpdateAvatar([FromBody] UpdateAvatarUrlRequest request) =>
+        await HandleUserUpdate(KeyStore.AvatarUpdated, KeyStore.AvatarUpdateError, _userService.UpdateAvatarUrlAsync, request);
     [HttpPost("update-email")]
     public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request) =>
         await HandleUserUpdate(KeyStore.EmailUpdated, KeyStore.EmailUpdateError, _userService.UpdateEmailAsync, request);
@@ -73,20 +73,7 @@ public class UpdateUserController : ControllerBase
     public async Task<IActionResult> DisableTwoFactor() =>
         await HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.DisableTwoFactor(userName), new object());
 
-    [HttpGet("get-user")]
-    public async Task<IActionResult> GetCurrentUser()
-    {
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-        if (userResponse.Success)
-        {
-            AUser? user = await _userService.FindUserByUserNameAsync(userResponse.User.UserName);
-            return Ok(user);
-        }
-        
-        return BadRequest(userResponse.Message);
-
-        
-    }
+    
     [HttpPost("promote")]
     public async Task<IActionResult> PromoteUserAccount([FromBody] PromoteUserRequest request)
     {

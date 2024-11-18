@@ -69,6 +69,11 @@ namespace HUBT_Social_API.Core.Settings
         public const string PasswordCorrect = "PasswordCorrect";
         public const string PasswordIncorrect = "PasswordIncorrect";
         public const string UsernameCannotBeEmpty = "UsernameCannotBeEmpty";
+
+        public const string AvatarUpdated = "AvatarUpdated";
+
+        public const string AvatarUpdateError ="AvatarUpdateError";
+
         
         // Các key cho thông điệp lỗi và OTP
         public const string InvalidRequestError = "InvalidRequest";
@@ -87,7 +92,35 @@ namespace HUBT_Social_API.Core.Settings
         public const string InvalidImageData  = "InvalidImageData";
         public const string InvalidFileData = "InvalidFileData";
 
+        
+
         public const string TokenValid =  "TokenValid";
+         public const string AvatarDefault1 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811655/qqgtqqr9igqnz6pj8zjn.jpg";
+        public const string AvatarDefault2 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811807/ahd7jbrya441tv0wv4h2.jpg";
+        public const string AvatarDefault3 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811831/khszyns5uzh6gf2zncsd.jpg";
+        public const string AvatarDefault4 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811852/hhn3ljzoky2jcz4djivy.jpg";
+        public const string AvatarDefault5 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811872/xthln1h8axw3nwrjqz0l.jpg";
+        public const string AvatarDefault6 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811890/migfj5wqjmk4v6jeuada.jpg";
+        public const string AvatarDefault7 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811913/bnlco4r2fwcsajwg7e7j.jpg";
+        public const string AvatarDefault8 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811930/b6oi4predbmtbqnf2gi4.jpg";
+        public const string AvatarDefault9 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811971/ihaipmgkzjyfliavkq3e.jpg";
+        public const string AvatarDefault10 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811992/lbkn7ehp5aqdpkjkqzgf.jpg";
+        public const string AvatarDefault11 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731812010/fjt3fwuqk53lnb910qvu.jpg";
+        public const string AvatarDefault12 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731812037/txbbmvgtpyhnleij7g1s.jpg";
         public const string DefaultUserImage = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1730901747/v5elptamoonvux5xth0a.jpg";
+
+        public static string GetRandomAvatarDefault()
+        {
+            // Tạo đối tượng Random
+            var random = new Random();
+
+            // Tên của trường hằng số
+            var fieldName = $"AvatarDefault{random.Next(1, 13)}";
+
+            // Lấy giá trị từ trường hằng số
+            var field = typeof(KeyStore).GetField(fieldName); // Đổi 'AvatarLibrary' thành tên lớp của bạn
+
+            return field?.GetValue(null)?.ToString() ?? KeyStore.DefaultUserImage;
+        }
     }
 }
