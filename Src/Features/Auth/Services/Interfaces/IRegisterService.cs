@@ -13,5 +13,5 @@ public interface IRegisterService
 
     Task<bool> AddToTempUser(RegisterRequest model);
 
-    Task<TempUserRegister> GetTempUser(string Email);
+    Task<TempUserRegister?> GetTempUser(string Email);
 }

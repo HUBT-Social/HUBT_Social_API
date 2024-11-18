@@ -1,20 +1,28 @@
 ﻿using AspNetCore.Identity.MongoDbCore.Models;
+using HUBT_Social_API.Core.Settings;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using MongoDbGenericRepository.Attributes;
 
 namespace HUBT_Social_API.Features.Auth.Models;
 
 [CollectionName("user")]
+[BsonIgnoreExtraElements]
 public class AUser : MongoIdentityUser<Guid>
 {
-    public string StudentImageURL { get; set; } = string.Empty;
-
-    public string FullName { get; set; } = string.Empty;
+    public string AvataUrl { get; set; } = string.Empty;
 
     public string FirstName { get; set; } = string.Empty;
 
     public string LastName { get; set; } = string.Empty;
 
-    public bool IsMale { get; set; } = false;
+    [BsonRepresentation(BsonType.String)]
+    public Gender Gender { get; set; } = Gender.Other;
 
     public DateTime DateOfBirth { get; set; }
+
+    public AUser()
+    {
+        AvataUrl = KeyStore.GetRandomAvatarDefault();
+    }
 }

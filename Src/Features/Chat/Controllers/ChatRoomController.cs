@@ -1,3 +1,4 @@
+using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -5,16 +6,14 @@ using Microsoft.Extensions.Localization;
 namespace HUBT_Social_API.Features.Chat.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/chatroom")]
 public class ChatRoomController : ControllerBase
 {
     private readonly IChatRoomService _chatRoomService;
-    private readonly IStringLocalizer<ChatRoomController> _localizer;
 
-    public ChatRoomController(IChatRoomService chatRoomService, IStringLocalizer<ChatRoomController> localizer)
+    public ChatRoomController(IChatRoomService chatRoomService)
     {
         _chatRoomService = chatRoomService;
-        _localizer = localizer;
     }
 
     /// <summary>
@@ -23,12 +22,12 @@ public class ChatRoomController : ControllerBase
     [HttpPost("create-group")]
     public async Task<IActionResult> CreateGroup([FromBody] string nameGroup)
     {
-        if (string.IsNullOrEmpty(nameGroup)) return BadRequest(new { message = _localizer["GroupNameRequired"] });
+        if (string.IsNullOrEmpty(nameGroup)) return BadRequest(new { message = LocalValue.Get(KeyStore.GroupNameRequired) });
 
         var result = await _chatRoomService.CreateGroupAsync(nameGroup);
         return result
-            ? Ok(new { message = _localizer["GroupCreatedSuccessfully"] })
-            : BadRequest(new { message = _localizer["FailedToCreateGroup"] });
+            ? Ok(new { message = LocalValue.Get(KeyStore.GroupCreatedSuccessfully) })
+            : BadRequest(new { message = LocalValue.Get(KeyStore.FailedToCreateGroup) });
     }
 
     /// <summary>
@@ -37,12 +36,12 @@ public class ChatRoomController : ControllerBase
     [HttpPut("{id}/update-name")]
     public async Task<IActionResult> UpdateGroupName(string id, [FromBody] string newName)
     {
-        if (string.IsNullOrEmpty(newName)) return BadRequest(new { message = _localizer["GroupNameRequired"] });
+        if (string.IsNullOrEmpty(newName)) return BadRequest(new { message = LocalValue.Get(KeyStore.GroupNameRequired) });
 
         var result = await _chatRoomService.UpdateGroupNameAsync(id, newName);
         return result
-            ? Ok(new { message = _localizer["GroupNameUpdatedSuccessfully"] })
-            : BadRequest(new { message = _localizer["FailedToUpdateGroup"] });
+            ? Ok(new { message = LocalValue.Get(KeyStore.GroupNameUpdatedSuccessfully) })
+            : BadRequest(new { message = LocalValue.Get(KeyStore.FailedToUpdateGroup) });
     }
 
     /// <summary>
@@ -53,8 +52,8 @@ public class ChatRoomController : ControllerBase
     {
         var result = await _chatRoomService.DeleteGroupAsync(id);
         return result
-            ? Ok(new { message = _localizer["GroupDeletedSuccessfully"] })
-            : BadRequest(new { message = _localizer["FailedToDeleteGroup"] });
+            ? Ok(new { message = LocalValue.Get(KeyStore.GroupDeletedSuccessfully) })
+            : BadRequest(new { message = LocalValue.Get(KeyStore.FailedToDeleteGroup) });
     }
 
     /// <summary>
@@ -66,7 +65,7 @@ public class ChatRoomController : ControllerBase
         var chatRoom = await _chatRoomService.GetGroupByIdAsync(id);
         return chatRoom != null
             ? Ok(chatRoom)
-            : NotFound(new { message = _localizer["GroupNotFound"] });
+            : NotFound(new { message = LocalValue.Get(KeyStore.GroupNotFound) });
     }
 
     /// <summary>

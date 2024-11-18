@@ -11,7 +11,7 @@ public interface IAuthService
     Task<(IdentityResult, AUser?)> RegisterAsync(RegisterRequest model);
     Task<(SignInResult, AUser?)> LoginAsync(ILoginRequest model);
 
-    Task<AUser> VerifyCodeAsync(ValidatePostcodeRequest request);
+    Task<AUser?> VerifyCodeAsync(ValidatePostcodeRequest request);
 
-    Task<TempUserRegister> GetTempUser(string email);
+    Task<TempUserRegister?> GetTempUser(string email);
 }

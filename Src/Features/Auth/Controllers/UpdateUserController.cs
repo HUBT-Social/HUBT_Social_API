@@ -1,87 +1,107 @@
+using HUBT_Social_API.Core.Settings;
+using HUBT_Social_API.Features.Auth.Controllers;
+using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
+using HUBT_Social_API.Features.Auth.Models;
+using HUBT_Social_API.Features.Auth.Services;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace HUBT_Social_API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-public class UpdateUserController : ControllerBase
+[Route("api/user-update")]
+[Authorize]
+public class UpdateUserController : BaseAccountController
 {
-    private readonly IEmailService _emailService;
-    private readonly IUserService _userService;
-    private readonly IStringLocalizer<SharedResource> _localizer;
-
-    public UpdateUserController(IUserService userService, IEmailService emailService, IStringLocalizer<SharedResource> localizer)
+    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService)
+    :base (null,tokenService,emailService,null,userService)
     {
-        _userService = userService;
-        _emailService = emailService;
-        _localizer = localizer;
-    }
 
-    // Cập nhật email
+    }
+    // Phương thức trợ giúp chung
+    private async Task<IActionResult> HandleUserUpdate<TRequest>(string successMessage, string errorMessage, Func<string, TRequest, Task<bool>> updateFunc, TRequest request)
+    {
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (string.IsNullOrWhiteSpace(userResponse.User.UserName))
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+
+        var result = await updateFunc(userResponse.User.UserName, request);
+        return result ? Ok(LocalValue.Get(successMessage)) : BadRequest(LocalValue.Get(errorMessage));
+    }
+    [HttpPost("update-avatar-url")]
+    public async Task<IActionResult> UpdateAvatar([FromBody] UpdateAvatarUrlRequest request) =>
+        await HandleUserUpdate(KeyStore.AvatarUpdated, KeyStore.AvatarUpdateError, _userService.UpdateAvatarUrlAsync, request);
     [HttpPost("update-email")]
-    public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Email))
-            return BadRequest(_localizer["EmailEmptyError"]);
+    public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request) =>
+        await HandleUserUpdate(KeyStore.EmailUpdated, KeyStore.EmailUpdateError, _userService.UpdateEmailAsync, request);
 
-        var result = await _userService.UpdateEmailAsync(request);
-        return result ? Ok(_localizer["EmailUpdatedSuccess"]) : BadRequest(_localizer["EmailUpdateError"]);
-    }
-
-    // Cập nhật mật khẩu
     [HttpPost("update-password")]
-    public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.NewPassword))
-            return BadRequest(_localizer["PasswordEmptyError"]);
+    public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request) =>
+        await HandleUserUpdate(KeyStore.PasswordUpdated, KeyStore.PasswordUpdateError, _userService.UpdatePasswordAsync, request);
 
-        var result = await _userService.UpdatePasswordAsync(request);
-        return result ? Ok(_localizer["PasswordUpdatedSuccess"]) : BadRequest(_localizer["PasswordUpdateError"]);
-    }
-
-    // Cập nhật tên người dùng
     [HttpPost("update-name")]
-    public async Task<IActionResult> UpdateName([FromBody] UpdateNameRequest request)
-    {
-        var result = await _userService.UpdateNameAsync(request);
-        return result ? Ok(_localizer["NameUpdatedSuccess"]) : BadRequest(_localizer["NameUpdateError"]);
-    }
+    public async Task<IActionResult> UpdateName([FromBody] UpdateNameRequest request) =>
+        await HandleUserUpdate(KeyStore.NameUpdated, KeyStore.NameUpdateError, _userService.UpdateNameAsync, request);
 
-    // Cập nhật số điện thoại
     [HttpPost("update-phone-number")]
-    public async Task<IActionResult> UpdatePhoneNumber([FromBody] UpdatePhoneNumberRequest request)
-    {
-        var result = await _userService.UpdatePhoneNumberAsync(request);
-        return result ? Ok(_localizer["PhoneNumberUpdatedSuccess"]) : BadRequest(_localizer["PhoneNumberUpdateError"]);
-    }
+    public async Task<IActionResult> UpdatePhoneNumber([FromBody] UpdatePhoneNumberRequest request) =>
+        await HandleUserUpdate(KeyStore.PhoneNumberUpdated, KeyStore.PhoneNumberUpdateError, _userService.UpdatePhoneNumberAsync, request);
 
-    // Cập nhật giới tính
     [HttpPost("update-gender")]
-    public async Task<IActionResult> UpdateGender([FromBody] UpdateGenderRequest request)
-    {
-        var result = await _userService.UpdateGenderAsync(request);
-        return result ? Ok(_localizer["GenderUpdatedSuccess"]) : BadRequest(_localizer["GenderUpdateError"]);
-    }
+    public async Task<IActionResult> UpdateGender([FromBody] UpdateGenderRequest request) =>
+        await HandleUserUpdate(KeyStore.GenderUpdated, KeyStore.GenderUpdateError, _userService.UpdateGenderAsync, request);
 
-    // Cập nhật ngày sinh
     [HttpPost("update-date-of-birth")]
-    public async Task<IActionResult> UpdateDateOfBirth([FromBody] UpdateDateOfBornRequest request)
-    {
-        var result = await _userService.UpdateDateOfBirthAsync(request);
-        return result ? Ok(_localizer["DateOfBirthUpdatedSuccess"]) : BadRequest(_localizer["DateOfBirthUpdateError"]);
-    }
+    public async Task<IActionResult> UpdateDateOfBirth([FromBody] UpdateDateOfBornRequest request) =>
+        await HandleUserUpdate(KeyStore.DateOfBirthUpdated, KeyStore.DateOfBirthUpdateError, _userService.UpdateDateOfBirthAsync, request);
 
-    // Cập nhật thông tin người dùng chung
     [HttpPost("general-update")]
-    public async Task<IActionResult> GeneralUpdate([FromBody] GeneralUpdateRequest request)
-    {
-        var result = await _userService.GeneralUpdateAsync(request);
-        return result ? Ok(_localizer["UserInfoUpdatedSuccess"]) : BadRequest(_localizer["UserInfoUpdateError"]);
-    }
+    public async Task<IActionResult> GeneralUpdate([FromBody] GeneralUpdateRequest request) =>
+        await HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, request);
+
+    [HttpPut("two-factor-enable")]
+    public async Task<IActionResult> EnableTwoFactor() =>
+        await HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.EnableTwoFactor(userName), new object());
+
+    [HttpPut("two-factor-disable")]
+    public async Task<IActionResult> DisableTwoFactor() =>
+        await HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.DisableTwoFactor(userName), new object());
 
     
+    [HttpPost("promote")]
+    public async Task<IActionResult> PromoteUserAccount([FromBody] PromoteUserRequest request)
+    {
+        // Validate request data
+        if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.RoleName))
+        {
+            return BadRequest("Invalid request data.");
+        }
+
+        // Extract token and get current user information
+        var userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (!userResponse.Success)
+        {
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+        }
+
+        // Attempt to promote the target user
+        var result = await _userService.PromoteUserAccountAsync(userResponse.User.UserName, request.UserName, request.RoleName);
+
+        if (result)
+        {
+            return Ok(LocalValue.Get(KeyStore.UserInfoUpdatedSuccess));
+        }
+        else
+        {
+            return BadRequest(LocalValue.Get(KeyStore.UserInfoUpdateError));
+        }
+    }
+    
+
 }

@@ -126,23 +126,23 @@
     <comment/>
   </data>
   <data name="UnableToSendOTP" xml:space="preserve">
-    <value>Không thể gửi mã OTP. Vui lòng thử lại.</value>
+    <value>Không thể gửi mã OTP.</value>
     <comment/>
   </data>
   <data name="RegistrationSuccess" xml:space="preserve">
-    <value>Đăng ký thành công. Vui lòng kiểm tra email để nhập mã OTP.</value>
+    <value>Đăng ký thành công.</value>
     <comment/>
   </data>
   <data name="StepOneVerificationSuccess" xml:space="preserve">
-    <value>Xác minh bước một thành công. Vui lòng kiểm tra email để nhập mã OTP.</value>
+    <value>Bước xác thực một thành công.</value>
     <comment/>
   </data>
   <data name="AccountLocked" xml:space="preserve">
-    <value>Tài khoản đã bị khóa.</value>
+    <value>Tài khoản bị khóa.</value>
     <comment/>
   </data>
   <data name="LoginNotAllowed" xml:space="preserve">
-    <value>Đăng nhập không được phép.</value>
+    <value>Không được phép đăng nhập.</value>
     <comment/>
   </data>
   <data name="TwoFactorRequired" xml:space="preserve">
@@ -150,15 +150,15 @@
     <comment/>
   </data>
   <data name="InvalidCredentials" xml:space="preserve">
-    <value>Tên người dùng hoặc mật khẩu không hợp lệ.</value>
+    <value>Thông tin đăng nhập không hợp lệ.</value>
     <comment/>
   </data>
   <data name="VerificationSuccess" xml:space="preserve">
-    <value>Xác minh thành công.</value>
+    <value>Xác thực thành công.</value>
     <comment/>
   </data>
   <data name="OTPVerificationFailed" xml:space="preserve">
-    <value>Xác minh mã OTP thất bại.</value>
+    <value>Xác thực mã OTP không thành công.</value>
     <comment/>
   </data>
   <data name="InvalidLanguage" xml:space="preserve">
@@ -258,7 +258,7 @@
     <comment/>
   </data>
   <data name="UserAlreadyExists" xml:space="preserve">
-    <value>	Người dùng đã tồn tại.</value>
+    <value>Tài khoản người dùng đã tồn tại.</value>
     <comment/>
   </data>
   <data name="UnableToStoreInDatabase" xml:space="preserve">
@@ -269,153 +269,136 @@
     <value>Mã xác minh email</value>
     <comment/>
   </data>
-  <data name="InvalidInformation" xml:space="preserve">
-    <value>Thông tin không hợp lệ.</value>
-    <comment/>
-</data>
-<data name="UserAlreadyExists" xml:space="preserve">
-    <value>Tài khoản người dùng đã tồn tại.</value>
-    <comment/>
-</data>
-<data name="UnableToStoreInDatabase" xml:space="preserve">
-    <value>Không thể lưu vào cơ sở dữ liệu.</value>
-    <comment/>
-</data>
-<data name="UnableToSendOTP" xml:space="preserve">
-    <value>Không thể gửi mã OTP.</value>
-    <comment/>
-</data>
-<data name="RegistrationSuccess" xml:space="preserve">
-    <value>Đăng ký thành công.</value>
-    <comment/>
-</data>
-<data name="StepOneVerificationSuccess" xml:space="preserve">
-    <value>Bước xác thực một thành công.</value>
-    <comment/>
-</data>
-<data name="AccountLocked" xml:space="preserve">
-    <value>Tài khoản bị khóa.</value>
-    <comment/>
-</data>
-<data name="LoginNotAllowed" xml:space="preserve">
-    <value>Không được phép đăng nhập.</value>
-    <comment/>
-</data>
-<data name="TwoFactorRequired" xml:space="preserve">
-    <value>Cần xác thực hai yếu tố.</value>
-    <comment/>
-</data>
-<data name="InvalidCredentials" xml:space="preserve">
-    <value>Thông tin đăng nhập không hợp lệ.</value>
-    <comment/>
-</data>
-<data name="OTPVerificationFailed" xml:space="preserve">
-    <value>Xác thực mã OTP không thành công.</value>
-    <comment/>
-</data>
-<data name="VerificationSuccess" xml:space="preserve">
-    <value>Xác thực thành công.</value>
-    <comment/>
-</data>
-<data name="EmailCannotBeEmpty" xml:space="preserve">
+  <data name="EmailCannotBeEmpty" xml:space="preserve">
     <value>Email không được để trống.</value>
     <comment/>
-</data>
-<data name="EmailUpdated" xml:space="preserve">
+  </data>
+  <data name="EmailUpdated" xml:space="preserve">
     <value>Email đã được cập nhật.</value>
     <comment/>
-</data>
-<data name="EmailUpdateError" xml:space="preserve">
-    <value>Có lỗi xảy ra khi cập nhật email.</value>
+  </data>
+  <data name="EmailUpdateError" xml:space="preserve">
+    <value>Không thể cập nhật email</value>
     <comment/>
-</data>
-<data name="PasswordCannotBeEmpty" xml:space="preserve">
+  </data>
+  <data name="PasswordCannotBeEmpty" xml:space="preserve">
     <value>Mật khẩu hiện tại và mật khẩu mới không được để trống.</value>
     <comment/>
-</data>
-<data name="PasswordUpdated" xml:space="preserve">
+  </data>
+  <data name="PasswordUpdated" xml:space="preserve">
     <value>Mật khẩu đã được cập nhật.</value>
     <comment/>
-</data>
-<data name="PasswordUpdateError" xml:space="preserve">
+  </data>
+  <data name="PasswordUpdateError" xml:space="preserve">
     <value>Có lỗi xảy ra khi cập nhật mật khẩu.</value>
     <comment/>
-</data>
-<data name="NameUpdated" xml:space="preserve">
+  </data>
+  <data name="NameUpdated" xml:space="preserve">
     <value>Tên người dùng đã được cập nhật.</value>
     <comment/>
-</data>
-<data name="NameUpdateError" xml:space="preserve">
+  </data>
+  <data name="NameUpdateError" xml:space="preserve">
     <value>Có lỗi xảy ra khi cập nhật tên.</value>
     <comment/>
-</data>
-<data name="PhoneNumberUpdated" xml:space="preserve">
+  </data>
+  <data name="PhoneNumberUpdated" xml:space="preserve">
     <value>Số điện thoại đã được cập nhật.</value>
     <comment/>
-</data>
-<data name="PhoneNumberUpdateError" xml:space="preserve">
+  </data>
+  <data name="PhoneNumberUpdateError" xml:space="preserve">
     <value>Có lỗi xảy ra khi cập nhật số điện thoại.</value>
     <comment/>
-</data>
-<data name="GenderUpdated" xml:space="preserve">
+  </data>
+  <data name="GenderUpdated" xml:space="preserve">
     <value>Giới tính đã được cập nhật.</value>
     <comment/>
-</data>
-<data name="GenderUpdateError" xml:space="preserve">
+  </data>
+  <data name="GenderUpdateError" xml:space="preserve">
     <value>Có lỗi xảy ra khi cập nhật giới tính.</value>
     <comment/>
-</data>
-<data name="DateOfBirthUpdated" xml:space="preserve">
+  </data>
+  <data name="DateOfBirthUpdated" xml:space="preserve">
     <value>Ngày sinh đã được cập nhật.</value>
     <comment/>
-</data>
-<data name="DateOfBirthUpdateError" xml:space="preserve">
+  </data>
+  <data name="DateOfBirthUpdateError" xml:space="preserve">
     <value>Có lỗi xảy ra khi cập nhật ngày sinh.</value>
     <comment/>
-</data>
-<data name="GeneralUpdateSuccess" xml:space="preserve">
+  </data>
+  <data name="GeneralUpdateSuccess" xml:space="preserve">
     <value>Thông tin người dùng đã được cập nhật.</value>
     <comment/>
-</data>
-<data name="GeneralUpdateError" xml:space="preserve">
+  </data>
+  <data name="GeneralUpdateError" xml:space="preserve">
     <value>Có lỗi xảy ra khi cập nhật thông tin.</value>
     <comment/>
-</data>
-<data name="CurrentPasswordAndUsernameCannotBeEmpty" xml:space="preserve">
+  </data>
+  <data name="CurrentPasswordAndUsernameCannotBeEmpty" xml:space="preserve">
     <value>Tên người dùng và mật khẩu hiện tại không được để trống.</value>
     <comment/>
-</data>
-<data name="PasswordCorrect" xml:space="preserve">
+  </data>
+  <data name="PasswordCorrect" xml:space="preserve">
     <value>Mật khẩu đúng.</value>
     <comment/>
-</data>
-<data name="PasswordIncorrect" xml:space="preserve">
+  </data>
+  <data name="PasswordIncorrect" xml:space="preserve">
     <value>Mật khẩu không đúng.</value>
     <comment/>
-</data>
-<data name="UsernameCannotBeEmpty" xml:space="preserve">
+  </data>
+  <data name="UsernameCannotBeEmpty" xml:space="preserve">
     <value>Tên người dùng không được để trống.</value>
     <comment/>
-</data>
-<data name="InvalidRequest" xml:space="preserve">
+  </data>
+  <data name="InvalidRequest" xml:space="preserve">
     <value>Yêu cầu không hợp lệ.</value>
     <comment/>
-</data>
-<data name="OtpSent" xml:space="preserve">
+  </data>
+  <data name="OtpSent" xml:space="preserve">
     <value>Mã OTP đã được gửi.</value>
     <comment/>
-</data>
-<data name="OtpSendError" xml:space="preserve">
+  </data>
+  <data name="OtpSendError" xml:space="preserve">
     <value>Có lỗi xảy ra khi gửi mã OTP.</value>
     <comment/>
-</data>
-<data name="OtpVerificationSuccess" xml:space="preserve">
+  </data>
+  <data name="OtpVerificationSuccess" xml:space="preserve">
     <value>Mã OTP xác thực thành công.</value>
     <comment/>
-</data>
-<data name="OtpInvalid" xml:space="preserve">
+  </data>
+  <data name="OtpInvalid" xml:space="preserve">
     <value>Mã OTP không hợp lệ.</value>
     <comment/>
-</data>
-
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Không tìm thấy người dùng</value>
+    <comment/>
+  </data>
+  <data name="UserInfoUpdatedSuccess" xml:space="preserve">
+    <value>Thông tin đã được cập nhật</value>
+    <comment/>
+  </data>
+  <data name="UserInfoUpdateError" xml:space="preserve">
+    <value>Có lỗi xảy ra khi cập nhật thông tin.</value>
+    <comment/>
+  </data>
+  <data name="PasswordCheckEmptyError" xml:space="preserve">
+    <value>Mật khẩu không được để trống.</value>
+    <comment/>
+  </data>
+  <data name="OtpVerifyEmptyError" xml:space="preserve">
+    <value>Mã xác thực không được để trống.</value>
+    <comment/>
+  </data>
+  <data name="TokenValid" xml:space="preserve">
+    <value>Token hợp lệ.</value>
+    <comment/>
+  </data>
+  <data name="AvatarUpdated" xml:space="preserve">
+    <value>Avatar đã được cập nhật.</value>
+    <comment/>
+  </data>
+  <data name="AvatarUpdateError" xml:space="preserve">
+    <value>Cập nhật ảnh đại diện thất bại.</value>
+    <comment/>
+  </data>
 </root>

@@ -26,7 +26,6 @@ public static class ServiceRegistration
         services.AddScoped<ILoginService, LoginService>();
         services.AddScoped<IRegisterService, RegisterService>();
         services.AddScoped<IUserService, UserService>();
-        services.AddScoped<RegisterService>();
         services.AddScoped<IChatRoomService, ChatRoomService>();
 
 

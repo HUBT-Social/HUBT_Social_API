@@ -122,259 +122,283 @@
     <comment/>
   </data>
   <data name="RegistrationFailed" xml:space="preserve">
-    <value>Registration failed.</value>
-    <comment/>
+      <value>Registration failed.</value>
+      <comment/>
   </data>
   <data name="UnableToSendOTP" xml:space="preserve">
-    <value>Unable to send OTP. Please try again.</value>
-    <comment/>
+      <value>Unable to send OTP code.</value>
+      <comment/>
   </data>
   <data name="RegistrationSuccess" xml:space="preserve">
-    <value>Registration successful. Please check your email to enter the OTP.</value>
-    <comment/>
+      <value>Registration successful.</value>
+      <comment/>
   </data>
   <data name="StepOneVerificationSuccess" xml:space="preserve">
-    <value>Step one verification successful. Please check your email to enter the OTP.</value>
-    <comment/>
+      <value>Step one verification successful.</value>
+      <comment/>
   </data>
   <data name="AccountLocked" xml:space="preserve">
-    <value>Account is locked.</value>
-    <comment/>
+      <value>Account locked.</value>
+      <comment/>
   </data>
   <data name="LoginNotAllowed" xml:space="preserve">
-    <value>Login is not allowed.</value>
-    <comment/>
+      <value>Login not allowed.</value>
+      <comment/>
   </data>
   <data name="TwoFactorRequired" xml:space="preserve">
-    <value>Two-factor authentication is required.</value>
-    <comment/>
+      <value>Two-factor authentication required.</value>
+      <comment/>
   </data>
   <data name="InvalidCredentials" xml:space="preserve">
-    <value>Invalid username or password.</value>
-    <comment/>
+      <value>Invalid login credentials.</value>
+      <comment/>
   </data>
   <data name="VerificationSuccess" xml:space="preserve">
-    <value>Verification successful.</value>
-    <comment/>
+      <value>Verification successful.</value>
+      <comment/>
   </data>
   <data name="OTPVerificationFailed" xml:space="preserve">
-    <value>OTP verification failed.</value>
-    <comment/>
+      <value>OTP verification failed.</value>
+      <comment/>
   </data>
   <data name="InvalidLanguage" xml:space="preserve">
-    <value>Invalid language.</value>
-    <comment/>
+      <value>Invalid language.</value>
+      <comment/>
   </data>
   <data name="LanguageChanged" xml:space="preserve">
-    <value>Language changed successfully.</value>
-    <comment/>
+      <value>Language changed successfully.</value>
+      <comment/>
   </data>
   <data name="LanguageChangeFailed" xml:space="preserve">
-    <value>Language change failed.</value>
-    <comment/>
+      <value>Failed to change language.</value>
+      <comment/>
   </data>
   <data name="InvalidMessageData" xml:space="preserve">
-    <value>Invalid message data</value>
-    <comment/>
+      <value>Invalid message data.</value>
+      <comment/>
   </data>
   <data name="MessageSentSuccessfully" xml:space="preserve">
-    <value>Message sent successfully</value>
-    <comment/>
+      <value>Message sent successfully.</value>
+      <comment/>
   </data>
   <data name="FailedToSendMessage" xml:space="preserve">
-    <value>Failed to send message</value>
-    <comment/>
+      <value>Failed to send message.</value>
+      <comment/>
   </data>
   <data name="ChatRoomIdRequired" xml:space="preserve">
-    <value>Chat room ID is required</value>
-    <comment/>
+      <value>Chat room ID is required.</value>
+      <comment/>
   </data>
   <data name="NoMessagesFound" xml:space="preserve">
-    <value>No messages found</value>
-    <comment/>
+      <value>No messages found.</value>
+      <comment/>
   </data>
   <data name="MessageDeletedSuccessfully" xml:space="preserve">
-    <value>Message deleted successfully</value>
-    <comment/>
+      <value>Message deleted successfully.</value>
+      <comment/>
   </data>
   <data name="FailedToDeleteMessage" xml:space="preserve">
-    <value>Failed to delete message</value>
-    <comment/>
+      <value>Failed to delete message.</value>
+      <comment/>
   </data>
   <data name="ChatRoomIdAndKeywordRequired" xml:space="preserve">
-    <value>Chat room ID and keyword are required</value>
-    <comment/>
+      <value>Chat room ID and keyword are required.</value>
+      <comment/>
   </data>
   <data name="MessagesFoundSuccessfully" xml:space="preserve">
-    <value>Messages found successfully</value>
-    <comment/>
+      <value>Messages found successfully.</value>
+      <comment/>
   </data>
   <data name="ImageUploadedSuccessfully" xml:space="preserve">
-    <value>Image uploaded successfully</value>
-    <comment/>
+      <value>Image uploaded successfully.</value>
+      <comment/>
   </data>
   <data name="FailedToUploadImage" xml:space="preserve">
-    <value>Failed to upload image</value>
-    <comment/>
+      <value>Failed to upload image.</value>
+      <comment/>
   </data>
   <data name="FileUploadedSuccessfully" xml:space="preserve">
-    <value>File uploaded successfully</value>
-    <comment/>
+      <value>File uploaded successfully.</value>
+      <comment/>
   </data>
   <data name="FailedToUploadFile" xml:space="preserve">
-    <value>Failed to upload file</value>
-    <comment/>
+      <value>Failed to upload file.</value>
+      <comment/>
   </data>
   <data name="GroupNameRequired" xml:space="preserve">
-    <value>Group name is required</value>
-    <comment/>
+      <value>Group name is required.</value>
+      <comment/>
   </data>
   <data name="GroupCreatedSuccessfully" xml:space="preserve">
-    <value>Group chat has been created successfully</value>
-    <comment/>
+      <value>Chat group created successfully.</value>
+      <comment/>
   </data>
   <data name="FailedToCreateGroup" xml:space="preserve">
-    <value>Failed to create group chat</value>
-    <comment/>
+      <value>Failed to create chat group.</value>
+      <comment/>
   </data>
   <data name="GroupNameUpdatedSuccessfully" xml:space="preserve">
-    <value>Group name has been updated successfully</value>
-    <comment/>
+      <value>Group name updated successfully.</value>
+      <comment/>
   </data>
   <data name="FailedToUpdateGroup" xml:space="preserve">
-    <value>Failed to update group name</value>
-    <comment/>
+      <value>Failed to update group name.</value>
+      <comment/>
   </data>
   <data name="GroupDeletedSuccessfully" xml:space="preserve">
-    <value>Group chat has been deleted successfully</value>
-    <comment/>
+      <value>Chat group deleted successfully.</value>
+      <comment/>
   </data>
   <data name="FailedToDeleteGroup" xml:space="preserve">
-    <value>Failed to delete group chat</value>
-    <comment/>
+      <value>Failed to delete chat group.</value>
+      <comment/>
   </data>
   <data name="GroupNotFound" xml:space="preserve">
-    <value>Group chat not found</value>
-    <comment/>
+      <value>Chat group not found.</value>
+      <comment/>
   </data>
   <data name="UserAlreadyExists" xml:space="preserve">
-    <value>User already exists</value>
-    <comment/>
+      <value>User account already exists.</value>
+      <comment/>
   </data>
   <data name="UnableToStoreInDatabase" xml:space="preserve">
-    <value>Cannot store in database.</value>
-    <comment/>
+      <value>Unable to store in the database.</value>
+      <comment/>
   </data>
   <data name="EmailVerificationCodeSubject" xml:space="preserve">
-    <value>Email Verification Code</value>
-    <comment/>
+      <value>Email verification code.</value>
+      <comment/>
   </data>
-  <data name="EmailEmptyError" xml:space="preserve">
-    <value>Email cannot be empty.</value>
-    <comment/>
+  <data name="EmailCannotBeEmpty" xml:space="preserve">
+      <value>Email cannot be empty.</value>
+      <comment/>
   </data>
-  <data name="EmailUpdatedSuccess" xml:space="preserve">
-    <value>EmailUpdatedSuccess</value>
-    <comment/>
+  <data name="EmailUpdated" xml:space="preserve">
+      <value>Email updated successfully.</value>
+      <comment/>
   </data>
   <data name="EmailUpdateError" xml:space="preserve">
-    <value>Error updating email.</value>
-    <comment/>
+      <value>Failed to update email.</value>
+      <comment/>
   </data>
-  <data name="PasswordEmptyError" xml:space="preserve">
-    <value>Current and new password cannot be empty.</value>
-    <comment/>
+  <data name="PasswordCannotBeEmpty" xml:space="preserve">
+      <value>Current password and new password cannot be empty.</value>
+      <comment/>
   </data>
-  <data name="PasswordUpdatedSuccess" xml:space="preserve">
-    <value>Password updated successfully.</value>
-    <comment/>
+  <data name="PasswordUpdated" xml:space="preserve">
+      <value>Password updated successfully.</value>
+      <comment/>
   </data>
   <data name="PasswordUpdateError" xml:space="preserve">
-    <value>Error updating password.</value>
-    <comment/>
+      <value>Error updating password.</value>
+      <comment/>
   </data>
-  <data name="NameUpdatedSuccess" xml:space="preserve">
-    <value>Username updated successfully.</value>
-    <comment/>
+  <data name="NameUpdated" xml:space="preserve">
+      <value>User name updated successfully.</value>
+      <comment/>
   </data>
   <data name="NameUpdateError" xml:space="preserve">
-    <value>Error updating name.</value>
-    <comment/>
+      <value>Error updating user name.</value>
+      <comment/>
   </data>
-  <data name="PhoneNumberUpdatedSuccess" xml:space="preserve">
-    <value>Phone number updated successfully.</value>
-    <comment/>
+  <data name="PhoneNumberUpdated" xml:space="preserve">
+      <value>Phone number updated successfully.</value>
+      <comment/>
   </data>
   <data name="PhoneNumberUpdateError" xml:space="preserve">
-    <value>Error updating phone number.</value>
-    <comment/>
+      <value>Error updating phone number.</value>
+      <comment/>
   </data>
-  <data name="GenderUpdatedSuccess" xml:space="preserve">
-    <value>Gender updated successfully.</value>
-    <comment/>
+  <data name="GenderUpdated" xml:space="preserve">
+      <value>Gender updated successfully.</value>
+      <comment/>
   </data>
   <data name="GenderUpdateError" xml:space="preserve">
-    <value>Error updating gender.</value>
-    <comment/>
+      <value>Error updating gender.</value>
+      <comment/>
   </data>
-  <data name="DateOfBirthUpdatedSuccess" xml:space="preserve">
-    <value>Date of birth updated successfully.</value>
-    <comment/>
+  <data name="DateOfBirthUpdated" xml:space="preserve">
+      <value>Date of birth updated successfully.</value>
+      <comment/>
   </data>
   <data name="DateOfBirthUpdateError" xml:space="preserve">
-    <value>Error updating date of birth.</value>
-    <comment/>
+      <value>Error updating date of birth.</value>
+      <comment/>
   </data>
-  <data name="UserInfoUpdatedSuccess" xml:space="preserve">
-    <value>User information updated successfully.</value>
-    <comment/>
+  <data name="GeneralUpdateSuccess" xml:space="preserve">
+      <value>User information updated successfully.</value>
+      <comment/>
   </data>
-  <data name="UserInfoUpdateError" xml:space="preserve">
-    <value>Error updating user information.</value>
-    <comment/>
+  <data name="GeneralUpdateError" xml:space="preserve">
+      <value>Error updating user information.</value>
+      <comment/>
   </data>
-  <data name="PasswordCheckEmptyError" xml:space="preserve">
-    <value>Username and current password cannot be empty.</value>
-    <comment/>
+  <data name="CurrentPasswordAndUsernameCannotBeEmpty" xml:space="preserve">
+      <value>Username and current password cannot be empty.</value>
+      <comment/>
   </data>
   <data name="PasswordCorrect" xml:space="preserve">
-    <value>Correct password.</value>
-    <comment/>
+      <value>Password is correct.</value>
+      <comment/>
   </data>
   <data name="PasswordIncorrect" xml:space="preserve">
-    <value>Incorrect password.</value>
-    <comment/>
+      <value>Password is incorrect.</value>
+      <comment/>
   </data>
-  <data name="UsernameEmptyError" xml:space="preserve">
-    <value>Username cannot be empty.</value>
-    <comment/>
+  <data name="UsernameCannotBeEmpty" xml:space="preserve">
+      <value>Username cannot be empty.</value>
+      <comment/>
   </data>
-  <data name="InvalidRequestError" xml:space="preserve">
-    <value>Invalid request.</value>
-    <comment/>
+  <data name="InvalidRequest" xml:space="preserve">
+      <value>Invalid request.</value>
+      <comment/>
   </data>
-  <data name="EmailVerificationSubject" xml:space="preserve">
-    <value>Email Verification Code</value>
-    <comment/>
-  </data>
-  <data name="OtpSentSuccess" xml:space="preserve">
-    <value>OTP sent successfully.</value>
-    <comment/>
+  <data name="OtpSent" xml:space="preserve">
+      <value>OTP code sent.</value>
+      <comment/>
   </data>
   <data name="OtpSendError" xml:space="preserve">
-    <value>Error sending OTP.</value>
+      <value>Error sending OTP code.</value>
+      <comment/>
+  </data>
+  <data name="OtpVerificationSuccess" xml:space="preserve">
+      <value>OTP verification successful.</value>
+      <comment/>
+  </data>
+  <data name="OtpInvalid" xml:space="preserve">
+      <value>OTP code is invalid.</value>
+      <comment/>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+      <value>User not found.</value>
+      <comment/>
+  </data>
+  <data name="UserInfoUpdatedSuccess" xml:space="preserve">
+      <value>User information updated successfully.</value>
+      <comment/>
+  </data>
+  <data name="UserInfoUpdateError" xml:space="preserve">
+      <value>Error updating user information.</value>
+      <comment/>
+  </data>
+  <data name="PasswordCheckEmptyError" xml:space="preserve">
+    <value>Password cannot be empty</value>
     <comment/>
   </data>
   <data name="OtpVerifyEmptyError" xml:space="preserve">
-    <value>Username and OTP cannot be empty.</value>
+    <value>OTP code cannot be empty.</value>
     <comment/>
   </data>
-  <data name="OtpVerifySuccess" xml:space="preserve">
-    <value>OTP verified successfully.</value>
+  <data name="TokenValid" xml:space="preserve">
+    <value>Token is valid.</value>
     <comment/>
   </data>
-  <data name="OtpInvalid" xml:space="preserve">
-    <value>	Invalid OTP.</value>
+  <data name="AvatarUpdated" xml:space="preserve">
+    <value>Avatar Updated.</value>
+    <comment/>
+  </data>
+  <data name="AvatarUpdateError" xml:space="preserve">
+    <value>Error Updated Avatar.</value>
     <comment/>
   </data>
 </root>

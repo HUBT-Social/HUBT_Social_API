@@ -24,7 +24,7 @@ public class LoginService : ILoginService
             return (SignInResult.Failed, null);
 
         var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, false, false);
-        return result.Succeeded
+        return result.Succeeded || result.RequiresTwoFactor
             ? (result, user)
             : (result, null);
     }
