@@ -17,6 +17,7 @@ namespace HUBT_Social_API.Core.Settings
         public const string InvalidLanguage = "InvalidLanguage";
         public const string LanguageChanged = "LanguageChanged";
         public const string LanguageChangeFailed = "LanguageChangeFailed";
+        public const string DefaultLoginError ="DefaultLoginError";
         
         // Các key cho thông điệp liên quan đến tin nhắn
         public const string InvalidMessageData = "InvalidMessageData";
@@ -95,32 +96,60 @@ namespace HUBT_Social_API.Core.Settings
         
 
         public const string TokenValid =  "TokenValid";
-         public const string AvatarDefault1 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811655/qqgtqqr9igqnz6pj8zjn.jpg";
-        public const string AvatarDefault2 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811807/ahd7jbrya441tv0wv4h2.jpg";
-        public const string AvatarDefault3 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811831/khszyns5uzh6gf2zncsd.jpg";
-        public const string AvatarDefault4 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811852/hhn3ljzoky2jcz4djivy.jpg";
-        public const string AvatarDefault5 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811872/xthln1h8axw3nwrjqz0l.jpg";
-        public const string AvatarDefault6 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811890/migfj5wqjmk4v6jeuada.jpg";
-        public const string AvatarDefault7 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811913/bnlco4r2fwcsajwg7e7j.jpg";
-        public const string AvatarDefault8 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811930/b6oi4predbmtbqnf2gi4.jpg";
-        public const string AvatarDefault9 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811971/ihaipmgkzjyfliavkq3e.jpg";
-        public const string AvatarDefault10 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811992/lbkn7ehp5aqdpkjkqzgf.jpg";
-        public const string AvatarDefault11 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731812010/fjt3fwuqk53lnb910qvu.jpg";
-        public const string AvatarDefault12 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731812037/txbbmvgtpyhnleij7g1s.jpg";
+        public const string AvatarDefaultFemale1 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811655/qqgtqqr9igqnz6pj8zjn.jpg";
+        public const string AvatarDefaultFemale2 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811807/ahd7jbrya441tv0wv4h2.jpg";
+        public const string AvatarDefaultFemale3 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811831/khszyns5uzh6gf2zncsd.jpg";
+        public const string AvatarDefaultFemale4 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811852/hhn3ljzoky2jcz4djivy.jpg";
+        public const string AvatarDefaultFemale5 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811872/xthln1h8axw3nwrjqz0l.jpg";
+        public const string AvatarDefaultFemale6 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811890/migfj5wqjmk4v6jeuada.jpg";
+        public const string AvatarDefaultFemale7 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811913/bnlco4r2fwcsajwg7e7j.jpg";
+        public const string AvatarDefaultFemale8 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811930/b6oi4predbmtbqnf2gi4.jpg";
+        public const string AvatarDefaultMale1 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811971/ihaipmgkzjyfliavkq3e.jpg";
+        public const string AvatarDefaultMale2 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811992/lbkn7ehp5aqdpkjkqzgf.jpg";
+        public const string AvatarDefaultMale3 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731812010/fjt3fwuqk53lnb910qvu.jpg";
+        public const string AvatarDefaultMale4 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731812037/txbbmvgtpyhnleij7g1s.jpg";
         public const string DefaultUserImage = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1730901747/v5elptamoonvux5xth0a.jpg";
 
-        public static string GetRandomAvatarDefault()
+        public static string GetRandomAvatarDefault(Gender gender)
         {
-            // Tạo đối tượng Random
             var random = new Random();
+            List<string> avatarUrls;
 
-            // Tên của trường hằng số
-            var fieldName = $"AvatarDefault{random.Next(1, 13)}";
+            // Chọn danh sách avatar dựa trên giới tính
+            switch (gender)
+            {
+                case Gender.Male:
+                    avatarUrls = new List<string>
+                    {
+                        AvatarDefaultMale1,
+                        AvatarDefaultMale2,
+                        AvatarDefaultMale3,
+                        AvatarDefaultMale4
+                    };
+                    break;
 
-            // Lấy giá trị từ trường hằng số
-            var field = typeof(KeyStore).GetField(fieldName); // Đổi 'AvatarLibrary' thành tên lớp của bạn
+                case Gender.Female:
+                    avatarUrls = new List<string>
+                    {
+                        AvatarDefaultFemale1,
+                        AvatarDefaultFemale2,
+                        AvatarDefaultFemale3,
+                        AvatarDefaultFemale4,
+                        AvatarDefaultFemale5,
+                        AvatarDefaultFemale6,
+                        AvatarDefaultFemale7,
+                        AvatarDefaultFemale8
+                    };
+                    break;
 
-            return field?.GetValue(null)?.ToString() ?? KeyStore.DefaultUserImage;
+                default:
+                    // Trường hợp không xác định giới tính
+                    avatarUrls = new List<string> { DefaultUserImage };
+                    break;
+            }
+
+            // Chọn ngẫu nhiên từ danh sách
+            return avatarUrls[random.Next(avatarUrls.Count)];
         }
     }
 }

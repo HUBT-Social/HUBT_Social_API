@@ -5,7 +5,7 @@ namespace HUBT_Social_API.Features.Auth.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public abstract class BaseAccountController : ControllerBase
+public abstract class BaseAuthController : ControllerBase
 {
     protected readonly IAuthService? _authService;
     protected readonly IEmailService? _emailService;
@@ -14,7 +14,7 @@ public abstract class BaseAccountController : ControllerBase
 
     protected readonly IUserService? _userService;
 
-    protected BaseAccountController(
+    protected BaseAuthController(
         IAuthService? authService = null, 
         ITokenService? tokenService = null, 
         IEmailService? emailService = null, 

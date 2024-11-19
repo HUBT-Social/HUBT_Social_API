@@ -6,6 +6,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -17,12 +18,13 @@ namespace HUBT_Social_API.Controllers;
 [ApiController]
 [Route("api/user-update")]
 [Authorize]
-public class UpdateUserController : BaseAccountController
+public class UpdateUserController : BaseAuthController
 {
-    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService)
+    private readonly IImageService _imageService;
+    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService,IImageService imageService)
     :base (null,tokenService,emailService,null,userService)
     {
-
+        _imageService = imageService;
     }
     // Phương thức trợ giúp chung
     private async Task<IActionResult> HandleUserUpdate<TRequest>(string successMessage, string errorMessage, Func<string, TRequest, Task<bool>> updateFunc, TRequest request)
@@ -103,5 +105,35 @@ public class UpdateUserController : BaseAccountController
         }
     }
     
+    [HttpGet("add-info-user")]
+    public async Task<IActionResult> AddInfoUser(FormFile file, [FromBody] AddInfoUserRequest request)
+    {
+            // Kiểm tra file upload
+        if (file != null || file.Length != 0)
+        {
+            // Upload ảnh lên Cloudinary
+            string avatarUrl;
+            try
+            {
+                avatarUrl = await _imageService.GetUrlFormFileAsync(file); 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"{LocalValue.Get(KeyStore.InvalidFileData)}");
+            }
 
+            // Gán URL ảnh vào request
+            request.AvatarUrl = avatarUrl;  
+        }
+
+        request.AvatarUrl = KeyStore.GetRandomAvatarDefault(request.Gender);
+
+        // Gọi hàm xử lý cập nhật thông tin người dùng
+        return await HandleUserUpdate(
+            KeyStore.GeneralUpdateSuccess,
+            KeyStore.GeneralUpdateError,
+            _userService.AddInfoUser,
+            request
+        );
+    }
 }

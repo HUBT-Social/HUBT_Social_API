@@ -19,6 +19,7 @@ public interface IUserService
     Task<bool> UpdatePhoneNumberAsync(string userName, UpdatePhoneNumberRequest request);
     Task<bool> UpdateGenderAsync(string userName, UpdateGenderRequest request);
     Task<bool> UpdateDateOfBirthAsync(string userName, UpdateDateOfBornRequest request);
+    Task<bool> AddInfoUser(string userName, AddInfoUserRequest request);
 
     Task<bool> EnableTwoFactor(string userName);
 

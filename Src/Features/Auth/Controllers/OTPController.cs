@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HUBT_Social_API.Features.Auth.Controllers;
 
-public class OTPController : BaseAccountController
+public class OTPController : BaseAuthController
 {
     public OTPController(IAuthService authService, ITokenService tokenService, IEmailService emailService)
     :base (authService,tokenService,emailService,null,null)

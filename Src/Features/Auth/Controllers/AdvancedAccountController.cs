@@ -15,14 +15,15 @@ namespace HUBT_Social_API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AdvancedAccountController : BaseAccountController
+public class AdvancedAuthController : BaseAuthController
 {
 
-    public AdvancedAccountController(IAuthService authService, ITokenService tokenService, IEmailService emailService,IUserService userService)
+    public AdvancedAuthController(IAuthService authService, ITokenService tokenService, IEmailService emailService,IUserService userService)
     :base (authService,tokenService,emailService,null,userService)
     {
         
     }
+
 
     [HttpGet("get-user")]
     public async Task<IActionResult> GetCurrentUser()

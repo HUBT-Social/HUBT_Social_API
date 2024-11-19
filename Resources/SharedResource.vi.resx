@@ -401,4 +401,8 @@
     <value>Cập nhật ảnh đại diện thất bại.</value>
     <comment/>
   </data>
+  <data name="DefaultLoginError" xml:space="preserve">
+    <value>Đăng nhập gặp sự cố không mong muốn. Vui lòng thử lại.</value>
+    <comment/>
+  </data>
 </root>

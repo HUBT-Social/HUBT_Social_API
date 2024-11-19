@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HUBT_Social_API.Features.Auth.Controllers;
 
 
-public partial class AccountController
+public partial class AuthController
 {
 
     [HttpGet("token-is-validate")]

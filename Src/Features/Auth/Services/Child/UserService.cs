@@ -184,6 +184,20 @@ public class UserService : IUserService
             if (request.DateOfBirth != DateTime.MinValue) u.DateOfBirth = request.DateOfBirth;
         });
     }
+    public async Task<bool> AddInfoUser(string userName, AddInfoUserRequest request)
+    {
+        var user = await GetUserByNameAsync(userName);
+        return user != null && await UpdateUserPropertyAsync(user, u =>
+        {
+            if (!string.IsNullOrEmpty(request.AvatarUrl)) u.AvataUrl = request.AvatarUrl;
+            if (!string.IsNullOrEmpty(request.FirstName)) u.FirstName = request.FirstName;
+            if (!string.IsNullOrEmpty(request.LastName)) u.LastName = request.LastName;
+            if (!string.IsNullOrEmpty(request.PhoneNumber)) u.PhoneNumber = request.PhoneNumber;
+            if (!string.IsNullOrEmpty(request.Gender.ToString())) u.Gender = request.Gender;
+            if (request.DateOfBirth != DateTime.MinValue) u.DateOfBirth = request.DateOfBirth;
+        });
+    }
+    
 
     public async Task<bool> EnableTwoFactor(string userName)
     {

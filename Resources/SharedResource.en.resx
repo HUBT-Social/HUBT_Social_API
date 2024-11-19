@@ -401,4 +401,8 @@
     <value>Error Updated Avatar.</value>
     <comment/>
   </data>
+  <data name="DefaultLoginError" xml:space="preserve">
+    <value>An unexpected error occurred. Please try again later.</value>
+    <comment/>
+  </data>
 </root>
