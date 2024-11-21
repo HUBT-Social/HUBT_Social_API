@@ -18,10 +18,11 @@ public static class IdentityConfiguration
             },
             IdentityOptionsAction = option =>
             {
-                option.Password.RequireDigit = false;
+                option.Password.RequireDigit = true;
                 option.Password.RequiredLength = 8;
                 option.Password.RequireNonAlphanumeric = true;
                 option.Password.RequireLowercase = false;
+                option.Password.RequireUppercase = true;
 
                 option.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
                 option.Lockout.MaxFailedAccessAttempts = 5;

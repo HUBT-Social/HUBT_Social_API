@@ -107,8 +107,10 @@ public class AdvancedAccountController : BaseAccountController
     public async Task<IActionResult> GetCurrentEmail()
     {
         string userAgent = Request.Headers.UserAgent.ToString();
+        string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+        if (ipAddress == null) return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
 
-        string? currentEmail = await _emailService.GetValidateEmail(userAgent);
+        string? currentEmail = await _emailService.GetValidateEmail(userAgent,ipAddress.ToString());
         if (string.IsNullOrEmpty(currentEmail))
             return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
         

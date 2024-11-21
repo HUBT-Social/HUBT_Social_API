@@ -2,7 +2,9 @@ using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
+using HUBT_Social_API.Features.Auth.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace HUBT_Social_API.Features.Auth.Controllers;
 
@@ -12,7 +14,8 @@ public partial class AccountController
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         string? userAgent = Request.Headers.UserAgent.ToString();
-
+        string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+        if (ipAddress == null) return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
         if (!ModelState.IsValid)
             return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
         if (await _registerService.CheckUserAccountExit(request))
@@ -23,7 +26,7 @@ public partial class AccountController
         // Gửi mã OTP qua email để xác thực
         try
         {
-            Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,request.Email);
+            Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,request.Email,ipAddress.ToString());
             if (code == null) return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
 
             await _emailService.SendEmailAsync(new EmailRequest

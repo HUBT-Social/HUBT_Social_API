@@ -24,12 +24,17 @@ public class OTPController : BaseAccountController
     {
         string userAgent = Request.Headers.UserAgent.ToString();
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        System.Net.IPAddress? ipAddress = HttpContext.Connection.RemoteIpAddress;
+        if (ipAddress == null || !ipAddress.IsIPv4MappedToIPv6)
+        {
+            return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
+        }
 
 
         if (userResponse == null || userResponse.User == null|| userResponse.User.Email == null) return BadRequest(LocalValue.Get(KeyStore.InvalidRequestError));
 
 
-        Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,userResponse.User.Email);
+        Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,userResponse.User.Email,ipAddress.ToString());
         if (code == null) return BadRequest(              
                    LocalValue.Get(KeyStore.InvalidCredentials)
             );
@@ -70,8 +75,16 @@ public class OTPController : BaseAccountController
     public async Task<IActionResult> ConfirmCodeSignUp([FromBody] OTPRequest code)
     {
         string userAgent = Request.Headers.UserAgent.ToString();
+        string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+        if (ipAddress == null) return BadRequest(
+            new LoginResponse
+            {
+                RequiresTwoFactor = false,
+                Message = LocalValue.Get(KeyStore.InvalidInformation)
+            }
+            );
 
-        string? currentEmail = await _emailService.GetValidateEmail(userAgent);
+        string? currentEmail = await _emailService.GetValidateEmail(userAgent,ipAddress);
         if (currentEmail == null) return BadRequest(
             new LoginResponse
             {
@@ -149,8 +162,15 @@ public class OTPController : BaseAccountController
     public async Task<IActionResult> ConfirmCodeSignIn([FromBody] OTPRequest code)
     {
         string userAgent = Request.Headers.UserAgent.ToString();
-
-        string? currentEmail = await _emailService.GetValidateEmail(userAgent);
+        string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+        if (ipAddress == null) return BadRequest(
+            new LoginResponse
+            {
+                RequiresTwoFactor = false,
+                Message = LocalValue.Get(KeyStore.InvalidInformation)
+            }
+            );
+        string? currentEmail = await _emailService.GetValidateEmail(userAgent,ipAddress.ToString());
         if (currentEmail == null) return BadRequest(
             new LoginResponse
             {

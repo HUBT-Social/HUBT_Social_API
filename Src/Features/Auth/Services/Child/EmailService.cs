@@ -59,12 +59,12 @@ public class EmailService : IEmailService
         }
     }
 
-    public async Task<Postcode?> CreatePostcodeAsync(string userAgent,string receiver)
+    public async Task<Postcode?> CreatePostcodeAsync(string userAgent,string receiver, string ipAdress)
     {
         var code = GenerateOtp();
 
         Postcode? postcode = await _postcode.Find(
-            pc => pc.Email == receiver && pc.UserAgent == userAgent
+            pc => pc.IPAddress == ipAdress && pc.UserAgent == userAgent
             ).FirstOrDefaultAsync();
 
         if (postcode is not null)
@@ -73,22 +73,32 @@ public class EmailService : IEmailService
                 .Set(pc=> pc.ExpireTime , DateTime.UtcNow);
             postcode.Code = code;
             await _postcode.UpdateOneAsync(
-                pc => pc.Email == receiver && pc.UserAgent == userAgent
+                pc => pc.IPAddress == ipAdress && pc.UserAgent == userAgent
                 ,updatePostcode);
 
             return postcode;
-        }; 
-
-        Postcode newPostcode = new()
-        {
-            UserAgent = userAgent,
-            Code = code,
-            Email = receiver,
-            ExpireTime = DateTime.UtcNow
         };
+        try
+        {
+            Postcode newPostcode = new()
+            {
+                UserAgent = userAgent,
+                IPAddress = ipAdress,
+                Code = code,
+                Email = receiver,
+                ExpireTime = DateTime.UtcNow
+            };
 
-        await _postcode.InsertOneAsync(newPostcode);
-        return newPostcode;
+            await _postcode.InsertOneAsync(newPostcode);
+            return newPostcode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            
+        }
+        return null;
+
     }
 
     public async Task<AUser?> ValidatePostcodeAsync(ValidatePostcodeRequest postcodeRequest)
@@ -135,15 +145,15 @@ public class EmailService : IEmailService
         return Environment.GetEnvironmentVariable(key);
     }
 
-    public async Task<string?> GetValidateEmail(string userAgent)
+    public async Task<string?> GetValidateEmail(string userAgent , string ipAddress)
     {
         Postcode postcode = await _postcode
-            .Find(ps => ps.UserAgent == userAgent)
+            .Find(ps => ps.UserAgent == userAgent && ps.IPAddress == ipAddress)
             .FirstOrDefaultAsync();
 
-        if (postcode == null) return null;
+        if (postcode != null) return postcode.Email;
 
-        return postcode.Email;
+        return null;
     }
 
     public bool MaskEmail(string email,out string maskEmail)

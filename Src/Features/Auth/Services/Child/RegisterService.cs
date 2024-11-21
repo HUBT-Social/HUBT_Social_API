@@ -1,5 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using HUBT_Social_API.Core.Settings;
+using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
@@ -29,17 +31,34 @@ public class RegisterService : IRegisterService
         
 
         TempUserRegister? tempUserRegister = await GetTempUser(model.Email);
-        if (tempUserRegister != null) return false;
-
-        TempUserRegister tempUser = new()
+        if (tempUserRegister == null)
         {
-            Email = model.Email,
-            ExpireTime = DateTime.UtcNow,
-            UserName = model.UserName,
-            Password = model.Password
+            TempUserRegister tempUser = new()
+            {
+                Email = model.Email,
+                ExpireTime = DateTime.UtcNow,
+                UserName = model.UserName,
+                Password = model.Password
+            };
+            await _tempUserRegister.InsertOneAsync(tempUser);
+            return true;
         };
-        await _tempUserRegister.InsertOneAsync(tempUser);
-        return true;
+        
+        try
+        {
+            var update = Builders<TempUserRegister>.Update
+                .Set(t => t.ExpireTime, DateTime.UtcNow)
+                .Set(t => t.UserName, model.UserName)
+                .Set(t => t.Password, model.Password);
+            await _tempUserRegister.UpdateOneAsync(t => t.Email == model.Email, update);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return false;
+        }
+        
     }
 
     public async Task<bool> CheckUserAccountExit(RegisterRequest model)
