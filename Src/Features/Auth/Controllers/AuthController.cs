@@ -9,9 +9,9 @@ namespace HUBT_Social_API.Features.Auth.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public partial class AccountController : BaseAccountController
+public partial class AuthController : BaseAuthController
 {
-    public AccountController(IAuthService authService,ITokenService tokenService, IEmailService emailService, IRegisterService registerService)
+    public AuthController(IAuthService authService,ITokenService tokenService, IEmailService emailService, IRegisterService registerService)
     : base(authService, tokenService,emailService,registerService,null)
     {
     }

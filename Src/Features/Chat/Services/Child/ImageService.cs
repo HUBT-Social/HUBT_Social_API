@@ -45,6 +45,27 @@ public class ImageService : IImageService
         var uploadResult = await _cloudinary.UploadAsync(uploadParams);
         return uploadResult.Url.ToString();
     }
+    public async Task<string> GetUrlFormFileAsync(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+                return null;
+
+            // Upload ảnh lên Cloudinary
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(file.FileName, file.OpenReadStream()),
+                Transformation = new Transformation().Width(500).Height(500).Crop("fill")
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+
+            string Url = uploadResult.SecureUrl.ToString();
+
+            return Url;
+
+    }
+
 
     public async Task<byte[]> ResizeImageAsync(byte[] imageData, int width, int height)
     {

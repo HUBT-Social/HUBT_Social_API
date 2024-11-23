@@ -8,92 +8,120 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HUBT_Social_API.Features.Auth.Controllers;
 
-public partial class AccountController
+public partial class AuthController
 {
     [HttpPost("sign-in")]
-    public async Task<IActionResult> LoginAsync(LoginByUserNameRequest model)
+    public async Task<IActionResult> LoginAsync([FromBody] LoginByUserNameRequest model)
     {
-        string? userAgent = Request.Headers.UserAgent.ToString();
-        string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
-        if (ipAddress == null) return BadRequest(
-            new LoginResponse
-            {
-                RequiresTwoFactor = false,
-                Message = LocalValue.Get(KeyStore.LoginNotAllowed),
-            }
-        );
-
-        var (result, user) = await _authService.LoginAsync(model);
-
-        if (result.RequiresTwoFactor && user?.Email is not null)
+        
+        try
         {
-            
-            Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,user.Email,ipAddress.ToString());
-            if (code == null) return BadRequest(
-                new LoginResponse
-                {
-                    RequiresTwoFactor = true,
-                    Message = LocalValue.Get(KeyStore.InvalidCredentials)
-                }        
-            );
-
-            await _emailService.SendEmailAsync(
-                new EmailRequest
-                {
-                    ToEmail =  code.Email,
-                    Code = code.Code,
-                    Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject)
-                }
-            );
-            
-            
-            return Ok(
-                new LoginResponse 
-                {
-                    RequiresTwoFactor = true,
-                    Message = LocalValue.Get(KeyStore.StepOneVerificationSuccess)
-                }
-                
-            );
-        }
-
-        if (result.IsLockedOut)
-            return BadRequest(new LoginResponse
+            // Kiểm tra dữ liệu đầu vào
+            if (string.IsNullOrWhiteSpace(model.UserName) || string.IsNullOrWhiteSpace(model.Password))
             {
-                RequiresTwoFactor = false,
-                Message = LocalValue.Get(KeyStore.AccountLocked)
-            }       
-            );
-        if (result.IsNotAllowed)
-            return BadRequest(
+                return BadRequest(
+                    new LoginResponse
+                    {
+                        RequiresTwoFactor = false,
+                        Message = $"{LocalValue.Get(KeyStore.EmailCannotBeEmpty)} or {LocalValue.Get(KeyStore.PasswordCannotBeEmpty)}"
+                    });
+            }
+
+            // Lấy User-Agent từ Header
+            string? userAgent = Request.Headers.UserAgent.ToString();
+            //Lấy Ip
+            string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+            if (ipAddress == null) return BadRequest(
                 new LoginResponse
                 {
                     RequiresTwoFactor = false,
                     Message = LocalValue.Get(KeyStore.LoginNotAllowed),
                 }
             );
-        if (result.Succeeded && user is not null)
-        {
-            TokenResponse token = await _tokenService.GenerateTokenAsync(user);
 
-            return Ok(
-                new LoginResponse
+            // Thực hiện đăng nhập
+            var (result, user) = await _authService.LoginAsync(model);
+
+            // Kiểm tra yêu cầu xác thực hai yếu tố
+            if (result.RequiresTwoFactor && user?.Email is not null)
+            {
+                Postcode? code = await _emailService.CreatePostcodeAsync(userAgent, user.Email,ipAddress.ToString());
+                if (code == null)
+                {
+                    return BadRequest(new LoginResponse
+                    {
+                        RequiresTwoFactor = true,
+                        Message = LocalValue.Get(KeyStore.InvalidCredentials)
+                    });
+                }
+
+                await _emailService.SendEmailAsync(new EmailRequest
+                {
+                    ToEmail = code.Email,
+                    Code = code.Code,
+                    Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject)
+                });
+
+                return Ok(new LoginResponse
+                {
+                    RequiresTwoFactor = true,
+                    Message = LocalValue.Get(KeyStore.StepOneVerificationSuccess)
+                });
+            }
+
+            // Xử lý các trường hợp đăng nhập thất bại
+            if (result.IsLockedOut)
+            {
+                return BadRequest(new LoginResponse
+                {
+                    RequiresTwoFactor = false,
+                    Message = LocalValue.Get(KeyStore.AccountLocked)
+                });
+            }
+
+            if (result.IsNotAllowed)
+            {
+                return BadRequest(new LoginResponse
+                {
+                    RequiresTwoFactor = false,
+                    Message = LocalValue.Get(KeyStore.LoginNotAllowed)
+                });
+            }
+
+            // Xử lý đăng nhập thành công
+            if (result.Succeeded && user is not null)
+            {
+                TokenResponse token = await _tokenService.GenerateTokenAsync(user);
+
+                return Ok(new LoginResponse
                 {
                     RequiresTwoFactor = false,
                     Message = LocalValue.Get(KeyStore.VerificationSuccess),
                     UserToken = token
-                }
-            );
-        }
-            
-        return BadRequest(
-            new LoginResponse
-            {
-                RequiresTwoFactor = true,
-                Message = LocalValue.Get(KeyStore.InvalidCredentials)
+                });
             }
 
-        );
+            // Mặc định trả về lỗi đăng nhập
+            return BadRequest(new LoginResponse
+            {
+                RequiresTwoFactor = false,
+                Message = LocalValue.Get(KeyStore.InvalidCredentials)
+            });
+        }
+        catch (Exception ex)
+        {
+            // Ghi log lỗi
+            // LogError(ex);
+
+            // Trả về lỗi server
+            return BadRequest(
+                new LoginResponse
+                {
+                    RequiresTwoFactor = false,
+                    Message = LocalValue.Get(KeyStore.DefaultLoginError)
+                });
+        }
     }
+
 
 }

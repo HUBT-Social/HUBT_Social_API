@@ -16,13 +16,12 @@ public class AUser : MongoIdentityUser<Guid>
 
     public string LastName { get; set; } = string.Empty;
 
-    [BsonRepresentation(BsonType.String)]
     public Gender Gender { get; set; } = Gender.Other;
 
     public DateTime DateOfBirth { get; set; }
 
     public AUser()
     {
-        AvataUrl = KeyStore.GetRandomAvatarDefault();
+        AvataUrl = KeyStore.GetRandomAvatarDefault(Gender);
     }
 }
