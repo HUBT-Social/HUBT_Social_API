@@ -13,39 +13,110 @@ public partial class AuthController
     [HttpPost("sign-up")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        string? userAgent = Request.Headers.UserAgent.ToString();
-        string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
-        if (ipAddress == null) return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
-        if (!ModelState.IsValid)
-            return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
-        if (await _registerService.CheckUserAccountExit(request))
-            return BadRequest(LocalValue.Get(KeyStore.UserAlreadyExists));
-        if (!await _registerService.AddToTempUser(request))
-            return BadRequest(LocalValue.Get(KeyStore.UnableToStoreInDatabase));
-
-        // Gửi mã OTP qua email để xác thực
         try
         {
-            Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,request.Email,ipAddress.ToString());
-            if (code == null) return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+            // Kiểm tra dữ liệu đầu vào
+            if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password) || 
+                string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.ConfirmPassword))
+            {
 
-            await _emailService.SendEmailAsync(new EmailRequest
-                { 
-                    Code = code.Code, 
-                    Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject), 
-                    ToEmail = request.Email 
-                });
+                return BadRequest(
+                    new RegisterResponse
+                    {
+                        Success = false,
+                        Message = LocalValue.Get(KeyStore.DataNotAllowNull)
+                    });
+            }
+            if(request.Password != request.ConfirmPassword)
+            {
+                return BadRequest(
+                    new RegisterResponse
+                    {
+                        Success = false,
+                        Message = LocalValue.Get(KeyStore.ConfirmPasswordError)
+                    }
+                );
+            }
+            string? userAgent = Request.Headers.UserAgent.ToString();
+            string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+            if (ipAddress == null) return BadRequest(
+                new RegisterResponse
+                    {
+                        Success = false,
+                        Message = LocalValue.Get(KeyStore.InvalidInformation)
+                    }
+                );
+            if (!ModelState.IsValid)
+                return BadRequest(
+                    new RegisterResponse
+                    {
+                        Success = false,
+                        Message = LocalValue.Get(KeyStore.InvalidInformation)
+                    });
+            if (await _registerService.CheckUserAccountExit(request))
+                return BadRequest(
+                    new RegisterResponse
+                    {
+                        Success = false,
+                        Message = LocalValue.Get(KeyStore.UserAlreadyExists)
+                    });
+            if (!await _registerService.AddToTempUser(request))
+                return BadRequest(
+                    new RegisterResponse
+                    {
+                        Success = false,
+                        Message = LocalValue.Get(KeyStore.UnableToStoreInDatabase)
+                    });
+
+            // Gửi mã OTP qua email để xác thực
+            try
+            {
+                Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,request.Email,ipAddress.ToString());
+                if (code == null) return BadRequest(
+                    new RegisterResponse
+                    {
+                        Success = false,
+                        Message = LocalValue.Get(KeyStore.InvalidCredentials)
+                    });
+
+                await _emailService.SendEmailAsync(new EmailRequest
+                    { 
+                        Code = code.Code, 
+                        Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject), 
+                        ToEmail = request.Email 
+                    });
+            }
+            catch (Exception)
+            {
+                return BadRequest(
+                    new RegisterResponse
+                    {
+                        Success = false,
+                        Message = LocalValue.Get(KeyStore.UnableToSendOTP)
+                    });
+            }
+
+            return Ok(
+                new RegisterResponse
+                    {
+                        Success = true,
+                        Message = LocalValue.Get(KeyStore.RegistrationSuccess)
+                    });
         }
-        catch (Exception)
+        catch(Exception ex)
         {
-            return StatusCode(
-                500,
-                LocalValue.Get(KeyStore.UnableToSendOTP)
-            );
-        }
+            // Ghi log lỗi
+            // LogError(ex);
 
-        return Ok(
-             LocalValue.Get(KeyStore.RegistrationSuccess)
-        );
+            // Trả về lỗi server
+            
+            return BadRequest(
+                new RegisterResponse
+                    {
+                        Success = true,
+                        Message = LocalValue.Get(KeyStore.DefaultLoginError)
+                    });
+        }
+        
     }
 }

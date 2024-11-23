@@ -405,4 +405,12 @@
     <value>Đăng nhập gặp sự cố không mong muốn. Vui lòng thử lại.</value>
     <comment/>
   </data>
+  <data name="DataNotAllowNull" xml:space="preserve">
+    <value>Thông tin không được bỏ trống.</value>
+    <comment/>
+  </data>
+  <data name="ConfirmPasswordError" xml:space="preserve">
+    <value>Xác nhận mật khẩu không khớp với mật khẩu ở trên.</value>
+    <comment/>
+  </data>
 </root>
