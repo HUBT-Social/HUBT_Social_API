@@ -105,11 +105,11 @@ public class UpdateUserController : BaseAuthController
         }
     }
     
-    [HttpGet("add-info-user")]
+    [HttpPost("add-info-user")]
     public async Task<IActionResult> AddInfoUser([FromForm] AddInfoUserRequest request)
     {
             // Kiểm tra file upload
-        if (request.file != null || request.file.Length != 0)
+        if (request.file != null)
         {
             // Upload ảnh lên Cloudinary
             string avatarUrl;
@@ -125,9 +125,12 @@ public class UpdateUserController : BaseAuthController
             // Gán URL ảnh vào request
             request.AvatarUrl = avatarUrl;  
         }
+        else
+        {
+            request.AvatarUrl = KeyStore.GetRandomAvatarDefault(request.Gender);
+        }
 
-        request.AvatarUrl = KeyStore.GetRandomAvatarDefault(request.Gender);
-
+        
         // Gọi hàm xử lý cập nhật thông tin người dùng
         return await HandleUserUpdate(
             KeyStore.GeneralUpdateSuccess,

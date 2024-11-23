@@ -30,7 +30,7 @@ namespace HUBT_Social_API;
             builder.Services.AddAuthMongoCollections(builder.Configuration);
         }
 
-        private static void InitServices(WebApplicationBuilder builder)
+        private static void InitServices(WebApplicationBuilder builder) 
         {
             // Đăng ký các dịch vụ của hệ thống
             builder.Services.RegisterApplicationServices();

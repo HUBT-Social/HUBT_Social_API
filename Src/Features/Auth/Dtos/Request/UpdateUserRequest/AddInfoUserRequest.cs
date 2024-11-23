@@ -21,7 +21,7 @@ namespace HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
         public string PhoneNumber { get; set; } = string.Empty;
 
         [FromForm]
-        public Gender Gender { get; set; } // Enum: Male = 1, Female = 2,...
+        public Gender Gender { get; set; } =0;
 
         [FromForm]
         public DateTime DateOfBirth { get; set; } // Ngày sinh
