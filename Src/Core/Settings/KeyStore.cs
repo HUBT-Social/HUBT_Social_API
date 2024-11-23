@@ -18,6 +18,10 @@ namespace HUBT_Social_API.Core.Settings
         public const string LanguageChanged = "LanguageChanged";
         public const string LanguageChangeFailed = "LanguageChangeFailed";
         public const string DefaultLoginError ="DefaultLoginError";
+        public const string DataNotAllowNull ="DataNotAllowNull";
+        public const string ConfirmPasswordError ="ConfirmPasswordError";
+
+        
         
         // Các key cho thông điệp liên quan đến tin nhắn
         public const string InvalidMessageData = "InvalidMessageData";
