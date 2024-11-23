@@ -20,8 +20,8 @@ public static class IdentityConfiguration
             {
                 option.Password.RequireDigit = true;
                 option.Password.RequiredLength = 8;
-                option.Password.RequireNonAlphanumeric = true;
-                option.Password.RequireLowercase = false;
+                option.Password.RequireNonAlphanumeric = false;
+                option.Password.RequireLowercase = true;
                 option.Password.RequireUppercase = true;
 
                 option.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);

@@ -70,7 +70,8 @@ public class EmailService : IEmailService
         if (postcode is not null)
         {
             var updatePostcode = Builders<Postcode>.Update.Set(pc => pc.Code , code)
-                .Set(pc=> pc.ExpireTime , DateTime.UtcNow);
+                .Set(pc=> pc.ExpireTime , DateTime.UtcNow)
+                .Set(pc => pc.Email , receiver);
             postcode.Code = code;
             await _postcode.UpdateOneAsync(
                 pc => pc.IPAddress == ipAdress && pc.UserAgent == userAgent
