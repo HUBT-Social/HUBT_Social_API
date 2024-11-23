@@ -106,16 +106,16 @@ public class UpdateUserController : BaseAuthController
     }
     
     [HttpGet("add-info-user")]
-    public async Task<IActionResult> AddInfoUser(FormFile file, [FromBody] AddInfoUserRequest request)
+    public async Task<IActionResult> AddInfoUser([FromForm] AddInfoUserRequest request)
     {
             // Kiểm tra file upload
-        if (file != null || file.Length != 0)
+        if (request.file != null || request.file.Length != 0)
         {
             // Upload ảnh lên Cloudinary
             string avatarUrl;
             try
             {
-                avatarUrl = await _imageService.GetUrlFormFileAsync(file); 
+                avatarUrl = await _imageService.GetUrlFormFileAsync(request.file); 
             }
             catch (Exception ex)
             {

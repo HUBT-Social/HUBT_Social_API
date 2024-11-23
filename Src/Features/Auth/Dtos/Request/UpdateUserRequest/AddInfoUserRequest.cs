@@ -1,15 +1,28 @@
 using HUBT_Social_API.Core.Settings;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 
     public class AddInfoUserRequest
     {
-        public string AvatarUrl { get; set; } = string.Empty; // Bên thiết kế mục này sẽ là muc chọn ảnh, nếu không chọ thì tôi sẽ random avatar
+        [FromForm]
+        public IFormFile? file { get; set; } // File được chọn để upload
+
+        [FromForm]
+        public string? AvatarUrl { get; set; } = string.Empty; // URL ảnh hoặc avatar mặc định
+
+        [FromForm]
         public string FirstName { get; set; } = string.Empty;
+
+        [FromForm]
         public string LastName { get; set; } = string.Empty;
+
+        [FromForm]
         public string PhoneNumber { get; set; } = string.Empty;
 
-        public Gender Gender { get; set; }
+        [FromForm]
+        public Gender Gender { get; set; } // Enum: Male = 1, Female = 2,...
 
-        public DateTime DateOfBirth { get; set; }
+        [FromForm]
+        public DateTime DateOfBirth { get; set; } // Ngày sinh
     }
