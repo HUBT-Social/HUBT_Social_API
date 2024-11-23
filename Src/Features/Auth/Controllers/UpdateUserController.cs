@@ -36,9 +36,25 @@ public class UpdateUserController : BaseAuthController
         var result = await updateFunc(userResponse.User.UserName, request);
         return result ? Ok(LocalValue.Get(successMessage)) : BadRequest(LocalValue.Get(errorMessage));
     }
-    [HttpPost("update-avatar-url")]
-    public async Task<IActionResult> UpdateAvatar([FromBody] UpdateAvatarUrlRequest request) =>
-        await HandleUserUpdate(KeyStore.AvatarUpdated, KeyStore.AvatarUpdateError, _userService.UpdateAvatarUrlAsync, request);
+    [HttpPost("update-avatar")]
+    public async Task<IActionResult> UpdateAvatar([FromForm] UpdateAvatarUrlRequest request)
+    {
+        if(request.file !=null){
+             string avatarUrl;
+            try
+            {
+                avatarUrl = await _imageService.GetUrlFormFileAsync(request.file); 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"{LocalValue.Get(KeyStore.InvalidFileData)}");
+            }
+            request.AvatarUrl = avatarUrl;
+            return await HandleUserUpdate(KeyStore.AvatarUpdated, KeyStore.AvatarUpdateError, _userService.UpdateAvatarUrlAsync, request);
+        }
+        return BadRequest(KeyStore.AvatarUpdateError);
+    }
+        
     [HttpPost("update-email")]
     public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request) =>
         await HandleUserUpdate(KeyStore.EmailUpdated, KeyStore.EmailUpdateError, _userService.UpdateEmailAsync, request);
@@ -64,8 +80,24 @@ public class UpdateUserController : BaseAuthController
         await HandleUserUpdate(KeyStore.DateOfBirthUpdated, KeyStore.DateOfBirthUpdateError, _userService.UpdateDateOfBirthAsync, request);
 
     [HttpPost("general-update")]
-    public async Task<IActionResult> GeneralUpdate([FromBody] GeneralUpdateRequest request) =>
-        await HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, request);
+    public async Task<IActionResult> GeneralUpdate([FromForm] GeneralUpdateRequest request)
+    {
+        if(request.file !=null){
+             string avatarUrl;
+            try
+            {
+                avatarUrl = await _imageService.GetUrlFormFileAsync(request.file); 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"{LocalValue.Get(KeyStore.InvalidFileData)}");
+            }
+            request.AvatarUrl = avatarUrl;
+            return await HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, request);
+        }
+        return BadRequest(KeyStore.GeneralUpdateError);
+    }
+        
 
     [HttpPut("two-factor-enable")]
     public async Task<IActionResult> EnableTwoFactor() =>
