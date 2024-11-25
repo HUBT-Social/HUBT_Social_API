@@ -112,7 +112,7 @@ namespace HUBT_Social_API.Core.Settings
         public const string AvatarDefaultMale2 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811992/lbkn7ehp5aqdpkjkqzgf.jpg";
         public const string AvatarDefaultMale3 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731812010/fjt3fwuqk53lnb910qvu.jpg";
         public const string AvatarDefaultMale4 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731812037/txbbmvgtpyhnleij7g1s.jpg";
-        public const string DefaultUserImage = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1730901747/v5elptamoonvux5xth0a.jpg";
+        public const string DefaultUserImage = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1732549977/jgldr2myysd7u6vx6sfy.jpg";
 
         public static string GetRandomAvatarDefault(Gender gender)
         {

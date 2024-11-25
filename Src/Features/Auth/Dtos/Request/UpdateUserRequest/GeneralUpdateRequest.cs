@@ -5,8 +5,6 @@ namespace HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 
 public class GeneralUpdateRequest
 {
-    [FromForm]
-    public IFormFile? file { get; set; } // File được chọn để upload
     public string? AvatarUrl { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;

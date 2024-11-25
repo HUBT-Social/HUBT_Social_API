@@ -12,4 +12,5 @@ public interface IEmailService
     Task<string?> GetValidateEmail(string userAgent , string ipAddress);
 
     bool MaskEmail(string email, out string maskEmail);
+    bool IsValidEmail(string email);
 }

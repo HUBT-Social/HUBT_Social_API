@@ -5,11 +5,9 @@ namespace HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 
     public class AddInfoUserRequest
     {
-        [FromForm]
-        public IFormFile? file { get; set; } // File được chọn để upload
 
         [FromForm]
-        public string? AvatarUrl { get; set; } = string.Empty; // URL ảnh hoặc avatar mặc định
+        public string AvatarUrl { get; set; } = string.Empty; // URL ảnh hoặc avatar mặc định
 
         [FromForm]
         public string FirstName { get; set; } = string.Empty;

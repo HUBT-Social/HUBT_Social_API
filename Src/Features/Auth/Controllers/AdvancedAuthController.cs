@@ -7,6 +7,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -17,11 +18,11 @@ namespace HUBT_Social_API.Controllers;
 [Route("api/auth")]
 public class AdvancedAuthController : BaseAuthController
 {
-
-    public AdvancedAuthController(IAuthService authService, ITokenService tokenService, IEmailService emailService,IUserService userService)
+    private readonly IImageService _imageService;
+    public AdvancedAuthController(IAuthService authService, ITokenService tokenService, IEmailService emailService,IUserService userService,IImageService imageService)
     :base (authService,tokenService,emailService,null,userService)
     {
-        
+        _imageService = imageService;
     }
 
 
@@ -34,6 +35,7 @@ public class AdvancedAuthController : BaseAuthController
             return Ok(
                 new {
                     IdUser = userResponse.User.Id,
+                    Email = userResponse.User.Email,
                     FirstName = userResponse.User.FirstName,
                     LastName = userResponse.User.LastName,
                     Gender = userResponse.User.Gender,
@@ -65,7 +67,7 @@ public class AdvancedAuthController : BaseAuthController
 
     
     //Tim tai khoan de dang nhap, bang username or password
-    [HttpPost("search-user-by-usename-or-email")]
+    [HttpPost("get-user-by-usename-or-email")]
     public async Task<IActionResult> SearchByUserNameOrEmail([FromBody] SearchUserByUserNameOrPasswordRequest request)
     {
         // Kiểm tra đầu vào có phải là email không
@@ -89,6 +91,7 @@ public class AdvancedAuthController : BaseAuthController
             return Ok(
                 new {
                         IdUser = user.Id,
+                        Email = user.Email,
                         FirstName = user.FirstName,
                         LastName = user.LastName,
                         Gender = user.Gender,
@@ -122,6 +125,37 @@ public class AdvancedAuthController : BaseAuthController
         return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
         
         
+    }
+    [HttpPost("get-url-from-image")]
+    public async Task<IActionResult> GetUrlFromImage(IFormFile file)
+    {
+        string avatarUrl;
+        try
+        {
+            avatarUrl = await _imageService.GetUrlFormFileAsync(file); 
+        }
+        catch(Exception ex)
+        {
+            return BadRequest(
+                new {
+                    Success = false,
+                    Data = $"{LocalValue.Get(KeyStore.InvalidFileData)}"
+                });
+        }
+        if(avatarUrl != null)
+        {
+            return Ok(
+                new {
+                    Success = true,
+                    Data = avatarUrl
+                });
+        }
+        return BadRequest(
+            new {
+                Success = false,
+                Data = $"{LocalValue.Get(KeyStore.InvalidFileData)}"
+            }
+        );
     }
 
 }

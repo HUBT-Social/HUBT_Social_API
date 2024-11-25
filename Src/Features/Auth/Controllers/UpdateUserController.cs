@@ -37,18 +37,19 @@ public class UpdateUserController : BaseAuthController
         return result ? Ok(LocalValue.Get(successMessage)) : BadRequest(LocalValue.Get(errorMessage));
     }
     [HttpPost("update-avatar")]
-    public async Task<IActionResult> UpdateAvatar([FromForm] UpdateAvatarUrlRequest request)
+    public async Task<IActionResult> UpdateAvatar(IFormFile file)
     {
-        if(request.file !=null){
-             string avatarUrl;
+        if(file !=null){
+            string avatarUrl;
             try
             {
-                avatarUrl = await _imageService.GetUrlFormFileAsync(request.file); 
+                avatarUrl = await _imageService.GetUrlFormFileAsync(file); 
             }
             catch (Exception ex)
             {
                 return BadRequest($"{LocalValue.Get(KeyStore.InvalidFileData)}");
             }
+            UpdateAvatarUrlRequest request = new();
             request.AvatarUrl = avatarUrl;
             return await HandleUserUpdate(KeyStore.AvatarUpdated, KeyStore.AvatarUpdateError, _userService.UpdateAvatarUrlAsync, request);
         }
@@ -80,24 +81,10 @@ public class UpdateUserController : BaseAuthController
         await HandleUserUpdate(KeyStore.DateOfBirthUpdated, KeyStore.DateOfBirthUpdateError, _userService.UpdateDateOfBirthAsync, request);
 
     [HttpPost("general-update")]
-    public async Task<IActionResult> GeneralUpdate([FromForm] GeneralUpdateRequest request)
-    {
-        if(request.file !=null){
-             string avatarUrl;
-            try
-            {
-                avatarUrl = await _imageService.GetUrlFormFileAsync(request.file); 
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"{LocalValue.Get(KeyStore.InvalidFileData)}");
-            }
-            request.AvatarUrl = avatarUrl;
-            return await HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, request);
-        }
-        return BadRequest(KeyStore.GeneralUpdateError);
-    }
-        
+    public async Task<IActionResult> GeneralUpdate([FromForm] GeneralUpdateRequest request) =>
+        await HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, request);
+    
+    
 
     [HttpPut("two-factor-enable")]
     public async Task<IActionResult> EnableTwoFactor() =>
@@ -141,25 +128,9 @@ public class UpdateUserController : BaseAuthController
     public async Task<IActionResult> AddInfoUser([FromForm] AddInfoUserRequest request)
     {
             // Kiểm tra file upload
-        if (request.file != null)
+        if (request.AvatarUrl == null)
         {
-            // Upload ảnh lên Cloudinary
-            string avatarUrl;
-            try
-            {
-                avatarUrl = await _imageService.GetUrlFormFileAsync(request.file); 
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"{LocalValue.Get(KeyStore.InvalidFileData)}");
-            }
-
-            // Gán URL ảnh vào request
-            request.AvatarUrl = avatarUrl;  
-        }
-        else
-        {
-            request.AvatarUrl = KeyStore.GetRandomAvatarDefault(request.Gender);
+            request.AvatarUrl = KeyStore.GetRandomAvatarDefault(request.Gender);  
         }
 
         
@@ -171,4 +142,5 @@ public class UpdateUserController : BaseAuthController
             request
         );
     }
+    
 }

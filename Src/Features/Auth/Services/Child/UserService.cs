@@ -189,12 +189,12 @@ public class UserService : IUserService
         var user = await GetUserByNameAsync(userName);
         return user != null && await UpdateUserPropertyAsync(user, u =>
         {
-            if (!string.IsNullOrEmpty(request.AvatarUrl)) u.AvataUrl = request.AvatarUrl;
-            if (!string.IsNullOrEmpty(request.FirstName)) u.FirstName = request.FirstName;
-            if (!string.IsNullOrEmpty(request.LastName)) u.LastName = request.LastName;
-            if (!string.IsNullOrEmpty(request.PhoneNumber)) u.PhoneNumber = request.PhoneNumber;
-            if (!string.IsNullOrEmpty(request.Gender.ToString())) u.Gender = request.Gender;
-            if (request.DateOfBirth != DateTime.MinValue) u.DateOfBirth = request.DateOfBirth;
+            u.AvataUrl = request.AvatarUrl;
+            u.FirstName = request.FirstName;
+            u.LastName = request.LastName;
+            u.PhoneNumber = request.PhoneNumber;
+            u.Gender = request.Gender;
+            u.DateOfBirth = request.DateOfBirth;
         });
     }
     

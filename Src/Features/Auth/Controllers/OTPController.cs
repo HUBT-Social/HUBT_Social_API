@@ -20,57 +20,79 @@ public class OTPController : BaseAuthController
     }
     // Gửi mã OTP
     [HttpPost("send-otp")]
-    public async Task<IActionResult> SendOtp()
+    public async Task<IActionResult> SendOtp(string email)
     {
-        string userAgent = Request.Headers.UserAgent.ToString();
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-        System.Net.IPAddress? ipAddress = HttpContext.Connection.RemoteIpAddress;
-        if (ipAddress == null || !ipAddress.IsIPv4MappedToIPv6)
+        try
         {
-            return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
-        }
+            // 1. Kiểm tra input
+            if (string.IsNullOrWhiteSpace(email))
+                return BadRequest(LocalValue.Get(KeyStore.EmailCannotBeEmpty));
 
+            if (!_emailService.IsValidEmail(email))
+                return BadRequest(LocalValue.Get(KeyStore.InvalidRequestError));
 
-        if (userResponse == null || userResponse.User == null|| userResponse.User.Email == null) return BadRequest(LocalValue.Get(KeyStore.InvalidRequestError));
+            // 2. Lấy UserAgent và IP Address
+            string userAgent = Request.Headers.UserAgent.ToString();
+            string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+            if (ipAddress == null)
+                return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
 
+            // 3. Tạo mã OTP
+            Postcode? code = await _emailService.CreatePostcodeAsync(userAgent, email, ipAddress.ToString());
+            if (code == null)
+                return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
 
-        Postcode? code = await _emailService.CreatePostcodeAsync(userAgent,userResponse.User.Email,ipAddress.ToString());
-        if (code == null) return BadRequest(              
-                   LocalValue.Get(KeyStore.InvalidCredentials)
-            );
-        var result = await _emailService.SendEmailAsync(
-            new EmailRequest
+            // 4. Gửi email
+            var result = await _emailService.SendEmailAsync(new EmailRequest
             {
                 Code = code.Code,
                 Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
-                ToEmail = userResponse.User.Email
+                ToEmail = email
             });
-        return result ? Ok(LocalValue.Get(KeyStore.OtpSent)) : BadRequest(LocalValue.Get(KeyStore.OtpSendError));
+
+            return result ? Ok(LocalValue.Get(KeyStore.OtpSent)) : BadRequest(LocalValue.Get(KeyStore.OtpSendError));
+
+        }
+        catch (Exception ex)
+        {
+           return BadRequest(LocalValue.Get(KeyStore.OtpSendError));
+        }
     }
 
     // Xác thực mã OTP
     [HttpPost("verify-two-factor")]
     public async Task<IActionResult> VerifyOtp([FromBody] OTPRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Postcode))
-            return BadRequest(LocalValue.Get(KeyStore.OtpVerifyEmptyError));
-        string userAgent = Request.Headers["User-Agent"].ToString();
+        string userAgent = Request.Headers.UserAgent.ToString();
+        string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+        if (ipAddress == null) return BadRequest(
+            new LoginResponse
+            {
+                RequiresTwoFactor = false,
+                Message = LocalValue.Get(KeyStore.InvalidInformation)
+            }
+            );
 
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        string? currentEmail = await _emailService.GetValidateEmail(userAgent,ipAddress);
 
+        // 3. Kiểm tra nếu email không tồn tại
+        if (currentEmail == null)
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
 
-        if (userResponse == null || userResponse.User == null|| userResponse.User.Email == null) return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
-        
-
+        // 4. Xác thực mã OTP
         var result = await _emailService.ValidatePostcodeAsync(new ValidatePostcodeRequest
         {
             Postcode = request.Postcode,
-            Email = userResponse.User.Email,
+            Email = currentEmail,
             UserAgent = userAgent
         });
 
-        return result is not null ? Ok(LocalValue.Get(KeyStore.OtpVerificationSuccess)) : BadRequest(LocalValue.Get(KeyStore.OtpInvalid));
+        // 5. Trả về kết quả
+        return result is not null
+            ? Ok(LocalValue.Get(KeyStore.OtpVerificationSuccess))
+            : BadRequest(LocalValue.Get(KeyStore.OtpInvalid));
     }
+
     [HttpPost("sign-up/verify-otp")]
     public async Task<IActionResult> ConfirmCodeSignUp([FromBody] OTPRequest code)
     {
