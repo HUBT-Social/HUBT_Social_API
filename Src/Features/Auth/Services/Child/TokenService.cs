@@ -117,16 +117,13 @@ public class TokenService : ITokenService
         }
     }
 
-    public async Task<TokenResponse?> ValidateTokens(string accessToken, string refreshToken)
+    public async Task<TokenResponse?> ValidateTokens(string refreshToken)
     {
-        var accessTokenResponse = ValidateToken(accessToken, _jwtSetting.SecretKey);
-        var accessUserId = accessTokenResponse.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
         var refreshTokenResponse = ValidateToken(refreshToken, _jwtSetting.RefreshSecretKey);
         var refreshUserId = refreshTokenResponse.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (refreshUserId != null && accessUserId != null)
+        if (refreshUserId != null)
         {
-            if (refreshTokenResponse.Success && refreshUserId == accessUserId)
+            if (refreshTokenResponse.Success)
             {
                 var user = await _userManager.FindByIdAsync(refreshUserId);
                 if (user != null) return await GenerateTokenAsync(user);

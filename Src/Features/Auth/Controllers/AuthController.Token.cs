@@ -16,17 +16,12 @@ public partial class AuthController
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RegenerateToken(string refreshToken)
     {
-        string? accessToken = TokenHelper.ExtractTokenFromHeader(Request);
-        
-        if (accessToken != null)
+        TokenResponse? result = await _tokenService.ValidateTokens(refreshToken);
+        if (result != null)
         {
-            TokenResponse? result = await _tokenService.ValidateTokens(accessToken, refreshToken);
-            if (result != null)
-            {
-                return Ok(result);
-            }
+            return Ok(result);
         }
-
+        
         return BadRequest(
             LocalValue.Get(KeyStore.InvalidCredentials));
     }
