@@ -26,16 +26,7 @@ public class UpdateUserController : BaseAuthController
     {
         _imageService = imageService;
     }
-    // Phương thức trợ giúp chung
-    private async Task<IActionResult> HandleUserUpdate<TRequest>(string successMessage, string errorMessage, Func<string, TRequest, Task<bool>> updateFunc, TRequest request)
-    {
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-        if (string.IsNullOrWhiteSpace(userResponse.User.UserName))
-            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
-
-        var result = await updateFunc(userResponse.User.UserName, request);
-        return result ? Ok(LocalValue.Get(successMessage)) : BadRequest(LocalValue.Get(errorMessage));
-    }
+   
     [HttpPost("update-avatar")]
     public async Task<IActionResult> UpdateAvatar(IFormFile file)
     {
@@ -51,48 +42,55 @@ public class UpdateUserController : BaseAuthController
             }
             UpdateAvatarUrlRequest request = new();
             request.AvatarUrl = avatarUrl;
-            return await HandleUserUpdate(KeyStore.AvatarUpdated, KeyStore.AvatarUpdateError, _userService.UpdateAvatarUrlAsync, request);
+            return await UpdateHelper.HandleUserUpdate(KeyStore.AvatarUpdated, KeyStore.AvatarUpdateError, _userService.UpdateAvatarUrlAsync, request,Request,_tokenService);
         }
         return BadRequest(KeyStore.AvatarUpdateError);
     }
         
     [HttpPost("update-email")]
     public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request) =>
-        await HandleUserUpdate(KeyStore.EmailUpdated, KeyStore.EmailUpdateError, _userService.UpdateEmailAsync, request);
+        await UpdateHelper.HandleUserUpdate(KeyStore.EmailUpdated, KeyStore.EmailUpdateError, _userService.UpdateEmailAsync, request,Request,_tokenService);
 
     [HttpPost("update-password")]
-    public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request) =>
-        await HandleUserUpdate(KeyStore.PasswordUpdated, KeyStore.PasswordUpdateError, _userService.UpdatePasswordAsync, request);
+    public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
+    {
+        if(request.NewPassword == request.ConfirmNewPassword)
+        {
+            await UpdateHelper.HandleUserUpdate(KeyStore.PasswordUpdated, KeyStore.PasswordUpdateError, _userService.UpdatePasswordAsync, request,Request,_tokenService);
+        }
+        return BadRequest(LocalValue.Get(KeyStore.ConfirmPasswordError));
+    }
+        
 
     [HttpPost("update-name")]
     public async Task<IActionResult> UpdateName([FromBody] UpdateNameRequest request) =>
-        await HandleUserUpdate(KeyStore.NameUpdated, KeyStore.NameUpdateError, _userService.UpdateNameAsync, request);
+        await UpdateHelper.HandleUserUpdate(KeyStore.NameUpdated, KeyStore.NameUpdateError, _userService.UpdateNameAsync, request,Request,_tokenService);
 
     [HttpPost("update-phone-number")]
     public async Task<IActionResult> UpdatePhoneNumber([FromBody] UpdatePhoneNumberRequest request) =>
-        await HandleUserUpdate(KeyStore.PhoneNumberUpdated, KeyStore.PhoneNumberUpdateError, _userService.UpdatePhoneNumberAsync, request);
+        await UpdateHelper.HandleUserUpdate(KeyStore.PhoneNumberUpdated, KeyStore.PhoneNumberUpdateError, _userService.UpdatePhoneNumberAsync, request,Request,_tokenService);
 
     [HttpPost("update-gender")]
     public async Task<IActionResult> UpdateGender([FromBody] UpdateGenderRequest request) =>
-        await HandleUserUpdate(KeyStore.GenderUpdated, KeyStore.GenderUpdateError, _userService.UpdateGenderAsync, request);
+        await UpdateHelper.HandleUserUpdate(KeyStore.GenderUpdated, KeyStore.GenderUpdateError, _userService.UpdateGenderAsync, request,Request,_tokenService);
 
     [HttpPost("update-date-of-birth")]
     public async Task<IActionResult> UpdateDateOfBirth([FromBody] UpdateDateOfBornRequest request) =>
-        await HandleUserUpdate(KeyStore.DateOfBirthUpdated, KeyStore.DateOfBirthUpdateError, _userService.UpdateDateOfBirthAsync, request);
+        await UpdateHelper.HandleUserUpdate(KeyStore.DateOfBirthUpdated, KeyStore.DateOfBirthUpdateError, _userService.UpdateDateOfBirthAsync, request,Request,_tokenService);
 
     [HttpPost("general-update")]
     public async Task<IActionResult> GeneralUpdate([FromForm] GeneralUpdateRequest request) =>
-        await HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, request);
+        await UpdateHelper.HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, request,Request,_tokenService);
     
     
 
     [HttpPut("two-factor-enable")]
     public async Task<IActionResult> EnableTwoFactor() =>
-        await HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.EnableTwoFactor(userName), new object());
+        await UpdateHelper.HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.EnableTwoFactor(userName), new object(),Request,_tokenService);
 
     [HttpPut("two-factor-disable")]
     public async Task<IActionResult> DisableTwoFactor() =>
-        await HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.DisableTwoFactor(userName), new object());
+        await UpdateHelper.HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.DisableTwoFactor(userName), new object(),Request,_tokenService);
 
     
     [HttpPost("promote")]
@@ -135,11 +133,12 @@ public class UpdateUserController : BaseAuthController
 
         
         // Gọi hàm xử lý cập nhật thông tin người dùng
-        return await HandleUserUpdate(
+        return await UpdateHelper.HandleUserUpdate(
             KeyStore.GeneralUpdateSuccess,
             KeyStore.GeneralUpdateError,
             _userService.AddInfoUser,
-            request
+            request,
+            Request,_tokenService
         );
     }
     

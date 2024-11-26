@@ -34,12 +34,11 @@ public class AdvancedAuthController : BaseAuthController
         {
             return Ok(
                 new {
-                    IdUser = userResponse.User.Id,
-                    Email = userResponse.User.Email,
+                    AvatarUrl = userResponse.User.AvataUrl,
                     FirstName = userResponse.User.FirstName,
                     LastName = userResponse.User.LastName,
                     Gender = userResponse.User.Gender,
-                    AvatarUrl = userResponse.User.AvataUrl,
+                    Email = userResponse.User.Email,
                     BirthDay = userResponse.User.DateOfBirth,
                     PhoneNumber = userResponse.User.PhoneNumber
                 }
@@ -67,13 +66,13 @@ public class AdvancedAuthController : BaseAuthController
 
     
     //Tim tai khoan de dang nhap, bang username or password
-    [HttpPost("get-user-by-usename-or-email")]
+    [HttpPost("forgot-password/get-user")]
     public async Task<IActionResult> SearchByUserNameOrEmail([FromBody] SearchUserByUserNameOrPasswordRequest request)
     {
         // Kiểm tra đầu vào có phải là email không
-        bool isEmail = request.UserNameOrEmail.Contains("@");
+        bool isEmail = request.UserNameOrEmail.Contains("@gmail.com");
 
-        Features.Auth.Models.AUser? user;
+        AUser? user;
 
         if (isEmail)
         {
@@ -90,12 +89,11 @@ public class AdvancedAuthController : BaseAuthController
         {
             return Ok(
                 new {
-                        IdUser = user.Id,
-                        Email = user.Email,
+                        AvatarUrl = user.AvataUrl,
                         FirstName = user.FirstName,
                         LastName = user.LastName,
                         Gender = user.Gender,
-                        AvatarUrl = user.AvataUrl,
+                        Email = user.Email,
                         BirthDay = user.DateOfBirth,
                         PhoneNumber = user.PhoneNumber
                     });
@@ -110,22 +108,126 @@ public class AdvancedAuthController : BaseAuthController
     [HttpGet("get-mask-email")]
     public async Task<IActionResult> GetCurrentEmail()
     {
+        // 1. Lấy UserAgent từ header
+        string userAgent = Request.Headers["User-Agent"].ToString();
+        if (string.IsNullOrWhiteSpace(userAgent))
+            return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
+
+        // 2. Lấy địa chỉ IP
+        string? ipAddress = ServerHelper.GetIPAddress(HttpContext);
+        if (string.IsNullOrWhiteSpace(ipAddress))
+            return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
+
+        // 3. Lấy email từ dịch vụ
+        string? currentEmail = await _emailService.GetValidateEmail(userAgent, ipAddress);
+        if (string.IsNullOrWhiteSpace(currentEmail))
+            return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+
+        // 4. Thực hiện mask email
+        if (_emailService.MaskEmail(currentEmail, out string maskedEmail))
+            return Ok(new { MaskedEmail = maskedEmail });
+
+        // 5. Xử lý lỗi nếu không thể mask email
+        return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+    }
+
+    [HttpGet("forgot-password/get-mask-email")]
+    public async Task<IActionResult> GetMaskPassword(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return BadRequest(LocalValue.Get(KeyStore.EmailCannotBeEmpty));
+
+        // 4. Thực hiện mask email
+        if (_emailService.MaskEmail(email, out string maskedEmail))
+            return Ok(new { MaskedEmail = maskedEmail });
+
+        // 5. Xử lý lỗi nếu không thể mask email
+        return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+    }
+    // Gửi mã OTP
+    [HttpPost("forgot-password/send-otp")]
+    public async Task<IActionResult> SendOtp(string email)
+    {
+        try
+        {
+            // 1. Kiểm tra input
+            if (string.IsNullOrWhiteSpace(email))
+                return BadRequest(LocalValue.Get(KeyStore.EmailCannotBeEmpty));
+
+            if (!_emailService.IsValidEmail(email))
+                return BadRequest(LocalValue.Get(KeyStore.InvalidRequestError));
+
+            // 2. Lấy UserAgent và IP Address
+            string userAgent = Request.Headers.UserAgent.ToString();
+            string? ipAddress = ServerHelper.GetIPAddress(HttpContext);
+            if (ipAddress == null)
+                return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
+
+            // 3. Tạo mã OTP
+            Postcode? code = await _emailService.CreatePostcodeAsync(userAgent, email, ipAddress);
+            if (code == null)
+                return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+
+            // 4. Gửi email
+            var result = await _emailService.SendEmailAsync(new EmailRequest
+            {
+                Code = code.Code,
+                Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
+                ToEmail = email
+            });
+
+            return result ? Ok(LocalValue.Get(KeyStore.OtpSent)) : BadRequest(LocalValue.Get(KeyStore.OtpSendError));
+
+        }
+        catch (Exception ex)
+        {
+           return BadRequest(LocalValue.Get(KeyStore.OtpSendError));
+        }
+    }
+
+    // Xác thực mã OTP
+    [HttpPost("forgot-password/password-verify")]
+    public async Task<IActionResult> VerifyOtp([FromBody] OTPRequest request)
+    {
         string userAgent = Request.Headers.UserAgent.ToString();
         string? ipAddress = ServerHelper.GetIPAddress(HttpContext);
-        if (ipAddress == null) return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
+        if (ipAddress == null) return BadRequest(
+            new LoginResponse
+            {
+                RequiresTwoFactor = false,
+                Message = LocalValue.Get(KeyStore.InvalidInformation)
+            }
+            );
 
-        string? currentEmail = await _emailService.GetValidateEmail(userAgent,ipAddress.ToString());
-        if (string.IsNullOrEmpty(currentEmail))
-            return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
-        
-        // Thực hiện mask email, nếu thất bại trả về lỗi
-        if (_emailService.MaskEmail(currentEmail, out string maskedEmail))
-            return Ok(maskedEmail);
+        string? currentEmail = await _emailService.GetValidateEmail(userAgent,ipAddress);
 
-        return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
-        
-        
+        // 3. Kiểm tra nếu email không tồn tại
+        if (currentEmail == null)
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+
+        // 4. Xác thực mã OTP
+        var result = await _emailService.ValidatePostcodeAsync(new ValidatePostcodeRequest
+        {
+            Postcode = request.Postcode,
+            Email = currentEmail,
+            UserAgent = userAgent
+        });
+
+        // 5. Trả về kết quả
+        return result is not null
+            ? Ok(LocalValue.Get(KeyStore.OtpVerificationSuccess))
+            : BadRequest(LocalValue.Get(KeyStore.OtpInvalid));
     }
+    [HttpPost("forgot-password/change-password")]
+    public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
+    {
+        if(request.NewPassword == request.ConfirmNewPassword)
+        {
+            await UpdateHelper.HandleUserUpdate(KeyStore.PasswordUpdated, KeyStore.PasswordUpdateError, _userService.UpdatePasswordAsync, request,Request,_tokenService);
+        }
+        return BadRequest(LocalValue.Get(KeyStore.ConfirmPasswordError));
+    }
+
     [HttpPost("get-url-from-image")]
     public async Task<IActionResult> GetUrlFromImage(IFormFile file)
     {
