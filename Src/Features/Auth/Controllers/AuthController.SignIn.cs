@@ -92,7 +92,7 @@ public partial class AuthController
             // Xử lý đăng nhập thành công
             if (result.Succeeded && user is not null)
             {
-                TokenResponse token = await _tokenService.GenerateTokenAsync(user);
+                TokenResponse? token = await _tokenService.GenerateTokenAsync(user);
 
                 return Ok(new LoginResponse
                 {

@@ -170,7 +170,7 @@ public class OTPController : BaseAuthController
             );
         }
 
-        TokenResponse token = await _tokenService.GenerateTokenAsync(user);
+        TokenResponse? token = await _tokenService.GenerateTokenAsync(user);
 
         return Ok(
             new LoginResponse
@@ -233,7 +233,7 @@ public class OTPController : BaseAuthController
             );
         }
 
-        TokenResponse token = await _tokenService.GenerateTokenAsync(user);
+        TokenResponse? token = await _tokenService.GenerateTokenAsync(user);
 
         return Ok(
             new LoginResponse

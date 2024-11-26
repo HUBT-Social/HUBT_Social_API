@@ -6,7 +6,6 @@ using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
-using HUBT_Social_API.Src.Features.Auth.Dtos.Reponse;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -61,30 +60,26 @@ public class TokenService : ITokenService
 
     public async Task<UserResponse> GetCurrentUser(string accessToken)
     {
-        var decodeValue = ValidateToken(accessToken,_jwtSetting.SecretKey);
+        var decodeValue = ValidateToken(accessToken, _jwtSetting.SecretKey);
         if (!decodeValue.Success)
-        {
-            return new UserResponse 
-            { 
-                Success = false, 
-                Message = decodeValue.Message 
+            return new UserResponse
+            {
+                Success = false,
+                Message = decodeValue.Message
             };
-        }
 
-        string? userIdClaim = decodeValue.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userIdClaim = decodeValue.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim))
-        {
-            return new UserResponse 
-            { 
-                Success = false, 
-                Message = LocalValue.Get(KeyStore.UserNotFound) 
+            return new UserResponse
+            {
+                Success = false,
+                Message = LocalValue.Get(KeyStore.UserNotFound)
             };
-        }
 
         // Kiểm tra người dùng bằng userId
-        AUser? user = await _userManager.FindByIdAsync(userIdClaim);
-        return user == null 
+        var user = await _userManager.FindByIdAsync(userIdClaim);
+        return user == null
             ? new UserResponse { Success = false, Message = LocalValue.Get(KeyStore.UserNotFound) }
             : new UserResponse { Success = true, User = user };
     }
@@ -92,10 +87,10 @@ public class TokenService : ITokenService
     private DecodeTokenResponse ValidateToken(string accessToken, string secretKey)
     {
         JwtSecurityTokenHandler tokenHandler = new();
-        byte[] tokenKey = Encoding.UTF8.GetBytes(secretKey);
+        var tokenKey = Encoding.UTF8.GetBytes(secretKey);
         try
         {
-            ClaimsPrincipal principal = tokenHandler.ValidateToken(accessToken, new TokenValidationParameters
+            var principal = tokenHandler.ValidateToken(accessToken, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 ValidateIssuer = true,
@@ -104,13 +99,14 @@ public class TokenService : ITokenService
                 IssuerSigningKey = new SymmetricSecurityKey(tokenKey),
                 ValidIssuer = _jwtSetting.Issuer,
                 ValidAudience = _jwtSetting.Audience
-            }, out SecurityToken? securityToken);
+            }, out var securityToken);
 
             if (securityToken is JwtSecurityToken token && token.Header.Alg.Equals(SecurityAlgorithms.HmacSha256))
             {
                 if (token.ValidTo < DateTime.UtcNow)
                     return new DecodeTokenResponse { Success = false, Message = "Token is expired" };
-                return new DecodeTokenResponse { Success = true, ClaimsPrincipal = principal , Message = LocalValue.Get(KeyStore.TokenValid)};
+                return new DecodeTokenResponse
+                    { Success = true, ClaimsPrincipal = principal, Message = LocalValue.Get(KeyStore.TokenValid) };
             }
 
             return new DecodeTokenResponse { Success = false, Message = "Token is not match our Algorithms" };
@@ -120,41 +116,24 @@ public class TokenService : ITokenService
             return new DecodeTokenResponse { Success = false, Message = ex.Message };
         }
     }
-    public async Task<ValidateTokenResponse> ValidateTokens(string accessToken,string refreshToken)
-    {
-        
-        DecodeTokenResponse accessTokenResponse = ValidateToken(accessToken, _jwtSetting.SecretKey);
-        string? accessUserId = accessTokenResponse.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        DecodeTokenResponse refreshTokenResponse = ValidateToken(refreshToken, _jwtSetting.RefreshSecretKey);
-        string? refreshUserId = refreshTokenResponse.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (refreshTokenResponse.Success && refreshUserId == accessUserId)
+    public async Task<TokenResponse?> ValidateTokens(string accessToken, string refreshToken)
+    {
+        var accessTokenResponse = ValidateToken(accessToken, _jwtSetting.SecretKey);
+        var accessUserId = accessTokenResponse.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        var refreshTokenResponse = ValidateToken(refreshToken, _jwtSetting.RefreshSecretKey);
+        var refreshUserId = refreshTokenResponse.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (refreshUserId != null && accessUserId != null)
         {
-            
-            if (refreshUserId != null)
+            if (refreshTokenResponse.Success && refreshUserId == accessUserId)
             {
-                AUser? user = await _userManager.FindByIdAsync(refreshUserId);
-                if (user != null)
-                {
-                    return new ValidateTokenResponse
-                    {
-                        AccessTokenIsValid = accessTokenResponse.Success,
-                        RefreshTokenIsValid = refreshTokenResponse.Success,
-                        NewTokens = await GenerateTokenAsync(user),
-                        Message = refreshTokenResponse.Message
-                    };
-                }
+                var user = await _userManager.FindByIdAsync(refreshUserId);
+                if (user != null) return await GenerateTokenAsync(user);
             }
-            
         }
 
-        return new ValidateTokenResponse
-        {
-            AccessTokenIsValid = accessTokenResponse.Success,
-            RefreshTokenIsValid = refreshTokenResponse.Success,
-            NewTokens = null,
-            Message = refreshTokenResponse.Message
-        };
+        return null;
     }
 
     private async Task HandleRefreshTokenAsync(AUser user, string accessToken, string refreshToken)
@@ -164,7 +143,7 @@ public class TokenService : ITokenService
         if (existingRefreshToken == null)
         {
             await _refreshToken.InsertOneAsync(new UserToken
-                { 
+            {
                 AccessToken = accessToken,
                 RefreshTo = refreshToken,
                 UserId = user.Id.ToString(),
@@ -175,10 +154,9 @@ public class TokenService : ITokenService
         {
             var update = Builders<UserToken>.Update.Set(t => t.AccessToken, accessToken)
                 .Set(t => t.RefreshTo, refreshToken)
-                .Set(t=> t.ExpireTime, DateTime.UtcNow.AddDays(_jwtSetting.RefreshTokenExpirationInDays));
+                .Set(t => t.ExpireTime, DateTime.UtcNow.AddDays(_jwtSetting.RefreshTokenExpirationInDays));
             await _refreshToken.UpdateOneAsync(t => t.UserId == existingRefreshToken.UserId, update);
         }
-
     }
 
     // Tạo JWT Token
@@ -221,6 +199,4 @@ public class TokenService : ITokenService
             () => DateTime.UtcNow.AddDays(_jwtSetting.RefreshTokenExpirationInDays)
         );
     }
-
-
 }

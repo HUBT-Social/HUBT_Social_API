@@ -13,47 +13,21 @@ namespace HUBT_Social_API.Features.Auth.Controllers;
 
 public partial class AuthController
 {
-
-    [HttpGet("token-is-validate")]
-    public async Task<IActionResult> ValidateToken(string refreshToken)
-    {
-        
-        string? token = TokenHelper.ExtractTokenFromHeader(Request);
-
-        
-        if (token != null)
-        {
-            ValidateTokenResponse result = await _tokenService.ValidateTokens(token, refreshToken);
-            return Ok(result);
-        }
-
-        return BadRequest(new ValidateTokenResponse
-        {
-            AccessTokenIsValid = false,
-            RefreshTokenIsValid = false,
-            Message = LocalValue.Get(KeyStore.InvalidCredentials)
-        });
-    }
-
     [HttpPost("refresh-token")]
-    public async Task<IActionResult> RegenerateToken()
+    public async Task<IActionResult> RegenerateToken(string refreshToken)
     {
-        string? token = TokenHelper.ExtractTokenFromHeader(Request);
-        if (token != null)
+        string? accessToken = TokenHelper.ExtractTokenFromHeader(Request);
+        
+        if (accessToken != null)
         {
-            UserResponse userResponse = await _tokenService.GetCurrentUser(token);
-
-            if (userResponse.User is not null)
+            TokenResponse? result = await _tokenService.ValidateTokens(accessToken, refreshToken);
+            if (result != null)
             {
-                TokenResponse tokenResponse = await _tokenService.GenerateTokenAsync(userResponse.User);
-                return Ok(tokenResponse);
+                return Ok(result);
             }
         }
-        return BadRequest(new ValidateTokenResponse
-        {
-            AccessTokenIsValid = false,
-            RefreshTokenIsValid = false,
-            Message = LocalValue.Get(KeyStore.InvalidCredentials)
-        });
+
+        return BadRequest(
+            LocalValue.Get(KeyStore.InvalidCredentials));
     }
 }
