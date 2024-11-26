@@ -7,7 +7,9 @@ using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.src.Features.Auth.Dtos.Collections;
+using HUBT_Social_API.Src.Core.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace HUBT_Social_API.Features.Auth.Controllers;
 
@@ -33,12 +35,12 @@ public class OTPController : BaseAuthController
 
             // 2. Lấy UserAgent và IP Address
             string userAgent = Request.Headers.UserAgent.ToString();
-            string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+            string? ipAddress = ServerHelper.GetIPAddress(HttpContext);
             if (ipAddress == null)
                 return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
 
             // 3. Tạo mã OTP
-            Postcode? code = await _emailService.CreatePostcodeAsync(userAgent, email, ipAddress.ToString());
+            Postcode? code = await _emailService.CreatePostcodeAsync(userAgent, email, ipAddress);
             if (code == null)
                 return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
 
@@ -64,7 +66,7 @@ public class OTPController : BaseAuthController
     public async Task<IActionResult> VerifyOtp([FromBody] OTPRequest request)
     {
         string userAgent = Request.Headers.UserAgent.ToString();
-        string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+        string? ipAddress = ServerHelper.GetIPAddress(HttpContext);
         if (ipAddress == null) return BadRequest(
             new LoginResponse
             {
@@ -97,7 +99,7 @@ public class OTPController : BaseAuthController
     public async Task<IActionResult> ConfirmCodeSignUp([FromBody] OTPRequest code)
     {
         string userAgent = Request.Headers.UserAgent.ToString();
-        string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+        string? ipAddress = ServerHelper.GetIPAddress(HttpContext);
         if (ipAddress == null) return BadRequest(
             new LoginResponse
             {
@@ -184,7 +186,7 @@ public class OTPController : BaseAuthController
     public async Task<IActionResult> ConfirmCodeSignIn([FromBody] OTPRequest code)
     {
         string userAgent = Request.Headers.UserAgent.ToString();
-        string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+        string? ipAddress = ServerHelper.GetIPAddress(HttpContext);
         if (ipAddress == null) return BadRequest(
             new LoginResponse
             {
@@ -241,6 +243,39 @@ public class OTPController : BaseAuthController
                 UserToken = token
             }
         );
+    }
+    [HttpPost("resend-postcode")]
+    public async Task<IActionResult> ResendPostcode()
+    {
+        string userAgent = Request.Headers.UserAgent.ToString();
+        string? ipAddress = ServerHelper.GetIPAddress(HttpContext);
+        if (ipAddress == null) return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+
+        string? currentEmail = await _emailService.GetValidateEmail(userAgent, ipAddress.ToString());
+
+        if (currentEmail == null)
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+
+        try
+        {
+            Postcode? code = await _emailService.CreatePostcodeAsync(userAgent, currentEmail, ipAddress.ToString());
+            if (code == null) return BadRequest(LocalValue.Get(KeyStore.InvalidCredentials));
+
+            bool result = await _emailService.SendEmailAsync(new EmailRequest
+            {
+                Code = code.Code,
+                Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
+                ToEmail = currentEmail
+            });
+            return result ? Ok(LocalValue.Get(KeyStore.OtpSent)) : BadRequest(LocalValue.Get(KeyStore.OtpSendError));
+        }
+        catch (Exception)
+        {
+            return BadRequest(
+                LocalValue.Get(KeyStore.UnableToSendOTP)
+            );
+        }
+
     }
 
 }

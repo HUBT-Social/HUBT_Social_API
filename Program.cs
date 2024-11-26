@@ -1,7 +1,9 @@
 using System.Globalization;
+using System.Net;
 using HUBT_Social_API.Core.Configurations;
 using HUBT_Social_API.Features.Chat.ChatHubs;
 using HUBT_Social_API.Src.Core.Configurations;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 
 namespace HUBT_Social_API;
@@ -54,7 +56,10 @@ namespace HUBT_Social_API;
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
             app.UseLocalization();
             app.UseHttpsRedirection();
             app.UseAuthentication();

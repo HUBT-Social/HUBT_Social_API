@@ -4,6 +4,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.LoginRequest;
 using HUBT_Social_API.Features.Auth.Services;
+using HUBT_Social_API.Src.Core.Helpers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HUBT_Social_API.Features.Auth.Controllers;
@@ -30,7 +31,7 @@ public partial class AuthController
             // Lấy User-Agent từ Header
             string? userAgent = Request.Headers.UserAgent.ToString();
             //Lấy Ip
-            string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+            string? ipAddress = ServerHelper.GetIPAddress(HttpContext);
             if (ipAddress == null) return BadRequest(
                 new LoginResponse
                 {

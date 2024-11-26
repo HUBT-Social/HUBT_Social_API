@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Http;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace HUBT_Social_API.Features.Auth.Services
+namespace HUBT_Social_API.Src.Core.Helpers
 {
     public static class TokenHelper
     {
         public static string? ExtractTokenFromHeader(HttpRequest request)
         {
-            var token = request.Headers["Authorization"].ToString();
+            var token = request.Headers.Authorization.ToString();
             return !string.IsNullOrEmpty(token) ? token.Replace("Bearer ", "") : null;
         }
 
@@ -22,24 +22,6 @@ namespace HUBT_Social_API.Features.Auth.Services
                 return new UserResponse { Success = false };
 
             return await tokenService.GetCurrentUser(token);
-        }
-        public static string? GetIPAddress(HttpContext content)
-        {
-            IPAddress? ipAddress = content.Connection.RemoteIpAddress;
-
-            if (ipAddress != null && ipAddress.IsIPv4MappedToIPv6)
-            {
-                ipAddress = ipAddress.MapToIPv4();
-                return ipAddress.ToString();
-            }
-                
-            if (IPAddress.IsLoopback(ipAddress))
-            {
-                ipAddress = IPAddress.Parse("192.168.1.100");
-                return ipAddress.ToString();
-            }
-                
-            return null;
         }
     }
 }

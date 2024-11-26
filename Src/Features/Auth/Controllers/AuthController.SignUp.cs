@@ -3,6 +3,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Services;
+using HUBT_Social_API.Src.Core.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -14,7 +15,7 @@ public partial class AuthController
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         string? userAgent = Request.Headers.UserAgent.ToString();
-        string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+        string? ipAddress = ServerHelper.GetIPAddress(HttpContext);
         if (ipAddress == null) return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
         if (!ModelState.IsValid)
             return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));

@@ -71,7 +71,7 @@ public class TokenService : ITokenService
             };
         }
 
-        var userIdClaim = decodeValue.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        string? userIdClaim = decodeValue.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim))
         {
@@ -120,27 +120,32 @@ public class TokenService : ITokenService
             return new DecodeTokenResponse { Success = false, Message = ex.Message };
         }
     }
-    public async Task<ValidateTokenResponse> ValidateTokens(string accessToken)
+    public async Task<ValidateTokenResponse> ValidateTokens(string accessToken,string refreshToken)
     {
         
         DecodeTokenResponse accessTokenResponse = ValidateToken(accessToken, _jwtSetting.SecretKey);
-        
-        UserToken userToken = await _refreshToken.Find(t => t.AccessToken == accessToken).FirstOrDefaultAsync();
+        string? accessUserId = accessTokenResponse.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        DecodeTokenResponse refreshTokenResponse = ValidateToken(userToken.RefreshTo, _jwtSetting.RefreshSecretKey);
-        if (refreshTokenResponse.Success)
+        DecodeTokenResponse refreshTokenResponse = ValidateToken(refreshToken, _jwtSetting.RefreshSecretKey);
+        string? refreshUserId = refreshTokenResponse.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (refreshTokenResponse.Success && refreshUserId == accessUserId)
         {
-            AUser? user = await _userManager.FindByIdAsync(userToken.UserId);
-            if (user != null)
+            
+            if (refreshUserId != null)
             {
-                return new ValidateTokenResponse
+                AUser? user = await _userManager.FindByIdAsync(refreshUserId);
+                if (user != null)
                 {
-                    AccessTokenIsValid = accessTokenResponse.Success,
-                    RefreshTokenIsValid = refreshTokenResponse.Success,
-                    NewTokens = await GenerateTokenAsync(user),
-                    Message = refreshTokenResponse.Message
-                };
+                    return new ValidateTokenResponse
+                    {
+                        AccessTokenIsValid = accessTokenResponse.Success,
+                        RefreshTokenIsValid = refreshTokenResponse.Success,
+                        NewTokens = await GenerateTokenAsync(user),
+                        Message = refreshTokenResponse.Message
+                    };
+                }
             }
+            
         }
 
         return new ValidateTokenResponse

@@ -5,9 +5,9 @@ using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
-using HUBT_Social_API.Features.Auth.Services;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
+using HUBT_Social_API.Src.Core.Helpers;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -111,7 +111,7 @@ public class AdvancedAuthController : BaseAuthController
     public async Task<IActionResult> GetCurrentEmail()
     {
         string userAgent = Request.Headers.UserAgent.ToString();
-        string? ipAddress = TokenHelper.GetIPAddress(HttpContext);
+        string? ipAddress = ServerHelper.GetIPAddress(HttpContext);
         if (ipAddress == null) return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
 
         string? currentEmail = await _emailService.GetValidateEmail(userAgent,ipAddress.ToString());
