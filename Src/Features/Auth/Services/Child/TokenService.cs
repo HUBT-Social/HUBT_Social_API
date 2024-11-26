@@ -95,7 +95,7 @@ public class TokenService : ITokenService
                 ValidateIssuerSigningKey = true,
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidateLifetime = true,
+                ValidateLifetime = false,
                 IssuerSigningKey = new SymmetricSecurityKey(tokenKey),
                 ValidIssuer = _jwtSetting.Issuer,
                 ValidAudience = _jwtSetting.Audience
@@ -104,7 +104,7 @@ public class TokenService : ITokenService
             if (securityToken is JwtSecurityToken token && token.Header.Alg.Equals(SecurityAlgorithms.HmacSha256))
             {
                 if (token.ValidTo < DateTime.UtcNow)
-                    return new DecodeTokenResponse { Success = false, Message = "Token is expired" };
+                    return new DecodeTokenResponse { Success = false,ClaimsPrincipal = principal, Message = "Token is expired" };
                 return new DecodeTokenResponse
                     { Success = true, ClaimsPrincipal = principal, Message = LocalValue.Get(KeyStore.TokenValid) };
             }
@@ -117,11 +117,14 @@ public class TokenService : ITokenService
         }
     }
 
-    public async Task<TokenResponse?> ValidateTokens(string refreshToken)
+    public async Task<TokenResponse?> ValidateTokens(string accessToken ,string refreshToken)
     {
+        var accessTokenResponse = ValidateToken(accessToken, _jwtSetting.SecretKey);
+        var accessUserId = accessTokenResponse.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
         var refreshTokenResponse = ValidateToken(refreshToken, _jwtSetting.RefreshSecretKey);
         var refreshUserId = refreshTokenResponse.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (refreshUserId != null)
+        if (refreshUserId != null && accessUserId == refreshUserId)
         {
             if (refreshTokenResponse.Success)
             {
