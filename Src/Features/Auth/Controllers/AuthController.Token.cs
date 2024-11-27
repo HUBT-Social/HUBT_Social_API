@@ -27,6 +27,10 @@ public partial class AuthController
             {
                 return Ok(result);
             }
+            else
+            {
+                return Unauthorized(LocalValue.Get(KeyStore.UnAuthorize));
+            }
         }
         
         return BadRequest(

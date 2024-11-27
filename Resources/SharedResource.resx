@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -118,228 +118,228 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="InvalidInformation" xml:space="preserve">
-    <value>Thông tin không hợp lệ.</value>
+    <value />
   </data>
   <data name="RegistrationFailed" xml:space="preserve">
-    <value>Đăng ký thất bại.</value>
+    <value />
   </data>
   <data name="UnableToSendOTP" xml:space="preserve">
-    <value>Không thể gửi mã OTP.</value>
+    <value />
   </data>
   <data name="RegistrationSuccess" xml:space="preserve">
-    <value>Đăng ký thành công.</value>
+    <value />
   </data>
   <data name="StepOneVerificationSuccess" xml:space="preserve">
-    <value>Bước xác thực một thành công.</value>
+    <value />
   </data>
   <data name="AccountLocked" xml:space="preserve">
-    <value>Tài khoản bị khóa.</value>
+    <value />
   </data>
   <data name="LoginNotAllowed" xml:space="preserve">
-    <value>Không được phép đăng nhập.</value>
+    <value />
   </data>
   <data name="TwoFactorRequired" xml:space="preserve">
-    <value>Cần xác thực hai yếu tố.</value>
+    <value />
   </data>
   <data name="InvalidCredentials" xml:space="preserve">
-    <value>Thông tin đăng nhập không hợp lệ.</value>
+    <value />
   </data>
   <data name="VerificationSuccess" xml:space="preserve">
-    <value>Xác thực thành công.</value>
+    <value />
   </data>
   <data name="OTPVerificationFailed" xml:space="preserve">
-    <value>Xác thực mã OTP không thành công.</value>
+    <value />
   </data>
   <data name="InvalidLanguage" xml:space="preserve">
-    <value>Ngôn ngữ không hợp lệ.</value>
+    <value />
   </data>
   <data name="LanguageChanged" xml:space="preserve">
-    <value>Đã thay đổi ngôn ngữ thành công.</value>
+    <value />
   </data>
   <data name="LanguageChangeFailed" xml:space="preserve">
-    <value>Thay đổi ngôn ngữ thất bại.</value>
+    <value />
   </data>
   <data name="InvalidMessageData" xml:space="preserve">
-    <value>Dữ liệu tin nhắn không hợp lệ</value>
+    <value />
   </data>
   <data name="MessageSentSuccessfully" xml:space="preserve">
-    <value>Tin nhắn đã được gửi thành công</value>
+    <value />
   </data>
   <data name="FailedToSendMessage" xml:space="preserve">
-    <value>Gửi tin nhắn không thành công</value>
+    <value />
   </data>
   <data name="ChatRoomIdRequired" xml:space="preserve">
-    <value>ID phòng chat là bắt buộc</value>
+    <value />
   </data>
   <data name="NoMessagesFound" xml:space="preserve">
-    <value>Không tìm thấy tin nhắn nào</value>
+    <value />
   </data>
   <data name="MessageDeletedSuccessfully" xml:space="preserve">
-    <value>Tin nhắn đã được xóa thành công</value>
+    <value />
   </data>
   <data name="FailedToDeleteMessage" xml:space="preserve">
-    <value>Xóa tin nhắn không thành công</value>
+    <value />
   </data>
   <data name="ChatRoomIdAndKeywordRequired" xml:space="preserve">
-    <value>ID phòng chat và từ khóa là bắt buộc</value>
+    <value />
   </data>
   <data name="MessagesFoundSuccessfully" xml:space="preserve">
-    <value>Tin nhắn đã được tìm thấy thành công</value>
+    <value />
   </data>
   <data name="ImageUploadedSuccessfully" xml:space="preserve">
-    <value>Ảnh đã được tải lên thành công</value>
+    <value />
   </data>
   <data name="FailedToUploadImage" xml:space="preserve">
-    <value>Tải ảnh lên không thành công</value>
+    <value />
   </data>
   <data name="FileUploadedSuccessfully" xml:space="preserve">
-    <value>Tập tin đã được tải lên thành công</value>
+    <value />
   </data>
   <data name="FailedToUploadFile" xml:space="preserve">
-    <value>Tải tập tin lên không thành công</value>
+    <value />
   </data>
   <data name="GroupNameRequired" xml:space="preserve">
-    <value>Tên nhóm không được để trống</value>
+    <value />
   </data>
   <data name="GroupCreatedSuccessfully" xml:space="preserve">
-    <value>Nhóm chat đã được tạo thành công</value>
+    <value />
   </data>
   <data name="FailedToCreateGroup" xml:space="preserve">
-    <value>Không thể tạo nhóm chat</value>
+    <value />
   </data>
   <data name="GroupNameUpdatedSuccessfully" xml:space="preserve">
-    <value>Tên nhóm đã được cập nhật thành công</value>
+    <value />
   </data>
   <data name="FailedToUpdateGroup" xml:space="preserve">
-    <value>Không thể cập nhật tên nhóm</value>
+    <value />
   </data>
   <data name="GroupDeletedSuccessfully" xml:space="preserve">
-    <value>Nhóm chat đã được xóa thành công</value>
+    <value />
   </data>
   <data name="FailedToDeleteGroup" xml:space="preserve">
-    <value>Không thể xóa nhóm chat</value>
+    <value />
   </data>
   <data name="GroupNotFound" xml:space="preserve">
-    <value>Không tìm thấy nhóm chat</value>
+    <value />
   </data>
   <data name="UserAlreadyExists" xml:space="preserve">
-    <value>Tài khoản người dùng đã tồn tại.</value>
+    <value />
   </data>
   <data name="UnableToStoreInDatabase" xml:space="preserve">
-    <value>Không thể lưu vào cơ sở dữ liệu.</value>
+    <value />
   </data>
   <data name="EmailVerificationCodeSubject" xml:space="preserve">
-    <value>Mã xác minh email</value>
+    <value />
   </data>
   <data name="EmailCannotBeEmpty" xml:space="preserve">
-    <value>Email không được để trống.</value>
+    <value />
   </data>
   <data name="EmailUpdated" xml:space="preserve">
-    <value>Email đã được cập nhật.</value>
+    <value />
   </data>
   <data name="EmailUpdateError" xml:space="preserve">
-    <value>Không thể cập nhật email</value>
+    <value />
   </data>
   <data name="PasswordCannotBeEmpty" xml:space="preserve">
-    <value>Mật khẩu hiện tại và mật khẩu mới không được để trống.</value>
+    <value />
   </data>
   <data name="PasswordUpdated" xml:space="preserve">
-    <value>Mật khẩu đã được cập nhật.</value>
+    <value />
   </data>
   <data name="PasswordUpdateError" xml:space="preserve">
-    <value>Có lỗi xảy ra khi cập nhật mật khẩu.</value>
+    <value />
   </data>
   <data name="NameUpdated" xml:space="preserve">
-    <value>Tên người dùng đã được cập nhật.</value>
+    <value />
   </data>
   <data name="NameUpdateError" xml:space="preserve">
-    <value>Có lỗi xảy ra khi cập nhật tên.</value>
+    <value />
   </data>
   <data name="PhoneNumberUpdated" xml:space="preserve">
-    <value>Số điện thoại đã được cập nhật.</value>
+    <value />
   </data>
   <data name="PhoneNumberUpdateError" xml:space="preserve">
-    <value>Có lỗi xảy ra khi cập nhật số điện thoại.</value>
+    <value />
   </data>
   <data name="GenderUpdated" xml:space="preserve">
-    <value>Giới tính đã được cập nhật.</value>
+    <value />
   </data>
   <data name="GenderUpdateError" xml:space="preserve">
-    <value>Có lỗi xảy ra khi cập nhật giới tính.</value>
+    <value />
   </data>
   <data name="DateOfBirthUpdated" xml:space="preserve">
-    <value>Ngày sinh đã được cập nhật.</value>
+    <value />
   </data>
   <data name="DateOfBirthUpdateError" xml:space="preserve">
-    <value>Có lỗi xảy ra khi cập nhật ngày sinh.</value>
+    <value />
   </data>
   <data name="GeneralUpdateSuccess" xml:space="preserve">
-    <value>Thông tin người dùng đã được cập nhật.</value>
+    <value />
   </data>
   <data name="GeneralUpdateError" xml:space="preserve">
-    <value>Có lỗi xảy ra khi cập nhật thông tin.</value>
+    <value />
   </data>
   <data name="CurrentPasswordAndUsernameCannotBeEmpty" xml:space="preserve">
-    <value>Tên người dùng và mật khẩu hiện tại không được để trống.</value>
+    <value />
   </data>
   <data name="PasswordCorrect" xml:space="preserve">
-    <value>Mật khẩu đúng.</value>
+    <value />
   </data>
   <data name="PasswordIncorrect" xml:space="preserve">
-    <value>Mật khẩu không đúng.</value>
+    <value />
   </data>
   <data name="UsernameCannotBeEmpty" xml:space="preserve">
-    <value>Tên người dùng không được để trống.</value>
+    <value />
   </data>
   <data name="InvalidRequest" xml:space="preserve">
-    <value>Yêu cầu không hợp lệ.</value>
+    <value />
   </data>
   <data name="OtpSent" xml:space="preserve">
-    <value>Mã OTP đã được gửi.</value>
+    <value />
   </data>
   <data name="OtpSendError" xml:space="preserve">
-    <value>Có lỗi xảy ra khi gửi mã OTP.</value>
+    <value />
   </data>
   <data name="OtpVerificationSuccess" xml:space="preserve">
-    <value>Mã OTP xác thực thành công.</value>
+    <value />
   </data>
   <data name="OtpInvalid" xml:space="preserve">
-    <value>Mã OTP không hợp lệ.</value>
+    <value />
   </data>
   <data name="UserNotFound" xml:space="preserve">
-    <value>Không tìm thấy người dùng</value>
+    <value />
   </data>
   <data name="UserInfoUpdatedSuccess" xml:space="preserve">
-    <value>Thông tin đã được cập nhật</value>
+    <value />
   </data>
   <data name="UserInfoUpdateError" xml:space="preserve">
-    <value>Có lỗi xảy ra khi cập nhật thông tin.</value>
+    <value />
   </data>
   <data name="PasswordCheckEmptyError" xml:space="preserve">
-    <value>Mật khẩu không được để trống.</value>
+    <value />
   </data>
   <data name="OtpVerifyEmptyError" xml:space="preserve">
-    <value>Mã xác thực không được để trống.</value>
+    <value />
   </data>
   <data name="TokenValid" xml:space="preserve">
-    <value>Token hợp lệ.</value>
+    <value />
   </data>
   <data name="AvatarUpdated" xml:space="preserve">
-    <value>Avatar đã được cập nhật.</value>
+    <value />
   </data>
   <data name="AvatarUpdateError" xml:space="preserve">
-    <value>Cập nhật ảnh đại diện thất bại.</value>
+    <value />
   </data>
   <data name="DefaultLoginError" xml:space="preserve">
-    <value>Đăng nhập gặp sự cố không mong muốn. Vui lòng thử lại.</value>
+    <value />
   </data>
   <data name="DataNotAllowNull" xml:space="preserve">
-    <value>Thông tin không được bỏ trống.</value>
+    <value />
   </data>
   <data name="ConfirmPasswordError" xml:space="preserve">
-    <value>Xác nhận mật khẩu không khớp với mật khẩu ở trên.</value>
+    <value />
   </data>
   <data name="UnAuthorize" xml:space="preserve">
-    <value>Không được ủy quyền</value>
+    <value />
   </data>
 </root>
