@@ -12,6 +12,7 @@ public class Postcode
     [BsonElement("IPAddress")] public string IPAddress { get; set; } = string.Empty;
     [BsonElement("Email")] public string Email { get; set; } = string.Empty;
     [BsonElement("Code")] public string Code { get; set; } = string.Empty;
+    [BsonElement("PostcodeType")] public string PostcodeType { get; set; } = string.Empty;
 
     [BsonElement("ExpireTime"),BsonDateTimeOptions]
     public DateTime ExpireTime { get; set; }

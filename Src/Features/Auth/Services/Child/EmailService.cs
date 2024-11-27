@@ -3,6 +3,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.Src.Core.Settings;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.AspNetCore.Identity;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Options;
 using MimeKit;
 using MimeKit.Text;
 using MongoDB.Driver;
+using System.ComponentModel;
 
 namespace HUBT_Social_API.Features.Auth.Services.Child;
 
@@ -59,7 +61,20 @@ public class EmailService : IEmailService
         }
     }
 
-    public async Task<Postcode?> CreatePostcodeAsync(string userAgent,string receiver, string ipAdress)
+    public async Task<Postcode?> CreatePostcodeSignUpAsync(string userAgent, string receiver, string ipAddress)
+    {
+
+        return await CreatePostcodeByTypeAsync(userAgent, receiver, ipAddress, PostcodeType.SignUp);
+    }
+    public async Task<Postcode?> CreatePostcodeSignInAsync(string userAgent, string receiver, string ipAddress)
+    {
+        return await CreatePostcodeByTypeAsync(userAgent, receiver, ipAddress, PostcodeType.SignIn);
+    }
+    public async Task<Postcode?> CreatePostcodeForgetPasswordAsync(string userAgent, string receiver, string ipAddress)
+    {
+        return await CreatePostcodeByTypeAsync(userAgent, receiver, ipAddress, PostcodeType.ForgetPassword);
+    }
+    public async Task<Postcode?> CreatePostcodeByTypeAsync(string userAgent, string receiver, string ipAdress, string type)
     {
         var code = GenerateOtp();
 
@@ -69,13 +84,14 @@ public class EmailService : IEmailService
 
         if (postcode is not null)
         {
-            var updatePostcode = Builders<Postcode>.Update.Set(pc => pc.Code , code)
-                .Set(pc=> pc.ExpireTime , DateTime.UtcNow)
-                .Set(pc => pc.Email , receiver);
+            var updatePostcode = Builders<Postcode>.Update.Set(pc => pc.Code, code)
+                .Set(pc => pc.ExpireTime, DateTime.UtcNow)
+                .Set(pc => pc.Email, receiver)
+                .Set(pc => pc.PostcodeType,type);
             postcode.Code = code;
             await _postcode.UpdateOneAsync(
                 pc => pc.IPAddress == ipAdress && pc.UserAgent == userAgent
-                ,updatePostcode);
+                , updatePostcode);
 
             return postcode;
         };
@@ -87,6 +103,7 @@ public class EmailService : IEmailService
                 IPAddress = ipAdress,
                 Code = code,
                 Email = receiver,
+                PostcodeType = type,
                 ExpireTime = DateTime.UtcNow
             };
 
@@ -96,11 +113,12 @@ public class EmailService : IEmailService
         catch (Exception ex)
         {
             Console.WriteLine(ex);
-            
+
         }
         return null;
 
     }
+
 
     public async Task<AUser?> ValidatePostcodeAsync(ValidatePostcodeRequest postcodeRequest)
     {
@@ -158,13 +176,13 @@ public class EmailService : IEmailService
         return Environment.GetEnvironmentVariable(key);
     }
 
-    public async Task<string?> GetValidateEmail(string userAgent , string ipAddress)
+    public async Task<Postcode?> GetCurrentPostCode(string userAgent , string ipAddress)
     {
         Postcode postcode = await _postcode
             .Find(ps => ps.UserAgent == userAgent && ps.IPAddress == ipAddress)
             .FirstOrDefaultAsync();
 
-        if (postcode != null) return postcode.Email;
+        if (postcode != null) return postcode;
 
         return null;
     }

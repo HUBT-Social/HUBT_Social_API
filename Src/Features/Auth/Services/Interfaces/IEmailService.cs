@@ -7,10 +7,11 @@ namespace HUBT_Social_API.Features.Auth.Services.Interfaces;
 public interface IEmailService
 {
     Task<bool> SendEmailAsync(EmailRequest emailRequest);
-    Task<Postcode?> CreatePostcodeAsync(string userAgent,string reciver, string ipAddress);
+    Task<Postcode?> CreatePostcodeSignUpAsync(string userAgent, string receiver, string ipAddress);
+    Task<Postcode?> CreatePostcodeSignInAsync(string userAgent, string receiver, string ipAddress);
+    Task<Postcode?> CreatePostcodeForgetPasswordAsync(string userAgent, string receiver, string ipAddress);
     Task<AUser?> ValidatePostcodeAsync(ValidatePostcodeRequest postcode);
-    Task<string?> GetValidateEmail(string userAgent , string ipAddress);
-
+    Task<Postcode?> GetCurrentPostCode(string userAgent , string ipAddress);
     bool MaskEmail(string email, out string maskEmail);
     bool IsValidEmail(string email);
 }

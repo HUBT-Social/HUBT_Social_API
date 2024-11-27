@@ -5,6 +5,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.LoginRequest;
 using HUBT_Social_API.Features.Auth.Services;
 using HUBT_Social_API.Src.Core.Helpers;
+using HUBT_Social_API.Src.Core.Settings;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HUBT_Social_API.Features.Auth.Controllers;
@@ -46,7 +47,7 @@ public partial class AuthController
             // Kiểm tra yêu cầu xác thực hai yếu tố
             if (result.RequiresTwoFactor && user?.Email is not null)
             {
-                Postcode? code = await _emailService.CreatePostcodeAsync(userAgent, user.Email,ipAddress.ToString());
+                Postcode? code = await _emailService.CreatePostcodeSignInAsync(userAgent, user.Email,ipAddress.ToString());
                 if (code == null)
                 {
                     return BadRequest(new LoginResponse
@@ -124,5 +125,71 @@ public partial class AuthController
         }
     }
 
+    [HttpPost("sign-in/verify-two-factor")]
+    public async Task<IActionResult> ConfirmCodeSignIn([FromBody] OTPRequest code)
+    {
+        string userAgent = Request.Headers.UserAgent.ToString();
+        string? ipAddress = ServerHelper.GetIPAddress(HttpContext);
+        if (ipAddress == null) return BadRequest(
+            new LoginResponse
+            {
+                RequiresTwoFactor = false,
+                Message = LocalValue.Get(KeyStore.InvalidInformation)
+            }
+            );
+        Postcode? currentEmail = await _emailService.GetCurrentPostCode(userAgent, ipAddress);
+        if (currentEmail == null) return BadRequest(
+            new LoginResponse
+            {
+                RequiresTwoFactor = false,
+                Message = LocalValue.Get(KeyStore.InvalidInformation)
+            }
+            );
 
+        ValidatePostcodeRequest request = new()
+        {
+            Postcode = code.Postcode,
+            UserAgent = userAgent,
+            Email = currentEmail.Email
+        };
+
+        if (!ModelState.IsValid)
+            return BadRequest(
+                new LoginResponse
+                {
+                    RequiresTwoFactor = false,
+                    Message = LocalValue.Get(KeyStore.InvalidInformation)
+                }
+
+            );
+
+        var user = await _authService.VerifyCodeAsync(request);
+        if (user == null)
+        {
+            return Unauthorized(
+                new LoginResponse
+                {
+                    RequiresTwoFactor = false,
+                    Message = LocalValue.Get(KeyStore.OTPVerificationFailed)
+                }
+
+            );
+        }
+
+        TokenResponse? token = await _tokenService.GenerateTokenAsync(user);
+
+        return Ok(
+            new LoginResponse
+            {
+                RequiresTwoFactor = false,
+                Message = LocalValue.Get(KeyStore.VerificationSuccess),
+                UserToken = token
+            }
+        );
+    }
+    [HttpPost("sign-in/verify-two-factor/resend")]
+    public async Task<IActionResult> ResendSignInPostcode()
+    {
+        return await PostcodeHelper.ResendPostcode(HttpContext, Request, _emailService.CreatePostcodeSignInAsync, _emailService, PostcodeType.SignIn); 
+    }
 }

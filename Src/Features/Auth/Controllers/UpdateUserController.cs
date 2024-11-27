@@ -16,7 +16,7 @@ using Org.BouncyCastle.Asn1.Ocsp;
 namespace HUBT_Social_API.Controllers;
 
 [ApiController]
-[Route("api/user-update")]
+[Route("api/user")]
 [Authorize]
 public class UpdateUserController : BaseAuthController
 {
@@ -26,8 +26,66 @@ public class UpdateUserController : BaseAuthController
     {
         _imageService = imageService;
     }
-   
-    [HttpPost("update-avatar")]
+
+    [HttpGet("get-user")]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (userResponse.Success && userResponse.User != null)
+        {
+            return Ok(
+                new
+                {
+                    AvatarUrl = userResponse.User.AvataUrl,
+                    FirstName = userResponse.User.FirstName,
+                    LastName = userResponse.User.LastName,
+                    Gender = userResponse.User.Gender,
+                    Email = userResponse.User.Email,
+                    BirthDay = userResponse.User.DateOfBirth,
+                    PhoneNumber = userResponse.User.PhoneNumber
+                }
+            );
+        }
+
+        return BadRequest(userResponse.Message);
+
+    }
+    [HttpPost("get-url-from-image")]
+    public async Task<IActionResult> GetUrlFromImage(IFormFile file)
+    {
+        string avatarUrl;
+        try
+        {
+            avatarUrl = await _imageService.GetUrlFormFileAsync(file);
+        }
+        catch (Exception)
+        {
+            return BadRequest(
+                new
+                {
+                    Success = false,
+                    Data = $"{LocalValue.Get(KeyStore.InvalidFileData)}"
+                });
+        }
+        if (avatarUrl != null)
+        {
+            return Ok(
+                new
+                {
+                    Success = true,
+                    Data = avatarUrl
+                });
+        }
+        return BadRequest(
+            new
+            {
+                Success = false,
+                Data = $"{LocalValue.Get(KeyStore.InvalidFileData)}"
+            }
+        );
+    }
+
+    [HttpPost("update/avatar")]
     public async Task<IActionResult> UpdateAvatar(IFormFile file)
     {
         if(file !=null){
@@ -47,11 +105,11 @@ public class UpdateUserController : BaseAuthController
         return BadRequest(KeyStore.AvatarUpdateError);
     }
         
-    [HttpPost("update-email")]
+    [HttpPost("update/email")]
     public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.EmailUpdated, KeyStore.EmailUpdateError, _userService.UpdateEmailAsync, request,Request,_tokenService);
 
-    [HttpPost("update-password")]
+    [HttpPost("update/password")]
     public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
     {
         if(request.NewPassword == request.ConfirmNewPassword)
@@ -62,23 +120,23 @@ public class UpdateUserController : BaseAuthController
     }
         
 
-    [HttpPost("update-name")]
+    [HttpPost("update/name")]
     public async Task<IActionResult> UpdateName([FromBody] UpdateNameRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.NameUpdated, KeyStore.NameUpdateError, _userService.UpdateNameAsync, request,Request,_tokenService);
 
-    [HttpPost("update-phone-number")]
+    [HttpPost("update/phone-number")]
     public async Task<IActionResult> UpdatePhoneNumber([FromBody] UpdatePhoneNumberRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.PhoneNumberUpdated, KeyStore.PhoneNumberUpdateError, _userService.UpdatePhoneNumberAsync, request,Request,_tokenService);
 
-    [HttpPost("update-gender")]
+    [HttpPost("update/gender")]
     public async Task<IActionResult> UpdateGender([FromBody] UpdateGenderRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.GenderUpdated, KeyStore.GenderUpdateError, _userService.UpdateGenderAsync, request,Request,_tokenService);
 
-    [HttpPost("update-date-of-birth")]
+    [HttpPost("update/date-of-birth")]
     public async Task<IActionResult> UpdateDateOfBirth([FromBody] UpdateDateOfBornRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.DateOfBirthUpdated, KeyStore.DateOfBirthUpdateError, _userService.UpdateDateOfBirthAsync, request,Request,_tokenService);
 
-    [HttpPost("general-update")]
+    [HttpPost("update/general")]
     public async Task<IActionResult> GeneralUpdate([FromForm] GeneralUpdateRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, request,Request,_tokenService);
     
