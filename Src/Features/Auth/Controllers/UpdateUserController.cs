@@ -20,11 +20,11 @@ namespace HUBT_Social_API.Controllers;
 [Authorize]
 public class UpdateUserController : BaseAuthController
 {
-    private readonly IImageService _imageService;
-    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService,IImageService imageService)
+    private readonly IUploadServices _uploadServices;
+    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService,IUploadServices uploadServices)
     :base (null,tokenService,emailService,null,userService)
     {
-        _imageService = imageService;
+        _uploadServices = uploadServices;
     }
 
     [HttpGet("get-user")]
@@ -56,7 +56,7 @@ public class UpdateUserController : BaseAuthController
         string avatarUrl;
         try
         {
-            avatarUrl = await _imageService.GetUrlFormFileAsync(file);
+            avatarUrl = await _uploadServices.UploadToStorageAsync(file);
         }
         catch (Exception)
         {
@@ -92,7 +92,7 @@ public class UpdateUserController : BaseAuthController
             string avatarUrl;
             try
             {
-                avatarUrl = await _imageService.GetUrlFormFileAsync(file); 
+                avatarUrl = await _uploadServices.UploadToStorageAsync(file); 
             }
             catch (Exception ex)
             {

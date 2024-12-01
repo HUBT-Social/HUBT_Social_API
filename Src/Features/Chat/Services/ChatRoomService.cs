@@ -14,33 +14,57 @@ public class ChatRoomService : IChatRoomService
     }
 
     // Thêm nhóm chat mới
-    public async Task<bool> CreateGroupAsync(string nameGroup)
+    public async Task<string?> CreateGroupAsync(string nameGroup)
     {
-        var newChatRoom = new ChatRoomModel
+        try
         {
-            Id = Guid.NewGuid().ToString(),
-            Name = nameGroup,
-            CreatedAt = DateTime.Now
-        };
+            ChatRoomModel newChatRoom = new()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = nameGroup,
+                CreatedAt = DateTime.Now
+            };
 
-        await _chatRooms.InsertOneAsync(newChatRoom); // Thêm nhóm vào MongoDB
-        return true;
+            await _chatRooms.InsertOneAsync(newChatRoom); 
+            return newChatRoom.Id;
+        }
+        catch
+        {
+            return null;
+        }
+        
     }
 
     // Cập nhật tên nhóm
     public async Task<bool> UpdateGroupNameAsync(string id, string newName)
     {
-        var update = Builders<ChatRoomModel>.Update.Set(c => c.Name, newName); // Cập nhật tên nhóm
-        var result = await _chatRooms.UpdateOneAsync(c => c.Id == id, update); // Thực hiện cập nhật
+        try
+        {
+            UpdateDefinition<ChatRoomModel> update = Builders<ChatRoomModel>.Update.Set(c => c.Name, newName); 
+            UpdateResult result = await _chatRooms.UpdateOneAsync(c => c.Id == id, update);
 
-        return result.ModifiedCount > 0; // Kiểm tra xem có thay đổi nào không
+            return result.ModifiedCount > 0; 
+        }
+        catch
+        {
+            return false;
+        }
+        
     }
 
     // Xóa nhóm chat
     public async Task<bool> DeleteGroupAsync(string id)
     {
-        var result = await _chatRooms.DeleteOneAsync(c => c.Id == id); // Xóa nhóm theo ID
-        return result.DeletedCount > 0; // Kiểm tra xem có nhóm nào bị xóa không
+        try
+        {
+            DeleteResult result = await _chatRooms.DeleteOneAsync(c => c.Id == id); // Xóa nhóm theo ID
+            return result.DeletedCount > 0; // Kiểm tra xem có nhóm nào bị xóa không
+        }
+        catch
+        {
+            return false;
+        }
+        
     }
 
     // Lấy thông tin nhóm theo ID
