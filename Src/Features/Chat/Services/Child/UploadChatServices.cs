@@ -7,12 +7,12 @@ using HUBT_Social_API.Features.Chat.DTOs;
 
 namespace HUBT_Social_API.Features.Chat.Services.Child;
 
-public class UploadServices : IUploadServices
+public class UploadChatServices : IUploadServices
 {
     private readonly IMongoCollection<ChatRoomModel> _chatRooms;
     private readonly Cloudinary _cloudinary;
 
-    public UploadServices(IMongoCollection<ChatRoomModel> chatRooms, Cloudinary cloudinary)
+    public UploadChatServices(IMongoCollection<ChatRoomModel> chatRooms, Cloudinary cloudinary)
     {
         _chatRooms = chatRooms;
         _cloudinary = cloudinary;
@@ -20,46 +20,51 @@ public class UploadServices : IUploadServices
 
     public async Task<bool> UploadChatAsync(ChatRequest chatRequest)
     {
+        // Tạo một tin nhắn mới
         MessageModel newMessage = new()
         {
+            Id = Guid.NewGuid().ToString(),
             UserId = chatRequest.UserId,
+            Timestamp = DateTime.UtcNow,
             Content = new ContentModel
             {
-                Message = chatRequest.Message,
-                Images = null,
-                Files = null
-
-            },
-            Timestamp = DateTime.UtcNow
-        };
-        
-
-        if(chatRequest.Images != null)
-        {
-            List<string> ImageUrls = new();
-            foreach (var image in chatRequest.Images)
-            {
-                var ImgUrl = await UploadToStorageAsync(image);
-                ImageUrls.Add(ImgUrl);
+                Message = chatRequest.Message
             }
-            newMessage.Content.Images = ImageUrls;
+        };
 
-        }
-        if(chatRequest.File != null)
+        // Xử lý danh sách file tải lên
+        if (chatRequest.Media != null)
         {
-            var fileUrl = await UploadToStorageAsync(chatRequest.File);
-            newMessage.Content.Files = fileUrl;
+            foreach (var file in chatRequest.Media)
+            {
+                var fileUrl = await UploadToStorageAsync(file);
+                MediaType mediaType = DetermineMediaType(file.ContentType);
+
+                newMessage.Content.Media.Add(new Media
+                {
+                    Url = fileUrl,
+                    FileType = file.ContentType,
+                    Size = file.Length,
+                    MediaType = mediaType
+                });
+            }
         }
-        
-        // Tạo cập nhật MongoDB
+
+        // Cập nhật vào MongoDB
         var update = Builders<ChatRoomModel>
             .Update.Push(cr => cr.Messages, newMessage);
 
-        // Thực hiện cập nhật
         var result = await _chatRooms.UpdateOneAsync(cr => cr.Id == chatRequest.GroupId, update);
 
-        // Trả về kết quả
         return result.ModifiedCount > 0;
+    }
+
+    private MediaType DetermineMediaType(string contentType)
+    {
+        if (contentType.StartsWith("image")) return MediaType.Image;
+        if (contentType.StartsWith("video")) return MediaType.Video;
+        if (contentType.StartsWith("audio")) return MediaType.Audio;
+        return MediaType.File; // Mặc định là file
     }
 
     public async Task<string> UploadToStorageAsync(IFormFile file)
