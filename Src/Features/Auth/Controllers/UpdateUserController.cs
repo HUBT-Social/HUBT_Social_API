@@ -50,7 +50,7 @@ public class UpdateUserController : BaseAuthController
         return BadRequest(userResponse.Message);
 
     }
-    [HttpDelete]
+    [HttpDelete("delete-user")]
     public async Task<IActionResult> DeleteUser(DeleteUserRequest request)
     {
         try
