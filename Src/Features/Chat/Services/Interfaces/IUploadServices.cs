@@ -4,6 +4,7 @@ namespace HUBT_Social_API.Features.Chat.Services.Interfaces;
 
 public interface IUploadServices
 {
-    Task<bool> UploadChatAsync(ChatRequest chatRequest);
+    Task<bool> UploadMessageAsync(MessageRequest chatRequest);
+    Task<bool> UploadFileAsync(FileRequest chatRequest);
     Task<string> UploadToStorageAsync(IFormFile file);
 }

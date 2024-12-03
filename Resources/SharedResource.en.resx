@@ -342,4 +342,7 @@
   <data name="UnAuthorize" xml:space="preserve">
     <value>UnAuthorize</value>
   </data>
+  <data name="NotEnoughMembers" xml:space="preserve">
+    <value>The number of members is not enough to create a new chat group</value>
+  </data>
 </root>

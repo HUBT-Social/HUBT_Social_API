@@ -342,4 +342,7 @@
   <data name="UnAuthorize" xml:space="preserve">
     <value>Không được ủy quyền</value>
   </data>
+  <data name="NotEnoughMembers" xml:space="preserve">
+    <value>Số thành viên không đủ để tạo nhóm chat mới</value>
+  </data>
 </root>

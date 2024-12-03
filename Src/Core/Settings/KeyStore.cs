@@ -33,6 +33,8 @@ namespace HUBT_Social_API.Core.Settings
         public const string FailedToDeleteMessage = "FailedToDeleteMessage";
         public const string ChatRoomIdAndKeywordRequired = "ChatRoomIdAndKeywordRequired";
         public const string MessagesFoundSuccessfully = "MessagesFoundSuccessfully";
+        public const string NotEnoughMembers = "NotEnoughMembers";
+        
         
         // Các key cho thông điệp liên quan đến file và hình ảnh
         public const string ImageUploadedSuccessfully = "ImageUploadedSuccessfully";

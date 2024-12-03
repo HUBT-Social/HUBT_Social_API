@@ -5,10 +5,7 @@ namespace HUBT_Social_API.Features.Chat.Services.Interfaces;
 
 public interface IChatService
 {
-    Task<bool> SendMessageAsync(MessageDTO messageDto);
-    Task<List<MessageModel>?> GetMessagesInChatRoomAsync(string chatRoomId);
-    Task<bool> DeleteMessageAsync(string chatRoomId, string messageId);
-    Task<List<MessageModel>> SearchMessagesInChatRoomAsync(string chatRoomId, string keyword);
-    Task<bool> UploadImageAsync(string userId, string chatRoomId, byte[] imageData);
-    Task<bool> UploadFileAsync(string chatRoomId, byte[] fileData, string fileName);
+    Task<bool> SendMessageAsync(MessageRequest chatRequest);
+    Task<bool> SendFileAsync(FileRequest chatRequest);
+    
 }
