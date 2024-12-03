@@ -205,7 +205,7 @@ public class TokenService : ITokenService
 
     public async Task<bool> DeleteTokenAsync(AUser user)
     {
-        FilterDefinition<UserToken> filter = Builders<UserToken>.Filter.Eq("userId",user.Id);
+        FilterDefinition<UserToken> filter = Builders<UserToken>.Filter.Eq("_id",user.Id.ToString());
         DeleteResult result = await _refreshToken.DeleteOneAsync(filter);
 
         if (result.DeletedCount > 0)
