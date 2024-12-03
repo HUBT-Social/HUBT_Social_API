@@ -3,6 +3,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.Src.Core.HttpContent;
 using HUBT_Social_API.Src.Core.Settings;
 using MailKit.Net.Smtp;
 using MailKit.Security;
@@ -148,10 +149,14 @@ public class EmailService : IEmailService
             Subject = emailRequest.Subject
         };
         email.To.Add(MailboxAddress.Parse(emailRequest.ToEmail));
-        email.Body = new TextPart(TextFormat.Plain)
+        var htmlContent = SendEmailHttpContent.GetSendPostcodeContent(emailRequest.Code);
+
+        var bodyBuilder = new BodyBuilder
         {
-            Text = emailRequest.Code
+            HtmlBody = htmlContent,  
+            TextBody = $"Your code is: {emailRequest.Code}. Thank you for using our service!"
         };
+        email.Body = bodyBuilder.ToMessageBody();
         return email;
     }
     public bool IsValidEmail(string email)
