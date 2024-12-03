@@ -197,6 +197,12 @@ public class UserService : IUserService
             u.DateOfBirth = request.DateOfBirth;
         });
     }
+
+    public async Task<bool> DeleteUserAsync(AUser user)
+    {
+        IdentityResult deleted = await _userManager.DeleteAsync(user);
+        return deleted.Succeeded == true; 
+    }
     
 
     public async Task<bool> EnableTwoFactor(string userName)

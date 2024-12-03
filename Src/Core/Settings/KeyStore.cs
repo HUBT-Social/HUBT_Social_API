@@ -20,6 +20,10 @@ namespace HUBT_Social_API.Core.Settings
         public const string DefaultLoginError ="DefaultLoginError";
         public const string DataNotAllowNull ="DataNotAllowNull";
         public const string ConfirmPasswordError ="ConfirmPasswordError";
+        public const string UserDeleted ="UserDeleted";
+        public const string UserDeletedError ="UserDeletedError";
+
+        
 
         
         

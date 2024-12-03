@@ -50,6 +50,36 @@ public class UpdateUserController : BaseAuthController
         return BadRequest(userResponse.Message);
 
     }
+    [HttpDelete]
+    public async Task<IActionResult> DeleteUser(DeleteUserRequest request)
+    {
+        try
+        {
+            if(string.IsNullOrEmpty(request.UserName))
+            {
+                return BadRequest(LocalValue.Get(KeyStore.UsernameCannotBeEmpty));
+            }
+
+            AUser user = await _userService.FindUserByUserNameAsync(request.UserName);
+            if(user == null)
+            {
+                return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+            }
+                
+            bool deleted = await _userService.DeleteUserAsync(user);
+            if(deleted)
+            {
+                return Ok(LocalValue.Get(KeyStore.UserDeleted));
+            }
+            
+        }
+        catch (Exception)
+        {
+            return BadRequest(LocalValue.Get(KeyStore.UserDeletedError));
+        }
+        return BadRequest(LocalValue.Get(KeyStore.UserDeletedError));
+    }
+
     [HttpPost("get-url-from-image")]
     public async Task<IActionResult> GetUrlFromImage(IFormFile file)
     {
