@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AspNetCore.Identity.MongoDbCore.Models;
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
@@ -9,7 +10,9 @@ using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Bson;
 using MongoDB.Driver;
+using Newtonsoft.Json.Linq;
 
 namespace HUBT_Social_API.Features.Auth.Services.Child;
 
@@ -198,5 +201,18 @@ public class TokenService : ITokenService
             _jwtSetting.RefreshSecretKey,
             () => DateTime.UtcNow.AddDays(_jwtSetting.RefreshTokenExpirationInDays)
         );
+    }
+
+    public async Task<bool> DeleteTokenAsync(AUser user)
+    {
+        FilterDefinition<UserToken> filter = Builders<UserToken>.Filter.Eq("_id",user.Id.ToString());
+        DeleteResult result = await _refreshToken.DeleteOneAsync(filter);
+
+        if (result.DeletedCount > 0)
+        {
+            Console.WriteLine("Xóa thành công.");
+            return true;
+        }
+        return false;
     }
 }

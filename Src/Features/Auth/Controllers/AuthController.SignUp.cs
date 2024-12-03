@@ -138,7 +138,7 @@ public partial class AuthController
             }
         );
     }
-    [HttpPost("sign-up/verify-otp/resend")]
+    [HttpPut("sign-up/verify-otp/resend")]
     public async Task<IActionResult> ResendSignUpPostcode()
     {
 

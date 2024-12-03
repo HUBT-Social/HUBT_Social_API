@@ -425,4 +425,7 @@
     <value>Deleted user faild.</value>
     <comment/>
   </data>
+  <data name="TokenDeleted" xml:space="preserve">
+    <value>Token has been deleted successfull</value>
+  </data>
 </root>

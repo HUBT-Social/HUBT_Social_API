@@ -12,6 +12,7 @@ using MimeKit;
 using MimeKit.Text;
 using MongoDB.Driver;
 using System.ComponentModel;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace HUBT_Social_API.Features.Auth.Services.Child;
 
@@ -211,4 +212,26 @@ public class EmailService : IEmailService
 
         
     }
+
+    public async Task<bool> UpdatePostcode(Postcode postcode)
+    {
+        try
+        {
+            var updatePostcode = Builders<Postcode>.Update.Set(pc => pc.Code, postcode.Code)
+                .Set(pc => pc.ExpireTime, DateTime.UtcNow)
+                .Set(pc => pc.Email, postcode.Email)
+                .Set(pc => pc.PostcodeType, postcode.PostcodeType);
+            await _postcode.UpdateOneAsync(
+                pc => pc.IPAddress == postcode.IPAddress && pc.UserAgent == postcode.UserAgent
+                , updatePostcode);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            return false;
+        }
+        
+    }
+    
 }

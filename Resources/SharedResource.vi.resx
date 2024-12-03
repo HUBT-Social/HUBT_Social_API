@@ -425,4 +425,7 @@
     <value>Xóa người dùng thất bại.</value>
     <comment/>
   </data>
+  <data name="TokenDeleted" xml:space="preserve">
+    <value>Đã xóa Token thành công</value>
+  </data>
 </root>
