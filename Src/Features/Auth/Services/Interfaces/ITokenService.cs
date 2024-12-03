@@ -9,4 +9,6 @@ public interface ITokenService
     Task<TokenResponse?> GenerateTokenAsync(AUser user);
     Task<TokenResponse?> ValidateTokens(string accessToken,string refreshToken);
     Task<UserResponse> GetCurrentUser(string accessToken);
+
+    Task<bool> DeleteTokenAsync(AUser user);
 }

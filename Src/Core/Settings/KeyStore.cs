@@ -97,8 +97,9 @@ namespace HUBT_Social_API.Core.Settings
 
         public const string InvalidImageData  = "InvalidImageData";
         public const string InvalidFileData = "InvalidFileData";
+        //Token
+        public const string TokenDeleted = "TokenDeleted";
 
-        
 
         public const string TokenValid =  "TokenValid";
         public const string AvatarDefaultFemale1 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811655/qqgtqqr9igqnz6pj8zjn.jpg";

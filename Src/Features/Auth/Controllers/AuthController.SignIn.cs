@@ -187,7 +187,7 @@ public partial class AuthController
             }
         );
     }
-    [HttpPost("sign-in/verify-two-factor/resend")]
+    [HttpPut("sign-in/verify-two-factor/resend")]
     public async Task<IActionResult> ResendSignInPostcode()
     {
         return await PostcodeHelper.ResendPostcode(HttpContext, Request, _emailService.CreatePostcodeSignInAsync, _emailService, PostcodeType.SignIn); 

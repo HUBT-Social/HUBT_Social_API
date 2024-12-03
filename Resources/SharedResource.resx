@@ -342,4 +342,7 @@
   <data name="UnAuthorize" xml:space="preserve">
     <value />
   </data>
+  <data name="TokenDeleted" xml:space="preserve">
+    <value />
+  </data>
 </root>
