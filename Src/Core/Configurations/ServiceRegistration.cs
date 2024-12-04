@@ -14,19 +14,18 @@ public static class ServiceRegistration
     public static IServiceCollection RegisterApplicationServices(this IServiceCollection services)
     {
         // Đăng ký các dịch vụ
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IEmailService, EmailService>();
-        services.AddScoped<ITokenService, TokenService>();
-        services.AddScoped<IChatService, ChatService>();
-        services.AddScoped<IMessageService, MessageService>();
-        services.AddScoped<IFileService, FileService>();
-        services.AddScoped<IImageService, ImageService>();
-        services.AddScoped<IChatMessageHub, ChatMessageHub>();
-        services.AddScoped<IChatFileHub, ChatFileHub>();
-        services.AddScoped<ILoginService, LoginService>();
-        services.AddScoped<IRegisterService, RegisterService>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IChatRoomService, ChatRoomService>();
+        services.AddSingleton<IAuthService, AuthService>();
+        services.AddSingleton<IEmailService, EmailService>();
+        services.AddSingleton<ITokenService, TokenService>();
+        services.AddSingleton<IChatService, ChatService>();
+        services.AddSingleton<IUploadChatServices, UploadChatServices>();
+        services.AddSingleton<IChatRoomService, ChatRoomService>();
+        services.AddSingleton<IChatMessageHub, ChatMessageHub>();
+        services.AddSingleton<IChatFileHub, ChatFileHub>();
+        services.AddSingleton<ILoginService, LoginService>();
+        services.AddSingleton<IRegisterService, RegisterService>();
+        services.AddSingleton<IUserService, UserService>();
+        services.AddSingleton<IChatRoomService, ChatRoomService>();
 
 
 /*            services.AddScoped<IUserManagerS, UserManagerS>();

@@ -9,23 +9,15 @@ public enum StatusSending
 public class MessageRequest
 {
     public string GroupId { get; set; } = string.Empty;
-    public string UserId { get; set; } = string.Empty;
-    public string? Message { get; set; } =string.Empty;
-
-    public StatusSending statusSending { get; set; }
-
-    //public List<IFormFile>? Media { get; set; } = [];
-
+    public string SenderId { get; set; } = string.Empty;
+    public string? Content { get; set; } =string.Empty;
 }
 
 
 public class FileRequest
 {
     public string GroupId { get; set; } = string.Empty;
-    public string UserId { get; set; } = string.Empty;
-
-    public StatusSending statusSending { get; set; }
-
+    public string SenderId { get; set; } = string.Empty;
     public List<IFormFile>? Files { get; set; } = [];
 
 }

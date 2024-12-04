@@ -21,7 +21,7 @@ public class ChatController : ControllerBase
     [HttpPost("send-message")]
     public async Task<IActionResult> SendMessage([FromForm] MessageRequest messageRequest)
     {
-        if (messageRequest == null || string.IsNullOrWhiteSpace(messageRequest.UserId))
+        if (messageRequest == null || string.IsNullOrWhiteSpace(messageRequest.SenderId))
             return BadRequest(new { message = "Invalid chat request." });
         
         bool IsSent = await _chatService.SendMessageAsync(messageRequest);

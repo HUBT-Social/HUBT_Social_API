@@ -6,13 +6,15 @@ using MongoDB.Driver;
 using HUBT_Social_API.Features.Chat.DTOs;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
+using HUBT_Social_API.Features.Chat.ChatHubs;
 
 namespace HUBT_Social_API.Features.Chat.Services.Child;
 
-public class UploadChatServices : IUploadServices
+public class UploadChatServices : IUploadChatServices
 {
     private readonly IMongoCollection<ChatRoomModel> _chatRooms;
     private readonly Cloudinary _cloudinary;
+    private  readonly ChatHub _chatHub;
 
     public UploadChatServices(IMongoCollection<ChatRoomModel> chatRooms, Cloudinary cloudinary)
     {
@@ -22,24 +24,29 @@ public class UploadChatServices : IUploadServices
 
     public async Task<bool> UploadMessageAsync(MessageRequest chatRequest)
     {
-        var (text, links) = ExtractLinksIfPresent(chatRequest.Message);
+        var (text, links) = ExtractLinksIfPresent(chatRequest.Content);
         
         // Tạo một tin nhắn mới
         MessageModel newMessage = new()
         {
-            UserId = chatRequest.UserId,
-            Content = new List<string>(),
-            Type = links.Any() ? MessageType.MessageLink : MessageType.Message
+            SenderId = chatRequest.SenderId,
+            Content = text,
+            Links = new()
         };
-        
-        newMessage.Content.Add(text);
-        if(links.Any())
+
+        if(links.Count > 0)
         {
-            newMessage.Content.AddRange(links);
+            foreach (var link in links)
+            {
+                var metadata = await FetchLinkMetadataAsync(link);
+                if(metadata != null)
+                {
+                    newMessage.Links.Add(metadata);
+                }
+            }
         }
-
-
-
+        
+        await _chatHub.SendMessage(chatRequest.GroupId,newMessage);
 
         // Cập nhật vào MongoDB
         var update = Builders<ChatRoomModel>
@@ -49,7 +56,87 @@ public class UploadChatServices : IUploadServices
 
         return result.ModifiedCount > 0;
     }
-    public async Task<LinkMetadata?> FetchLinkMetadataAsync(string url)
+
+    public async Task<bool> UploadMediaAsync(FileRequest chatRequest)
+    {
+        // Tạo một tin nhắn mới
+        List<MediaModel> mediaModels = new();
+
+        // Xử lý danh sách file tải lên
+        if (chatRequest.Files != null)
+        {
+             foreach (var file in chatRequest.Files)
+             {
+                MediaModel newMedia = new()
+                {
+                    SenderId = chatRequest.SenderId,
+                };
+
+                 var fileUrl = await UploadToStorageAsync(file);
+                 newMedia.Url = fileUrl;
+
+                 mediaModels.Add(newMedia);
+             }
+         }
+         await _chatHub.SendMedia(chatRequest.SenderId,mediaModels);
+
+        // Cập nhật vào MongoDB
+        var update = Builders<ChatRoomModel>
+            .Update.PushEach(cr => cr.MediaItems, mediaModels);
+
+        var result = await _chatRooms.UpdateOneAsync(cr => cr.Id == chatRequest.GroupId, update);
+
+        return result.ModifiedCount > 0;
+    }
+
+    // Hàm này dùng ở khắp nơi CẤM XÓA (DONT DELETE)
+    public async Task<string> UploadToStorageAsync(IFormFile file)
+    {
+        using var stream = file.OpenReadStream();
+        var uploadParams = new RawUploadParams
+        {
+            File = new FileDescription(file.FileName, stream)
+        };
+        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+        return uploadResult.Url.ToString();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private async Task<LinkMetadataModel?> FetchLinkMetadataAsync(string url)
     {
         try
         {
@@ -77,7 +164,7 @@ public class UploadChatServices : IUploadServices
                 doc.DocumentNode.SelectSingleNode("//meta[@property='og:description']")?
                 .GetAttributeValue("content", "");
 
-            return new LinkMetadata
+            return new LinkMetadataModel
             {
                 Url = url,
                 Title = title ?? "No Title",
@@ -91,10 +178,7 @@ public class UploadChatServices : IUploadServices
             return null;
         }
     }
-
-
-
-    private (string CleanMessage, List<string> Links) ExtractLinksIfPresent(string message)
+    private (string Message, List<string> Links) ExtractLinksIfPresent(string message)
     {
         if (!Regex.IsMatch(message, @"(http|https):\/\/[^\s]+|www\.[^\s]+"))
         {
@@ -104,63 +188,31 @@ public class UploadChatServices : IUploadServices
         // Xử lý tách link nếu phát hiện
         var words = message.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         var links = new List<string>();
-        var cleanMessage = new List<string>();
+        var messageWithLinks = new List<string>();
 
         foreach (var word in words)
         {
             if (Uri.TryCreate(word, UriKind.Absolute, out Uri? uri) &&
                 (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
             {
+                // Thêm link vào danh sách
                 links.Add(word);
+                // Chèn thẻ <a> vào từ chứa URL
+                messageWithLinks.Add($"<a href=\"{word}\" target=\"_blank\">{word}</a>");
             }
             else
             {
-                cleanMessage.Add(word);
+                // Thêm từ không phải link vào chuỗi kết quả
+                messageWithLinks.Add(word);
             }
         }
 
-        return (string.Join(" ", cleanMessage), links);
+        // Kết hợp các từ lại thành chuỗi sau khi thay thế link thành thẻ <a>
+        string updatedMessage = string.Join(" ", messageWithLinks);
+
+        return (updatedMessage, links);
     }
-    public async Task<bool> UploadFileAsync(FileRequest chatRequest)
-    {
-        // Tạo một tin nhắn mới
-        MessageModel newMessage = new()
-        {
-            UserId = chatRequest.UserId,
-            Content = new List<string>(),
-            Type = MessageType.File
-        };
-
-
-        // Xử lý danh sách file tải lên
-        if (chatRequest.Files != null)
-        {
-             foreach (var file in chatRequest.Files)
-             {
-                 var fileUrl = await UploadToStorageAsync(file);
-
-                 newMessage.Content.Add(fileUrl);
-             }
-         }
-
-        // Cập nhật vào MongoDB
-        var update = Builders<ChatRoomModel>
-            .Update.Push(cr => cr.Messages, newMessage);
-
-        var result = await _chatRooms.UpdateOneAsync(cr => cr.Id == chatRequest.GroupId, update);
-
-        return result.ModifiedCount > 0;
-    }
-
-    public async Task<string> UploadToStorageAsync(IFormFile file)
-    {
-        using var stream = file.OpenReadStream();
-        var uploadParams = new RawUploadParams
-        {
-            File = new FileDescription(file.FileName, stream)
-        };
-        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-        return uploadResult.Url.ToString();
-    }
+    
+    
 
 }

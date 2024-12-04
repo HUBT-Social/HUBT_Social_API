@@ -6,10 +6,10 @@ namespace HUBT_Social_API.Features.Chat.Services;
 
 public class ChatService : IChatService
 {
-    private readonly IUploadServices _uploadtService;
+    private readonly IUploadChatServices _uploadtService;
 
 
-    public ChatService(IUploadServices uploadtService)
+    public ChatService(IUploadChatServices uploadtService)
     {
         _uploadtService = uploadtService;
     }
@@ -20,9 +20,9 @@ public class ChatService : IChatService
         return await _uploadtService.UploadMessageAsync(messageRequest);
     }
 
-    public async Task<bool> SendFileAsync(FileRequest chatRequest)
+    public async Task<bool> SendMediaAsync(FileRequest chatRequest)
     {
-        return await _uploadtService.UploadFileAsync(chatRequest);
+        return await _uploadtService.UploadMediaAsync(chatRequest);
     }
     //Unsend message
 

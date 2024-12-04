@@ -6,6 +6,6 @@ namespace HUBT_Social_API.Features.Chat.Services.Interfaces;
 public interface IChatService
 {
     Task<bool> SendMessageAsync(MessageRequest chatRequest);
-    Task<bool> SendFileAsync(FileRequest chatRequest);
+    Task<bool> SendMediaAsync(FileRequest chatRequest);
     
 }
