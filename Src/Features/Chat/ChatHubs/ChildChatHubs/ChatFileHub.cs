@@ -7,11 +7,10 @@ namespace HUBT_Social_API.Features.Chat.ChatHubs.ChildChatHubs;
 
 public class ChatFileHub : Hub, IChatFileHub
 {
-    private readonly IChatService _chatService;
 
-    public ChatFileHub(IChatService chatService)
+
+    public ChatFileHub()
     {
-        _chatService = chatService;
     }
 
     /// <summary>

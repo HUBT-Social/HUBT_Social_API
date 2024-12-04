@@ -8,11 +8,10 @@ namespace HUBT_Social_API.Features.Chat.ChatHubs.ChildChatHubs;
 
 public class ChatMessageHub : Hub, IChatMessageHub
 {
-    private readonly IChatService _chatService;
 
-    public ChatMessageHub(IChatService chatService)
+
+    public ChatMessageHub()
     {
-        _chatService = chatService;
     }
 
     /// <summary>
@@ -20,9 +19,11 @@ public class ChatMessageHub : Hub, IChatMessageHub
     /// </summary>
     public async Task SendMessage(string GroupId, MessageModel messageModel)
     {
-        // Gửi tin nhắn đến tất cả các người dùng trong phòng chat
-        await Clients.Group(GroupId)
-            .SendAsync("ReceiveMessage", new { messageModel.SenderId, Content = messageModel.Content });
+
+            // Send the message to all clients in the specified group
+            await Clients.Group(GroupId).SendAsync("ReceiveMessage", new { messageModel.SenderId, Content = messageModel.Content }); 
+
+        
     }
 
 

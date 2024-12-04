@@ -11,20 +11,21 @@ namespace HUBT_Social_API.Features.Chat.Controllers;
 [Route("api/chat")]
 public class ChatController : ControllerBase
 {
-    private readonly IChatService _chatService;
 
-    public ChatController(IChatService chatService)
+    private readonly IUploadChatServices _uploadtService;
+
+    public ChatController(IUploadChatServices uploadtService)
     {
-        _chatService = chatService;
+        _uploadtService = uploadtService;
     }
 
     [HttpPost("send-message")]
-    public async Task<IActionResult> SendMessage([FromForm] MessageRequest messageRequest)
+    public async Task<IActionResult> SendMessage(MessageRequest messageRequest)
     {
         if (messageRequest == null || string.IsNullOrWhiteSpace(messageRequest.SenderId))
             return BadRequest(new { message = "Invalid chat request." });
         
-        bool IsSent = await _chatService.SendMessageAsync(messageRequest);
+        bool IsSent = await _uploadtService.UploadMessageAsync(messageRequest);
         return IsSent == true
             ? Ok("sent")
             : BadRequest("Sending failed");

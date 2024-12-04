@@ -5,6 +5,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBT_Social_API.Src.Core.Helpers;
 using Microsoft.AspNetCore.Authorization;
@@ -20,8 +21,8 @@ namespace HUBT_Social_API.Controllers;
 [Authorize]
 public class UpdateUserController : BaseAuthController
 {
-    private readonly IUploadServices _uploadServices;
-    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService,IUploadServices uploadServices)
+    private readonly UploadChatServices _uploadServices;
+    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService,UploadChatServices uploadServices)
     :base (null,tokenService,emailService,null,userService)
     {
         _uploadServices = uploadServices;

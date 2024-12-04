@@ -6,7 +6,7 @@ public static class CloudinaryConfiguration
 {
     public static IServiceCollection ConfigureCloudinary(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<Cloudinary>(s =>
+        services.AddSingleton<Cloudinary>(s =>
         {
             var config = configuration.GetSection("Cloudinary");
             var account = new Account

@@ -7,6 +7,8 @@ using HUBT_Social_API.Features.Chat.DTOs;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using HUBT_Social_API.Features.Chat.ChatHubs;
+using Microsoft.AspNetCore.SignalR;
+using HUBT_Social_API.Features.Chat.ChatHubs.IHubs;
 
 namespace HUBT_Social_API.Features.Chat.Services.Child;
 
@@ -14,12 +16,13 @@ public class UploadChatServices : IUploadChatServices
 {
     private readonly IMongoCollection<ChatRoomModel> _chatRooms;
     private readonly Cloudinary _cloudinary;
-    private  readonly ChatHub _chatHub;
+    private readonly IChatHub _chatHub;
 
-    public UploadChatServices(IMongoCollection<ChatRoomModel> chatRooms, Cloudinary cloudinary)
+    public UploadChatServices(IMongoCollection<ChatRoomModel> chatRooms, Cloudinary cloudinary,IChatHub chatHub)
     {
         _chatRooms = chatRooms;
         _cloudinary = cloudinary;
+        _chatHub = chatHub;
     }
 
     public async Task<bool> UploadMessageAsync(MessageRequest chatRequest)
@@ -45,8 +48,13 @@ public class UploadChatServices : IUploadChatServices
                 }
             }
         }
+        if(chatRequest.GroupId != null && newMessage != null)
+        {
+           await _chatHub.SendMessage(chatRequest.GroupId, newMessage); 
+        }
         
-        await _chatHub.SendMessage(chatRequest.GroupId,newMessage);
+        // Gửi tin nhắn qua SignalR đến nhóm
+        
 
         // Cập nhật vào MongoDB
         var update = Builders<ChatRoomModel>

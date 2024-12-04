@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace HUBT_Social_API.Features.Chat.ChatHubs;
 
-public class ChatHub : Hub
+public class ChatHub : Hub, IChatHub
 {
     private readonly IChatFileHub _chatFileHub;
     private readonly IChatMessageHub _chatMessageHub;
