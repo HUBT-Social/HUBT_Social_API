@@ -48,7 +48,7 @@ public class UploadChatServices : IUploadChatServices
                 }
             }
         }
-        if(chatRequest.GroupId != null && newMessage != null)
+        if(_chatRooms.Find(room => room.UserIds.Contains(chatRequest.SenderId)).Any())
         {
            await _chatHub.SendMessage(chatRequest.GroupId, newMessage); 
         }

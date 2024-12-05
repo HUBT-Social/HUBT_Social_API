@@ -8,10 +8,11 @@ namespace HUBT_Social_API.Features.Chat.ChatHubs.ChildChatHubs;
 
 public class ChatMessageHub : Hub, IChatMessageHub
 {
+    private readonly IHubContext<ChatMessageHub> _hubContext;
 
-
-    public ChatMessageHub()
+    public ChatMessageHub(IHubContext<ChatMessageHub> hubContext)
     {
+        _hubContext = hubContext;
     }
 
     /// <summary>
@@ -19,12 +20,17 @@ public class ChatMessageHub : Hub, IChatMessageHub
     /// </summary>
     public async Task SendMessage(string GroupId, MessageModel messageModel)
     {
+        try
+        {
+            // Gửi tin nhắn
+            await _hubContext.Clients.Group(GroupId).SendAsync("ReceiveMessage", messageModel);
+        }
+        catch (Exception)
+        {
 
-            // Send the message to all clients in the specified group
-            await Clients.Group(GroupId).SendAsync("ReceiveMessage", new { messageModel.SenderId, Content = messageModel.Content }); 
-
-        
+        }
     }
+
 
 
 }

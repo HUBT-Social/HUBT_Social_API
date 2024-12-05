@@ -7,10 +7,11 @@ namespace HUBT_Social_API.Features.Chat.ChatHubs.ChildChatHubs;
 
 public class ChatFileHub : Hub, IChatFileHub
 {
+    private readonly IHubContext<ChatMessageHub> _hubContext;
 
-
-    public ChatFileHub()
+    public ChatFileHub(IHubContext<ChatMessageHub> hubContext)
     {
+        _hubContext = hubContext;
     }
 
     /// <summary>
@@ -22,6 +23,6 @@ public class ChatFileHub : Hub, IChatFileHub
 
         List<string> urls = mediaModels.Select(m => m.Url).ToList();
 
-        await Clients.Group(chatRoomId).SendAsync("SendMedia", new { senderId = sender, urls = urls });
+        await _hubContext.Clients.Group(chatRoomId).SendAsync("SendMedia", new { senderId = sender, urls = urls });
     }
 }
