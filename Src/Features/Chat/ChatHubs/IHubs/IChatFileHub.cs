@@ -4,5 +4,5 @@ namespace HUBT_Social_API.Features.Chat.ChatHubs.IHubs;
 
 public interface IChatFileHub
 {
-    Task SendMedia(string chatRoomId,List<MediaModel> mediaModels);
+    Task SendMedia(string chatRoomId,MediaChatItem mediaModels);
 }

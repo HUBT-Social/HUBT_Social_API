@@ -5,6 +5,6 @@ namespace HUBT_Social_API.Features.Chat.ChatHubs.IHubs;
 
 public interface IChatMessageHub
 {
-    Task SendMessage(string GroupId, MessageModel messageModel);
+    Task SendMessage(string GroupId, MessageChatItem messageModel);
 
 }

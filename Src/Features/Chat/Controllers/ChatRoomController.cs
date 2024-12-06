@@ -1,8 +1,11 @@
 using HUBT_Social_API.Core.Settings;
+using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBTSOCIAL.Src.Features.Chat.DTOs;
+using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using static HUBT_Social_API.Features.Chat.Services.ChatRoomService;
 
 namespace HUBT_Social_API.Features.Chat.Controllers;
 
@@ -32,6 +35,27 @@ public class ChatRoomController : ControllerBase
         return groupId != null
             ? Ok(new {message = groupId})
             : BadRequest(new { message = LocalValue.Get(KeyStore.FailedToCreateGroup) });
+    }
+
+    [HttpPost("get-history-chat")]
+    public async Task<IActionResult> GetHistoryChat([FromBody] GetChatHistoryRequest getChatHistoryRequest)
+    {
+        if (getChatHistoryRequest == null)
+        {
+            return BadRequest("Request body cannot be null");
+        }
+
+        if (string.IsNullOrWhiteSpace(getChatHistoryRequest.ChatRoomId))
+        {
+            return BadRequest("ChatRoomId cannot be null or empty");
+        }
+        if (string.IsNullOrEmpty(getChatHistoryRequest.Time.ToString()))
+        {
+            getChatHistoryRequest.Time = DateTime.Now;
+        }
+        IEnumerable<ChatHistoryResponse> chatItems = await _chatRoomService.GetChatHistoryAsync(getChatHistoryRequest);
+
+        return Ok(chatItems);
     }
 
 

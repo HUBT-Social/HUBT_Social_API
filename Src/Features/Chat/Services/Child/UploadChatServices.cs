@@ -27,10 +27,12 @@ public class UploadChatServices : IUploadChatServices
 
     public async Task<bool> UploadMessageAsync(MessageRequest chatRequest)
     {
+        if(!_chatRooms.Find(room => room.UserIds.Contains(chatRequest.SenderId)).Any()){return false;}
+
         var (text, links) = ExtractLinksIfPresent(chatRequest.Content);
         
         // Tạo một tin nhắn mới
-        MessageModel newMessage = new()
+        MessageChatItem newMessage = new()
         {
             SenderId = chatRequest.SenderId,
             Content = text,
@@ -48,17 +50,12 @@ public class UploadChatServices : IUploadChatServices
                 }
             }
         }
-        if(_chatRooms.Find(room => room.UserIds.Contains(chatRequest.SenderId)).Any())
-        {
-           await _chatHub.SendMessage(chatRequest.GroupId, newMessage); 
-        }
-        
-        // Gửi tin nhắn qua SignalR đến nhóm
-        
+
+        await _chatHub.SendMessage(chatRequest.GroupId, newMessage); 
 
         // Cập nhật vào MongoDB
         var update = Builders<ChatRoomModel>
-            .Update.Push(cr => cr.Messages, newMessage);
+            .Update.Push(cr => cr.ChatItems, newMessage);
 
         var result = await _chatRooms.UpdateOneAsync(cr => cr.Id == chatRequest.GroupId, update);
 
@@ -67,30 +64,30 @@ public class UploadChatServices : IUploadChatServices
 
     public async Task<bool> UploadMediaAsync(FileRequest chatRequest)
     {
-        // Tạo một tin nhắn mới
-        List<MediaModel> mediaModels = new();
+        if(!_chatRooms.Find(room => room.UserIds.Contains(chatRequest.SenderId)).Any()){return false;}
 
+        MediaChatItem newMedia = new()
+        {
+            SenderId = chatRequest.SenderId,
+            MediaUrls = new()
+        };
         // Xử lý danh sách file tải lên
         if (chatRequest.Files != null)
         {
-             foreach (var file in chatRequest.Files)
-             {
-                MediaModel newMedia = new()
+            foreach (var file in chatRequest.Files)
+            {
+                var fileUrl = await UploadToStorageAsync(file);
+                if (fileUrl != null)
                 {
-                    SenderId = chatRequest.SenderId,
-                };
-
-                 var fileUrl = await UploadToStorageAsync(file);
-                 newMedia.Url = fileUrl;
-
-                 mediaModels.Add(newMedia);
-             }
+                    newMedia.MediaUrls.Add(fileUrl);
+                }
+            }
          }
-         await _chatHub.SendMedia(chatRequest.SenderId,mediaModels);
+        await _chatHub.SendMedia(chatRequest.SenderId, newMedia);
 
         // Cập nhật vào MongoDB
         var update = Builders<ChatRoomModel>
-            .Update.PushEach(cr => cr.MediaItems, mediaModels);
+            .Update.Push(cr => cr.ChatItems, newMedia);
 
         var result = await _chatRooms.UpdateOneAsync(cr => cr.Id == chatRequest.GroupId, update);
 

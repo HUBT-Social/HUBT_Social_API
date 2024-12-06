@@ -18,7 +18,7 @@ public class ChatMessageHub : Hub, IChatMessageHub
     /// <summary>
     ///     Gửi tin nhắn đến tất cả người dùng trong phòng chat.
     /// </summary>
-    public async Task SendMessage(string GroupId, MessageModel messageModel)
+    public async Task SendMessage(string GroupId, MessageChatItem messageModel)
     {
         try
         {

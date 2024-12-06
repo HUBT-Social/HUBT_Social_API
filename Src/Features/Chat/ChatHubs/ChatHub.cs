@@ -16,13 +16,13 @@ public class ChatHub : Hub, IChatHub
     }
 
     // Chuyển tiếp tin nhắn
-    public async Task SendMessage(string GroupId, MessageModel messageModel)
+    public async Task SendMessage(string GroupId, MessageChatItem messageModel)
     {
         await _chatMessageHub.SendMessage(GroupId,messageModel);
     }
 
     // Chuyển tiếp phương thức gửi file
-    public async Task SendMedia(string chatRoomId,List<MediaModel> mediaModels)
+    public async Task SendMedia(string chatRoomId,MediaChatItem mediaModels)
     {
         await _chatFileHub.SendMedia(chatRoomId,mediaModels);
     }

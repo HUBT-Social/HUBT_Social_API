@@ -17,12 +17,8 @@ public class ChatFileHub : Hub, IChatFileHub
     /// <summary>
     ///     Gửi tệp đến tất cả người dùng trong phòng chat.
     /// </summary>
-    public async Task SendMedia(string chatRoomId, List<MediaModel> mediaModels)
+    public async Task SendMedia(string chatRoomId, MediaChatItem mediaModels)
     {
-        string sender = mediaModels[0].SenderId;
-
-        List<string> urls = mediaModels.Select(m => m.Url).ToList();
-
-        await _hubContext.Clients.Group(chatRoomId).SendAsync("SendMedia", new { senderId = sender, urls = urls });
+        await _hubContext.Clients.Group(chatRoomId).SendAsync("SendMedia", mediaModels);
     }
 }

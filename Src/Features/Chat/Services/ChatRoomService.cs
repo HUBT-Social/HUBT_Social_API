@@ -111,4 +111,72 @@ public class ChatRoomService : IChatRoomService
     {
         return await _chatRooms.Find(_ => true).ToListAsync(); // Lấy tất cả nhóm từ MongoDB
     }
+
+
+
+
+
+
+
+
+
+
+
+
+    public async Task<IEnumerable<ChatHistoryResponse>> GetChatHistoryAsync(GetChatHistoryRequest getChatHistoryRequest)
+    {
+        var chatItems = await GetItemsAsync(getChatHistoryRequest);
+
+        var response = chatItems.Select(item => new ChatHistoryResponse
+        {
+            Id = item.Id,
+            ChatRoomId = item.ChatRoomId,
+            SenderId = item.SenderId,
+            Timestamp = item.Timestamp,
+            Type = item.Type,
+            Data = item switch
+            {
+                MessageChatItem message => new { message.Content, message.Links },
+                MediaChatItem media => new { media.MediaUrls },
+                FileChatItem file => new { file.FileUrl, file.FileName, file.FileSize, file.FileType },
+                _ => null
+            }
+        });
+
+        return response;
+    }
+
+        public async Task<List<ChatItem>> GetItemsAsync(GetChatHistoryRequest getChatHistoryRequest)
+        {
+            // Giả lập data từ `ChatRoomModel` (thay thế bằng kết nối DB thực tế)
+            var chatRoom = _chatRooms.Find(room => room.Id == getChatHistoryRequest.ChatRoomId).FirstOrDefault();
+
+            if (chatRoom == null)
+                return new List<ChatItem>();
+
+            // Lọc các item cũ hơn `beforeTimestamp`
+            var filteredItems = chatRoom.ChatItems
+                .Where(item => getChatHistoryRequest.Time == null || item.Timestamp < getChatHistoryRequest.Time)
+                .OrderByDescending(item => item.Timestamp)
+                .Take(getChatHistoryRequest.Limit)
+                .ToList();
+
+            return filteredItems;
+        }
+
+
+
+
+public class ChatHistoryResponse
+{
+    public string Id { get; set; }
+    public string ChatRoomId { get; set; }
+    public string SenderId { get; set; }
+    public DateTime Timestamp { get; set; }
+    public string Type { get; set; }
+    public object? Data { get; set; }
+}
+
+
+
 }

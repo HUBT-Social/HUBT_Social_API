@@ -31,5 +31,19 @@ public class ChatController : ControllerBase
             : BadRequest("Sending failed");
     }
 
+    [HttpPost("send-media")]
+    public async Task<IActionResult> SendMedia(FileRequest fileRequest)
+    {
+        if(string.IsNullOrWhiteSpace(fileRequest.GroupId) || string.IsNullOrWhiteSpace(fileRequest.SenderId) || fileRequest.Files.Count == 0)
+        {
+            return BadRequest("value is null");
+        }
+        bool IsSent = await _uploadtService.UploadMediaAsync(fileRequest);
+        return IsSent == true
+            ? Ok("sent")
+            : BadRequest("Sending failed");
+
+    }
+
     
 }

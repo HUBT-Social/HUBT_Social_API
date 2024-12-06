@@ -1,5 +1,5 @@
 namespace HUBTSOCIAL.Src.Features.Chat.Models;
-public class VoiceChatModel : BaseChatModel
+public class VoiceChatItem : ChatItem
 {
     public string Url { get; set; } = string.Empty;
     public double Duration { get; set; } // Thời lượng âm thanh (giây)

@@ -1,10 +1,9 @@
 namespace HUBTSOCIAL.Src.Features.Chat.Models;
 
 
-public class MediaModel : BaseChatModel
+public class MediaChatItem : ChatItem
 {
-    public string Url { get; set; } = string.Empty;
-
+    public List<string> MediaUrls { get; set; } = new List<string>();
 }
 
 
