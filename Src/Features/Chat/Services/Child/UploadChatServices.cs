@@ -35,6 +35,7 @@ public class UploadChatServices : IUploadChatServices
         MessageChatItem newMessage = new()
         {
             SenderId = chatRequest.SenderId,
+            Type = "Message",
             Content = text,
             Links = new()
         };
@@ -69,6 +70,7 @@ public class UploadChatServices : IUploadChatServices
         MediaChatItem newMedia = new()
         {
             SenderId = chatRequest.SenderId,
+            Type = "Media",
             MediaUrls = new()
         };
         // Xử lý danh sách file tải lên

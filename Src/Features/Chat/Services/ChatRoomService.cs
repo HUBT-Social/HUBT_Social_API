@@ -130,7 +130,6 @@ public class ChatRoomService : IChatRoomService
         var response = chatItems.Select(item => new ChatHistoryResponse
         {
             Id = item.Id,
-            ChatRoomId = item.ChatRoomId,
             SenderId = item.SenderId,
             Timestamp = item.Timestamp,
             Type = item.Type,
@@ -170,7 +169,6 @@ public class ChatRoomService : IChatRoomService
 public class ChatHistoryResponse
 {
     public string Id { get; set; }
-    public string ChatRoomId { get; set; }
     public string SenderId { get; set; }
     public DateTime Timestamp { get; set; }
     public string Type { get; set; }
