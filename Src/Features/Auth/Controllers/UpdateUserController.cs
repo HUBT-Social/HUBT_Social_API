@@ -167,7 +167,7 @@ public class UpdateUserController : BaseAuthController
         await UpdateHelper.HandleUserUpdate(KeyStore.DateOfBirthUpdated, KeyStore.DateOfBirthUpdateError, _userService.UpdateDateOfBirthAsync, request,Request,_tokenService);
 
     [HttpPost("update/general")]
-    public async Task<IActionResult> GeneralUpdate([FromForm] GeneralUpdateRequest request) =>
+    public async Task<IActionResult> GeneralUpdate(GeneralUpdateRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, request,Request,_tokenService);
     
     
@@ -211,7 +211,7 @@ public class UpdateUserController : BaseAuthController
     }
     
     [HttpPost("add-info-user")]
-    public async Task<IActionResult> AddInfoUser([FromForm] AddInfoUserRequest request)
+    public async Task<IActionResult> AddInfoUser(AddInfoUserRequest request)
     {
             // Kiểm tra file upload
         if (request.AvatarUrl == null)
