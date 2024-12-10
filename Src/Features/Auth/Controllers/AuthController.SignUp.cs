@@ -42,28 +42,15 @@ public partial class AuthController
         catch (Exception)
         {
             return StatusCode(
-                500, new RegisterResponse
-                {
-                    Message = LocalValue.Get(KeyStore.UnableToSendOTP)
-                }
-            );
+                500, LocalValue.Get(KeyStore.UnableToSendOTP));
         }
 
         if (_emailService.MaskEmail(request.Email, out string maskEmail))
         {
             
-            return Ok(
-                new RegisterResponse
-                {
-                    MaskEmail = maskEmail,
-                    Message = LocalValue.Get(KeyStore.OtpSent)
-                });
+            return Ok(LocalValue.Get(KeyStore.OtpSent));
         }
-        return BadRequest(
-            new RegisterResponse 
-            { 
-                Message = LocalValue.Get(KeyStore.InvalidInformation)
-            });
+        return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
     }
 
     [HttpPost("sign-up/verify-otp")]

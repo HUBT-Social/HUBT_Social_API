@@ -213,12 +213,6 @@ public class UpdateUserController : BaseAuthController
     [HttpPost("add-info-user")]
     public async Task<IActionResult> AddInfoUser(AddInfoUserRequest request)
     {
-            // Kiểm tra file upload
-        if (request.AvatarUrl == null)
-        {
-            request.AvatarUrl = KeyStore.GetRandomAvatarDefault(request.Gender);  
-        }
-
         
         // Gọi hàm xử lý cập nhật thông tin người dùng
         return await UpdateHelper.HandleUserUpdate(

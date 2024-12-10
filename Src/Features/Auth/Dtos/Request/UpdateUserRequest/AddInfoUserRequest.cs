@@ -6,8 +6,6 @@ namespace HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
     public class AddInfoUserRequest
     {
 
-        public string AvatarUrl { get; set; } = string.Empty; // URL ảnh hoặc avatar mặc định
-
         public string FirstName { get; set; } = string.Empty;
 
         public string LastName { get; set; } = string.Empty;
