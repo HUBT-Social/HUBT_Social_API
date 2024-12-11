@@ -5,6 +5,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBT_Social_API.Src.Core.Helpers;
 using Microsoft.AspNetCore.Authorization;
@@ -20,11 +21,11 @@ namespace HUBT_Social_API.Controllers;
 [Authorize]
 public class UpdateUserController : BaseAuthController
 {
-    private readonly IImageService _imageService;
-    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService,IImageService imageService)
+    private readonly UploadChatServices _uploadServices;
+    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService,UploadChatServices uploadServices)
     :base (null,tokenService,emailService,null,userService)
     {
-        _imageService = imageService;
+        _uploadServices = uploadServices;
     }
 
     [HttpGet("get-user")]
@@ -86,7 +87,7 @@ public class UpdateUserController : BaseAuthController
         string avatarUrl;
         try
         {
-            avatarUrl = await _imageService.GetUrlFormFileAsync(file);
+            avatarUrl = await _uploadServices.UploadToStorageAsync(file);
         }
         catch (Exception)
         {
@@ -122,7 +123,7 @@ public class UpdateUserController : BaseAuthController
             string avatarUrl;
             try
             {
-                avatarUrl = await _imageService.GetUrlFormFileAsync(file); 
+                avatarUrl = await _uploadServices.UploadToStorageAsync(file); 
             }
             catch (Exception ex)
             {

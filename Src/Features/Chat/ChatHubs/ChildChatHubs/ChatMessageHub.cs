@@ -1,54 +1,36 @@
 using HUBT_Social_API.Features.Chat.ChatHubs.IHubs;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
+using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.SignalR;
 
 namespace HUBT_Social_API.Features.Chat.ChatHubs.ChildChatHubs;
 
 public class ChatMessageHub : Hub, IChatMessageHub
 {
-    private readonly IChatService _chatService;
+    private readonly IHubContext<ChatMessageHub> _hubContext;
 
-    public ChatMessageHub(IChatService chatService)
+    public ChatMessageHub(IHubContext<ChatMessageHub> hubContext)
     {
-        _chatService = chatService;
+        _hubContext = hubContext;
     }
 
     /// <summary>
     ///     Gửi tin nhắn đến tất cả người dùng trong phòng chat.
     /// </summary>
-    public async Task SendMessage(string chatRoomId, string userId, string messageContent)
+    public async Task SendMessage(string GroupId, MessageChatItem messageModel)
     {
-        var messageDto = new MessageDTO
+        try
         {
-            UserId = userId,
-            ChatRoomId = chatRoomId,
-            Content = messageContent
-        };
+            // Gửi tin nhắn
+            await _hubContext.Clients.Group(GroupId).SendAsync("ReceiveMessage", messageModel);
+        }
+        catch (Exception)
+        {
 
-        // Gửi tin nhắn đến tất cả các người dùng trong phòng chat
-        await Clients.Group(chatRoomId)
-            .SendAsync("ReceiveMessage", new { UserId = userId, MessageContent = messageDto });
-
-        // Lưu tin nhắn vào MongoDB
-        await _chatService.SendMessageAsync(messageDto);
+        }
     }
 
-    /// <summary>
-    ///     Người dùng tham gia vào phòng chat.
-    /// </summary>
-    public async Task JoinRoom(string chatRoomId)
-    {
-        await Groups.AddToGroupAsync(Context.ConnectionId, chatRoomId);
-        await Clients.Group(chatRoomId).SendAsync("UserJoined", Context.ConnectionId);
-    }
 
-    /// <summary>
-    ///     Người dùng rời khỏi phòng chat.
-    /// </summary>
-    public async Task LeaveRoom(string chatRoomId)
-    {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatRoomId);
-        await Clients.Group(chatRoomId).SendAsync("UserLeft", Context.ConnectionId);
-    }
+
 }

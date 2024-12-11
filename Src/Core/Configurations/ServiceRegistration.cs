@@ -1,6 +1,7 @@
 using HUBT_Social_API.Features.Auth.Services;
 using HUBT_Social_API.Features.Auth.Services.Child;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.Features.Chat.ChatHubs;
 using HUBT_Social_API.Features.Chat.ChatHubs.ChildChatHubs;
 using HUBT_Social_API.Features.Chat.ChatHubs.IHubs;
 using HUBT_Social_API.Features.Chat.Services;
@@ -17,16 +18,15 @@ public static class ServiceRegistration
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ITokenService, TokenService>();
-        services.AddScoped<IChatService, ChatService>();
-        services.AddScoped<IMessageService, MessageService>();
-        services.AddScoped<IFileService, FileService>();
-        services.AddScoped<IImageService, ImageService>();
+        services.AddScoped<IUploadChatServices, UploadChatServices>();
+        services.AddScoped<IChatRoomService, ChatRoomService>();
         services.AddScoped<IChatMessageHub, ChatMessageHub>();
         services.AddScoped<IChatFileHub, ChatFileHub>();
         services.AddScoped<ILoginService, LoginService>();
         services.AddScoped<IRegisterService, RegisterService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IChatRoomService, ChatRoomService>();
+        services.AddScoped<IChatHub, ChatHub>();
 
 
 /*            services.AddScoped<IUserManagerS, UserManagerS>();

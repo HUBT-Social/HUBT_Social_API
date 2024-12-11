@@ -352,4 +352,7 @@
   <data name="TokenDeleted" xml:space="preserve">
     <value />
   </data>
+  <data name="NotEnoughMembers" xml:space="preserve">
+    <value />
+  </data>
 </root>
