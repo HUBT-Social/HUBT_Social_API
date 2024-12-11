@@ -65,7 +65,15 @@ public partial class AuthController
                     });
                 }
 
-                return BadRequest(new LoginResponse
+                await _emailService.SendEmailAsync(new EmailRequest
+                {
+                    ToEmail = code.Email,
+                    Code = code.Code,
+                    Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
+                    FullName = user.FirstName + " " + user.LastName
+                });
+
+                return Ok(new LoginResponse
                 {
                     RequiresTwoFactor = true,
                     Message = LocalValue.Get(KeyStore.InvalidCredentials)

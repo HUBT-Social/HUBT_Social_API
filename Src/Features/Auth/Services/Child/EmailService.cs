@@ -22,11 +22,6 @@ public class EmailService : IEmailService
     private readonly SMPTSetting _emailSetting;
     private readonly IMongoCollection<Postcode> _postcode;
     private readonly UserManager<AUser> _userManager;
-    private readonly string _smtpHost;
-    private readonly int _smtpPort;
-    private readonly string _smtpEmail;
-    private readonly string _smtpPassword;
-    
 
     public EmailService(IOptions<SMPTSetting> setting, IMongoCollection<Postcode> postcode,
         UserManager<AUser> userManager)
@@ -35,21 +30,23 @@ public class EmailService : IEmailService
         _postcode = postcode;
         _userManager = userManager;
         // Lấy thông tin từ môi trường hoặc cài đặt mặc định
-        _smtpHost = GetEnvironmentVariable("SMTP_HOST") ?? _emailSetting.Host;
-        _smtpPort = int.Parse(GetEnvironmentVariable("SMTP_PORT") ?? _emailSetting.Port);
-        _smtpEmail = GetEnvironmentVariable("SMTP_USERNAME") ?? _emailSetting.Email;
-        _smtpPassword = GetEnvironmentVariable("SMTP_PASSWORD") ?? _emailSetting.Password;
     }
 
     public async Task<bool> SendEmailAsync(EmailRequest emailRequest)
     {
+        // Lấy thông tin SMTP từ môi trường hoặc cấu hình
+        var smtpHost =_emailSetting.Host;
+        var smtpPort = int.Parse(_emailSetting.Port);
+        var smtpEmail = _emailSetting.Email;
+        var smtpPassword = _emailSetting.Password;
+
         try
         {
             var email = CreateEmailMessage(emailRequest);
             using var smtpClient = new SmtpClient();
 
-            await smtpClient.ConnectAsync(_smtpHost, _smtpPort, SecureSocketOptions.StartTls);
-            await smtpClient.AuthenticateAsync(_smtpEmail, _smtpPassword);
+            await smtpClient.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
+            await smtpClient.AuthenticateAsync(smtpEmail, smtpPassword);
             await smtpClient.SendAsync(email);
             await smtpClient.DisconnectAsync(true);
 
@@ -143,22 +140,52 @@ public class EmailService : IEmailService
 
     private MimeMessage CreateEmailMessage(EmailRequest emailRequest)
     {
-        var email = new MimeMessage
-        {
-            Sender = MailboxAddress.Parse(_emailSetting.Email),
-            Subject = emailRequest.Subject
-        };
-        email.To.Add(MailboxAddress.Parse(emailRequest.ToEmail));
-        var htmlContent = SendEmailHttpContent.GetSendPostcodeContent(emailRequest.Code);
 
+        var emailMessage = new MimeMessage();
+
+        // Người gửi và người nhận
+        emailMessage.From.Add(new MailboxAddress("HUBT Social", _emailSetting.Email));
+        emailMessage.To.Add(new MailboxAddress(emailRequest.ToEmail, emailRequest.ToEmail));
+        emailMessage.Subject = emailRequest.Subject;
+        // Đọc HTML template
+        string emailHtmlContent = LocalValue.Get(KeyStore.EmailTemplate);
+        
+        // Thay thế thông tin trong template
+        emailHtmlContent = emailHtmlContent
+            .Replace("{{RecipientName}}", emailRequest.FullName.Length != 0 ? emailRequest.FullName : emailRequest.ToEmail)
+            .Replace("{{content-top0}}",LocalValue.Get(KeyStore.EmailContentOTP0))
+            .Replace("{{content-top1}}",LocalValue.Get(KeyStore.EmailContentOTP1))
+            .Replace("{{content-top2}}",LocalValue.Get(KeyStore.EmailContentOTP2))
+            .Replace("{{content-bottom2}}",LocalValue.Get(KeyStore.EmailContentOTP4))
+            .Replace("{{content-bottom3}}",LocalValue.Get(KeyStore.EmailContentOTP5))
+            .Replace("{{content-bottom4}}",LocalValue.Get(KeyStore.EmailContentOTP6))
+            .Replace("{{footer1}}",LocalValue.Get(KeyStore.EmailContentFooter1))
+            .Replace("{{footer2}}",LocalValue.Get(KeyStore.EmailContentFooter2))
+            .Replace("{{footer3}}",LocalValue.Get(KeyStore.EmailContentFooter3))
+            .Replace("{{footer4}}",LocalValue.Get(KeyStore.EmailContentFooter4));
+        for (int i = 0; i < 6; i++)
+        {
+            string placeholder = $"{{{{value-{i}}}}}";
+
+            string value = emailRequest.Code[i].ToString();
+            emailHtmlContent = emailHtmlContent.Replace(placeholder,value);
+        }
+
+        // Tạo body của email
         var bodyBuilder = new BodyBuilder
         {
-            HtmlBody = htmlContent,  
-            TextBody = $"Your code is: {emailRequest.Code}. Thank you for using our service!"
+            HtmlBody = emailHtmlContent,
+            TextBody = $"Hi {emailRequest.ToEmail},\n\nYour OTP is {string.Join("", emailRequest.Code)}.\n\nBest Regards,\nHUBT Social Team"
         };
-        email.Body = bodyBuilder.ToMessageBody();
-        return email;
+
+        emailMessage.Body = bodyBuilder.ToMessageBody();
+        return emailMessage;
     }
+
+
+
+
+
     public bool IsValidEmail(string email)
     {
         try
@@ -177,10 +204,7 @@ public class EmailService : IEmailService
         return new Random().Next(100000, 999999).ToString();
     }
 
-    private string? GetEnvironmentVariable(string key)
-    {
-        return Environment.GetEnvironmentVariable(key);
-    }
+
 
     public async Task<Postcode?> GetCurrentPostCode(string userAgent , string ipAddress)
     {

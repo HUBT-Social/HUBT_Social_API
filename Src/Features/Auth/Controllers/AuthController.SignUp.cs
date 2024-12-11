@@ -36,7 +36,8 @@ public partial class AuthController
             {
                 Code = code.Code,
                 Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
-                ToEmail = request.Email 
+                ToEmail = request.Email,
+                FullName = request.UserName 
             });
         }
         catch (Exception)
