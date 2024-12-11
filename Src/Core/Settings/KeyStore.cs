@@ -99,6 +99,22 @@ namespace HUBT_Social_API.Core.Settings
 
         public const string InvalidImageData  = "InvalidImageData";
         public const string InvalidFileData = "InvalidFileData";
+        // Các Key cho Email Template
+        public const string EmailContentHeaderContent1 = "EmailContentHeaderContent1";
+        public const string EmailContentHeaderContent2 = "EmailContentHeaderContent2";
+        public const string EmailContentHeaderContent3 = "EmailContentHeaderContent3";
+        public const string EmailContentHeaderContent4 = "EmailContentHeaderContent4";
+        public const string EmailContentOTP0 = "EmailContentOTP0";
+        public const string EmailContentOTP1 = "EmailContentOTP1";
+        public const string EmailContentOTP2 = "EmailContentOTP2";
+        public const string EmailContentOTP3 = "EmailContentOTP3";
+        public const string EmailContentOTP4 = "EmailContentOTP4";
+        public const string EmailContentOTP5 = "EmailContentOTP5";
+        public const string EmailContentOTP6 = "EmailContentOTP6";
+        public const string EmailContentFooter1 = "EmailContentFooter1";
+        public const string EmailContentFooter2 = "EmailContentFooter2";
+        public const string EmailContentFooter3 = "EmailContentFooter3";
+        public const string EmailContentFooter4 = "EmailContentFooter4";
 
         
 
@@ -158,5 +174,186 @@ namespace HUBT_Social_API.Core.Settings
             // Chọn ngẫu nhiên từ danh sách
             return avatarUrls[random.Next(avatarUrls.Count)];
         }
+        //Cấm động, CHẶT CU
+        public static string EmailTemplate = @"
+                <!DOCTYPE html>
+                <html lang=""en"">
+                <head>
+                    <meta charset=""UTF-8"">
+                    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+                    <title>Email Template</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 0;
+                            padding: 0;
+                            text-align: left;
+                        }
+                        .container {
+                            max-width: 600px;
+                            margin: 0 auto;
+                            background-color: #fff;
+                            border-radius: 10px;
+                            padding: 10px;
+                            background-color: #1b944e;
+                        }
+                        header {
+                            display: table;
+                            width: 100%;
+                            height: 200px;
+                            background-color: #dff0d8;
+                            border-radius: 10px;
+                        }
+                        .header-left, .header-right {
+                            display: table-cell;
+                            vertical-align: middle;
+                            padding: 0 0px;
+                        }
+                        .header-left img {
+                            height: 125px;
+                            width: auto;
+                            border-radius: 30px;
+                            margin-left: 10px;
+                        }
+                        .header-right h1 {
+                            font-family: Amasis MT Pro Black;
+                            color: black;
+                            font-size: 75px;
+                            margin: 0;
+                            text-align: center;
+                        }
+                        .content {
+                            background-color: #ffffff;
+                            padding: 20px;
+                            border-radius: 10px;
+                            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                            margin-top: 10px;
+                            background-color: #f4f4f4;
+                        }
+                        .content h2 {
+                            font-size: 20px;
+                            color: #1b944e;
+                            margin-top: 0;
+                        }
+                        .otp-container {
+                            text-align: center;
+                            margin: 20px 0;
+                        }
+                        .otp-box {
+                            display: inline-block;
+                            width: 40px;
+                            height: 40px;
+                            background-color: #dff0d8;
+                            text-align: center;
+                            line-height: 40px;
+                            font-size: 20px;
+                            font-weight: bold;
+                            border-radius: 5px;
+                            color: #1b944e;
+                            border: 2px solid #1b944e;
+                            margin-right: 2px;
+                        }
+                        .otp-box:last-child {
+                            margin-right: 0;
+                        }
+                        .footer {
+                            background-color: #f4f4f4;
+                            padding: 20px;
+                            text-align: center;
+                            font-size: 12px;
+                            color: #666;
+                            margin-top: 30px;
+                            border-radius: 10px;
+                        }
+                        .footer a {
+                            color: #1b944e;
+                            text-decoration: none;
+                        }
+                        .footer-top {
+                            text-align: center;
+                            padding-bottom: 20px;
+                        }
+                        .social-icon img {
+                            width: 30px;
+                            height: 30px;
+                            margin: 0 3px;
+                        }
+                        .footer-divider {
+                            border-bottom: 1px solid #ddd;
+                            margin: 20px 0;
+                        }
+                        .footer-bottom p {
+                            margin: 5px 0;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class=""container"">
+                        <header class=""header"">
+                            <section class=""header-left"">
+                                <img src=""https://res.cloudinary.com/dnx8aew1t/image/upload/v1733812934/vtpdccqnag2djickf47c.png"" alt=""HUBT Social"">
+                            </section>
+                            <section class=""header-right"">
+                                <h1> HUBT Social </h1>
+                            </section>
+                        </header>
+                        <table role=""presentation"" width=""100%"" class=""content"">
+                            <tr>
+                                <td>
+                                    <h2>{{content-top0}} {{RecipientName}}</h2>
+                                    <p>{{content-top1}}<br><br>{{content-top2}}</p>
+                                    <div class=""otp-container"">
+                                        <div class=""otp-box"">{{value-0}}</div>
+                                        <div class=""otp-box"">{{value-1}}</div>
+                                        <div class=""otp-box"">{{value-2}}</div>
+                                        <div class=""otp-box"">{{value-3}}</div>
+                                        <div class=""otp-box"">{{value-4}}</div>
+                                        <div class=""otp-box"">{{value-5}}</div>
+                                    </div>
+                                    <p>{{content-bottom2}}</p>
+                                    <p>{{content-bottom3}}<br><b style=""color: #1b944e"">{{content-bottom4}}</b></p>
+                                </td>
+                            </tr>
+                        </table>
+                        <table role=""presentation"" width=""100%"" class=""footer"">
+                            <tr>
+                                <td class=""footer-top"">
+                                    <a href=""www.facebook.com/groups/8705552386231535/"" target=""_blank"" class=""social-icon"">
+                                        <img src=""https://cdn2.iconfinder.com/data/icons/social-media-2285/512/1_Facebook_colored_svg_copy-128.png"" alt=""Facebook"">
+                                    </a>
+                                    <a href=""https://twitter.com"" target=""_blank"" class=""social-icon"">
+                                        <img src=""https://cdn4.iconfinder.com/data/icons/social-media-black-white-2/1227/X-64.png"" alt=""X"">
+                                    </a>
+                                    <a href=""https://www.reddit.com/r/HUBT_Social/"" target=""_blank"" class=""social-icon"">
+                                        <img src=""https://cdn3.iconfinder.com/data/icons/2018-social-media-logotypes/1000/2018_social_media_popular_app_logo_reddit-64.png"" alt=""Reddit"">
+                                    </a>
+                                    <a href=""https://www.tiktok.com/@hubtsocial"" target=""_blank"" class=""social-icon"">
+                                        <img src=""https://cdn4.iconfinder.com/data/icons/social-media-flat-7/64/Social-media_Tiktok-64.png"" alt=""TikTok"">
+                                    </a>
+                                    <a href=""https://github.com"" target=""_blank"" class=""social-icon"">
+                                        <img src=""https://cdn2.iconfinder.com/data/icons/social-icons-33/128/Github-64.png"" alt=""GitHub"">
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class=""footer-divider""></td>
+                            </tr>
+                            <tr>
+                                <td class=""footer-bottom"">
+                                    <p>{{footer1}}</p>
+                                    <p>{{footer2}} <a href=""#"" onclick=""unsubscribe()"">{{footer3}}</a> {{footer4}}</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <script>
+                        function unsubscribe() {
+                            alert('Unsubscribed successfully.');
+                        }
+                    </script>
+                </body>
+                </html>";
+
+
     }
 }

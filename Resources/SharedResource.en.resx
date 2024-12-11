@@ -345,4 +345,52 @@
   <data name="NotEnoughMembers" xml:space="preserve">
     <value>The number of members is not enough to create a new chat group</value>
   </data>
+  <data name="EmailContentHeaderContent1" xml:space="preserve">
+  <value>Hanoi</value>
+</data>
+<data name="EmailContentHeaderContent2" xml:space="preserve">
+  <value>University of Business and Technology</value>
+</data>
+<data name="EmailContentHeaderContent3" xml:space="preserve">
+  <value>HUBT Social – Connecting HUBT students! Share knowledge, stay updated on events, and grow</value>
+</data>
+<data name="EmailContentHeaderContent4" xml:space="preserve">
+  <value>together in a vibrant, creative, and passionate community.</value>
+</data>
+<data name="EmailContentOTP0" xml:space="preserve">
+  <value>Hello</value>
+</data>
+<data name="EmailContentOTP1" xml:space="preserve">
+  <value>Here is your One Time Password (OTP).</value>
+</data>
+<data name="EmailContentOTP2" xml:space="preserve">
+  <value>Please enter this code to verify your email address for HUBT Social:</value>
+</data>
+<data name="EmailContentOTP3" xml:space="preserve">
+  <value>Copy OTP</value>
+</data>
+<data name="EmailContentOTP4" xml:space="preserve">
+  <value>The OTP will expire in 3 minutes.</value>
+</data>
+<data name="EmailContentOTP5" xml:space="preserve">
+  <value>Best Regards</value>
+</data>
+<data name="EmailContentOTP6" xml:space="preserve">
+  <value>HUBT Social Team</value>
+</data>
+<data name="EmailContentFooter1" xml:space="preserve">
+  <value>© 2024 HUBT Social. All rights reserved.</value>
+</data>
+<data name="EmailContentFooter2" xml:space="preserve">
+  <value>You are receiving this mail because you registered to join the HUBT Social platform. 
+      If you no longer want to receive mails, click the</value>
+</data>
+<data name="EmailContentFooter3" xml:space="preserve">
+  <value>unsubscribe</value>
+</data>
+<data name="EmailContentFooter4" xml:space="preserve">
+  <value> link below.</value>
+</data>
+
+
 </root>

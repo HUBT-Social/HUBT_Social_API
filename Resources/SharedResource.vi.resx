@@ -345,4 +345,54 @@
   <data name="NotEnoughMembers" xml:space="preserve">
     <value>Số thành viên không đủ để tạo nhóm chat mới</value>
   </data>
+    <data name="EmailContentHeaderContent1" xml:space="preserve">
+    <value>Hà Nội</value>
+    </data> 
+    <data name="EmailContentHeaderContent2" xml:space="preserve">
+    <value>Trường Đại học Kinh Doanh và Công Nghệ</value>
+    </data>
+    <data name="EmailContentHeaderContent3" xml:space="preserve">
+    <value>HUBT Social – Kết nối sinh viên HUBT! Chia sẻ kiến thức, cập nhật các sự kiện và phát triển</value>
+    </data>
+    <data name="EmailContentHeaderContent4" xml:space="preserve">
+    <value>cùng nhau trong một cộng đồng sôi động, sáng tạo và đầy đam mê.</value>
+    </data>
+  <data name="EmailContentOTP0" xml:space="preserve">
+  <value>Xin chào </value>
+</data>
+<data name="EmailContentOTP1" xml:space="preserve">
+  <value>Đây là Mã OTP (One Time Password) của bạn.</value>
+</data>
+<data name="EmailContentOTP2" xml:space="preserve">
+  <value>Vui lòng nhập mã này để xác minh địa chỉ email của bạn cho HUBT Social:</value>
+</data>
+<data name="EmailContentOTP3" xml:space="preserve">
+  <value>Sao chép OTP</value>
+</data>
+<data name="EmailContentOTP4" xml:space="preserve">
+  <value>Mã OTP sẽ hết hạn trong 3 phút.</value>
+</data>
+<data name="EmailContentOTP5" xml:space="preserve">
+  <value>Trân trọng</value>
+</data>
+<data name="EmailContentOTP6" xml:space="preserve">
+  <value>Đội ngũ HUBT Social</value>
+</data>
+<data name="EmailContentFooter1" xml:space="preserve">
+  <value>© 2024 HUBT Social. Bảo lưu mọi quyền.</value>
+</data>
+<data name="EmailContentFooter2" xml:space="preserve">
+  <value>Bạn nhận được email này vì đã đăng ký tham gia nền tảng HUBT Social. 
+      Nếu không muốn nhận email nữa, hãy nhấp vào liên kết</value>
+</data>
+<data name="EmailContentFooter3" xml:space="preserve">
+  <value>hủy đăng ký</value>
+</data>
+<data name="EmailContentFooter4" xml:space="preserve">
+  <value> dưới đây.</value>
+</data>
+
+
+
+
 </root>

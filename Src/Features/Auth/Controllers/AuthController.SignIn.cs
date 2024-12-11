@@ -61,7 +61,8 @@ public partial class AuthController
                 {
                     ToEmail = code.Email,
                     Code = code.Code,
-                    Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject)
+                    Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
+                    FullName = user.FirstName + " " + user.LastName
                 });
 
                 return Ok(new LoginResponse
