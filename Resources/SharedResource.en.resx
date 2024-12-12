@@ -370,7 +370,7 @@
   <value>Copy OTP</value>
 </data>
 <data name="EmailContentOTP4" xml:space="preserve">
-  <value>The OTP will expire in 3 minutes.</value>
+  <value>The OTP will expire in 2 minutes 30 seconds.</value>
 </data>
 <data name="EmailContentOTP5" xml:space="preserve">
   <value>Best Regards</value>
