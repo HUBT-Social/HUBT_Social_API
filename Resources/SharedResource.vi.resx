@@ -456,7 +456,7 @@
   <value>Sao chép OTP</value>
 </data>
 <data name="EmailContentOTP4" xml:space="preserve">
-  <value>Mã OTP sẽ hết hạn trong 3 phút.</value>
+  <value>Mã OTP sẽ hết hạn trong 2 phút 30 giây.</value>
 </data>
 <data name="EmailContentOTP5" xml:space="preserve">
   <value>Trân trọng</value>

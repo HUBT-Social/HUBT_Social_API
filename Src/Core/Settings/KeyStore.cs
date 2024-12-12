@@ -243,11 +243,13 @@ namespace HUBT_Social_API.Core.Settings
                         .otp-container {
                             text-align: center;
                             margin: 20px 0;
+                            flex-wrap: nowrap;
+                            
                         }
                         .otp-box {
                             display: inline-block;
-                            width: 40px;
-                            height: 40px;
+                            width: 37px;
+                            height: 37px;
                             background-color: #dff0d8;
                             text-align: center;
                             line-height: 40px;
@@ -299,7 +301,7 @@ namespace HUBT_Social_API.Core.Settings
                                 <img src=""https://res.cloudinary.com/dnx8aew1t/image/upload/v1733812934/vtpdccqnag2djickf47c.png"" alt=""HUBT Social"">
                             </section>
                             <section class=""header-right"">
-                                <h1> HUBT Social </h1>
+                                <h1>HUBT Social</h1>
                             </section>
                         </header>
                         <table role=""presentation"" width=""100%"" class=""content"">
