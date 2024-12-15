@@ -14,6 +14,8 @@ using MimeKit.Text;
 using MongoDB.Driver;
 using System.ComponentModel;
 using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
+using System.IO;
+
 
 namespace HUBT_Social_API.Features.Auth.Services.Child;
 
@@ -22,14 +24,16 @@ public class EmailService : IEmailService
     private readonly SMPTSetting _emailSetting;
     private readonly IMongoCollection<Postcode> _postcode;
     private readonly UserManager<AUser> _userManager;
+    private readonly IWebHostEnvironment _env;
 
     public EmailService(IOptions<SMPTSetting> setting, IMongoCollection<Postcode> postcode,
-        UserManager<AUser> userManager)
+        UserManager<AUser> userManager,IWebHostEnvironment env)
     {
         _emailSetting = setting.Value;
         _postcode = postcode;
         _userManager = userManager;
         // Lấy thông tin từ môi trường hoặc cài đặt mặc định
+        _env = env;
     }
 
     public async Task<bool> SendEmailAsync(EmailRequest emailRequest)
@@ -142,16 +146,21 @@ public class EmailService : IEmailService
     {
 
         var emailMessage = new MimeMessage();
-
+        string emailHtmlContent;
         // Người gửi và người nhận
         emailMessage.From.Add(new MailboxAddress("HUBT Social", _emailSetting.Email));
         emailMessage.To.Add(new MailboxAddress(emailRequest.ToEmail, emailRequest.ToEmail));
         emailMessage.Subject = emailRequest.Subject;
-        // Đọc HTML template
-        string emailHtmlContent = LocalValue.Get(KeyStore.EmailTemplate);
-        
-        // Thay thế thông tin trong template
-        emailHtmlContent = emailHtmlContent
+        try
+        {
+            // Đọc HTML template
+            var filePath = Path.Combine(_env.ContentRootPath, "HTML_Template", "OTPVerify.html");
+            emailHtmlContent = File.ReadAllText(filePath);
+        }catch
+        {
+            emailHtmlContent = LocalValue.Get(KeyStore.EmailTemplate);
+
+            emailHtmlContent = emailHtmlContent
             .Replace("{{RecipientName}}", emailRequest.FullName.Length != 0 ? emailRequest.FullName : emailRequest.ToEmail)
             .Replace("{{content-top0}}",LocalValue.Get(KeyStore.EmailContentOTP0))
             .Replace("{{content-top1}}",LocalValue.Get(KeyStore.EmailContentOTP1))
@@ -163,6 +172,30 @@ public class EmailService : IEmailService
             .Replace("{{footer2}}",LocalValue.Get(KeyStore.EmailContentFooter2))
             .Replace("{{footer3}}",LocalValue.Get(KeyStore.EmailContentFooter3))
             .Replace("{{footer4}}",LocalValue.Get(KeyStore.EmailContentFooter4));
+        }
+        
+        
+        // Thay thế thông tin trong template
+        emailHtmlContent = emailHtmlContent
+            .Replace("{{name}}", emailRequest.FullName.Length != 0 ? emailRequest.FullName : emailRequest.ToEmail)
+            .Replace("{{device}}",emailRequest.Device)
+            .Replace("{{location}}",emailRequest.Location)
+            .Replace("{{time}}",emailRequest.DateTime)
+            .Replace("{{text0}}",LocalValue.Get(KeyStore.Email2Text0))
+            .Replace("{{text1}}",LocalValue.Get(KeyStore.Email2Text1))
+            .Replace("{{text2}}",LocalValue.Get(KeyStore.Email2Text2))
+            .Replace("{{text3}}",LocalValue.Get(KeyStore.Email2Text3))
+            .Replace("{{text4}}",LocalValue.Get(KeyStore.Email2Text4))
+            .Replace("{{text5}}",LocalValue.Get(KeyStore.Email2Text5))
+            .Replace("{{text6}}",LocalValue.Get(KeyStore.Email2Text6))
+            .Replace("{{text7}}",LocalValue.Get(KeyStore.Email2Text7))
+            .Replace("{{text8}}",LocalValue.Get(KeyStore.Email2Text8))
+            .Replace("{{text9}}",LocalValue.Get(KeyStore.Email2Text9))
+            .Replace("{{text10}}",LocalValue.Get(KeyStore.Email2Text10))
+            .Replace("{{text11}}",LocalValue.Get(KeyStore.Email2Text11))
+            .Replace("{{text12}}",LocalValue.Get(KeyStore.Email2Text12))
+            .Replace("{{text13}}",LocalValue.Get(KeyStore.Email2Text13));
+        
         for (int i = 0; i < 6; i++)
         {
             string placeholder = $"{{{{value-{i}}}}}";

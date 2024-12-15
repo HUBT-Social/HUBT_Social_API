@@ -70,7 +70,10 @@ public partial class AuthController
                     ToEmail = code.Email,
                     Code = code.Code,
                     Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
-                    FullName = user.FirstName + " " + user.LastName
+                    FullName = user.FirstName + " " + user.LastName,
+                    Device = userAgent,
+                    Location = await ServerHelper.GetLocationFromIpAsync(ipAddress),
+                    DateTime = ServerHelper.ConvertToCustomString(DateTime.UtcNow) 
                 });
 
                 return Ok(new LoginResponse
