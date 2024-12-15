@@ -115,8 +115,21 @@ namespace HUBT_Social_API.Core.Settings
         public const string EmailContentFooter2 = "EmailContentFooter2";
         public const string EmailContentFooter3 = "EmailContentFooter3";
         public const string EmailContentFooter4 = "EmailContentFooter4";
-
-        
+        public const string Email2Text0 = "Email2Text0";
+        public const string Email2Text1 = "Email2Text1";
+        public const string Email2Text2 = "Email2Text2";
+        public const string Email2Text3 = "Email2Text3";
+        public const string Email2Text4 = "Email2Text4";
+        public const string Email2Text5 = "Email2Text5";
+        public const string Email2Text6 = "Email2Text6";
+        public const string Email2Text7 = "Email2Text7";
+        public const string Email2Text8 = "Email2Text8";
+        public const string Email2Text9 = "Email2Text9";
+        public const string Email2Text10 = "Email2Text10";
+        public const string Email2Text11 = "Email2Text11";
+        public const string Email2Text12 = "Email2Text12";
+        public const string Email2Text13 = "Email2Text13";
+                
 
         public const string TokenValid =  "TokenValid";
         public const string AvatarDefaultFemale1 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811655/qqgtqqr9igqnz6pj8zjn.jpg";

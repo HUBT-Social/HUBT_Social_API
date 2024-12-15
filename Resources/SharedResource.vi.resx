@@ -391,7 +391,48 @@
 <data name="EmailContentFooter4" xml:space="preserve">
   <value> dưới đây.</value>
 </data>
-
+<data name="Email2Text0" xml:space="preserve">
+  <value>Kính gửi</value>
+</data>
+<data name="Email2Text1" xml:space="preserve">
+  <value>Mã xác minh một lần của bạn là</value>
+</data>
+<data name="Email2Text2" xml:space="preserve">
+  <value>Vui lòng xác thực danh tính của bạn bằng cách nhập mã 6 chữ số này</value>
+</data>
+<data name="Email2Text3" xml:space="preserve">
+  <value>trong quá trình xác thực. Lưu ý rằng mã này sẽ hết hạn</value>
+</data>
+<data name="Email2Text4" xml:space="preserve">
+  <value>sau 2 phút 30 giây vì lý do bảo mật.</value>
+</data>
+<data name="Email2Text5" xml:space="preserve">
+  <value>Chúng tôi nhận thấy có sự truy cập từ một </value>
+</data>
+<data name="Email2Text6" xml:space="preserve">
+  <value>vị trí hoặc thiết bị mới.</value>
+</data>
+<data name="Email2Text7" xml:space="preserve">
+  <value>Thiết bị</value>
+</data>
+<data name="Email2Text8" xml:space="preserve">
+  <value>Vị trí</value>
+</data>
+<data name="Email2Text9" xml:space="preserve">
+  <value>Ngày</value>
+</data>
+<data name="Email2Text10" xml:space="preserve">
+  <value>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với Hướng dẫn Website của chúng tôi.</value>
+</data>
+<data name="Email2Text11" xml:space="preserve">
+  <value>Hoặc, truy cập Trung tâm hỗ trợ của chúng tôi.</value>
+</data>
+<data name="Email2Text12" xml:space="preserve">
+  <value>HUBTSOCIAL - Một ngôi nhà của tình bạn và sự khai sáng, nuôi dưỡng những kết nối sâu sắc trong cộng đồng HUBT để khơi gợi sự chia sẻ, khơi nguồn học hỏi và tỏa sáng những giá trị cao đẹp, xây dựng một nơi trú ẩn hòa hợp nơi những trái tim và khát vọng hòa quyện.</value>
+</data>
+<data name="Email2Text13" xml:space="preserve">
+  <value>Kết nối với HUBTSOCIAL trên Facebook, Instagram và Twitter để luôn cập nhật thông tin, chia sẻ khoảnh khắc và phát triển cùng cộng đồng năng động của chúng tôi!</value>
+</data>
 
 
 

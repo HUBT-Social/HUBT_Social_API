@@ -37,7 +37,10 @@ public partial class AuthController
                 Code = code.Code,
                 Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
                 ToEmail = request.Email,
-                FullName = request.UserName 
+                FullName = request.UserName,
+                Device = userAgent,
+                Location = await ServerHelper.GetLocationFromIpAsync(ipAddress),
+                DateTime = ServerHelper.ConvertToCustomString(DateTime.UtcNow)  
             });
         }
         catch (Exception)

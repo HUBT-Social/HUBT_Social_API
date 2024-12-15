@@ -45,7 +45,11 @@ public partial class AuthController
                 {
                     Code = code.Code,
                     Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
-                    ToEmail = user.Email
+                    ToEmail = user.Email,
+                    FullName = user.FirstName + " " + user.LastName,
+                    Device = userAgent,
+                    Location = await ServerHelper.GetLocationFromIpAsync(ipAddress),
+                    DateTime = ServerHelper.ConvertToCustomString(DateTime.UtcNow)
                 });
                 if (_emailService.MaskEmail(user.Email, out string maskEmail))
                 {

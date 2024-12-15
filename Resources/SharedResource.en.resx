@@ -391,6 +391,46 @@
 <data name="EmailContentFooter4" xml:space="preserve">
   <value> link below.</value>
 </data>
-
-
+<data name="Email2Text0" xml:space="preserve">
+  <value>Dear</value>
+</data>
+<data name="Email2Text1" xml:space="preserve">
+  <value>Your one-time code is</value>
+</data>
+<data name="Email2Text2" xml:space="preserve">
+  <value>Please verify your identity by entering this</value>
+</data>
+<data name="Email2Text3" xml:space="preserve">
+  <value>6-digit code during authentication. Note that this code will expire</value>
+</data>
+<data name="Email2Text4" xml:space="preserve">
+  <value>in 2 minutes and 30 seconds for security reasons.</value>
+</data>
+<data name="Email2Text5" xml:space="preserve">
+  <value>We noticed access from a </value>
+</data>
+<data name="Email2Text6" xml:space="preserve">
+  <value>new location or device.</value>
+</data>
+<data name="Email2Text7" xml:space="preserve">
+  <value>Device</value>
+</data>
+<data name="Email2Text8" xml:space="preserve">
+  <value>Location</value>
+</data>
+<data name="Email2Text9" xml:space="preserve">
+  <value>Date</value>
+</data>
+<data name="Email2Text10" xml:space="preserve">
+  <value>If you have any questions, contact our Website Guides.</value>
+</data>
+<data name="Email2Text11" xml:space="preserve">
+  <value>Or, visit our Help Center.</value>
+</data>
+<data name="Email2Text12" xml:space="preserve">
+  <value>HUBTSOCIAL - A sanctuary of friendship and enlightenment, fostering profound connections within the HUBT community to inspire sharing, ignite learning, and radiate noble values, building a harmonious haven where hearts and aspirations unite.</value>
+</data>
+<data name="Email2Text13" xml:space="preserve">
+  <value>Connect with HUBTSOCIAL on Facebook, Instagram, and Twitter to stay informed, share moments, and grow with our vibrant community!</value>
+</data>
 </root>
