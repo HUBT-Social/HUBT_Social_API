@@ -14,7 +14,7 @@ namespace HUBT_Social_API.Features.Auth.Controllers;
 
 public partial class AuthController
 {
-    [HttpPut("refresh-token")]
+    [HttpPost("refresh-token")]
     public async Task<IActionResult> RegenerateToken([FromBody] RefreshTokenRequest refreshToken)
     {
         string? accessToken = TokenHelper.ExtractTokenFromHeader(Request);
