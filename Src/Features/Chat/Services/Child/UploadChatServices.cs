@@ -58,8 +58,7 @@ public class UploadChatServices : IUploadChatServices
         var update = Builders<ChatRoomModel>
             .Update.Push(cr => cr.ChatItems, newMessage);
 
-        var result = await _chatRooms.UpdateOneAsync(cr => cr.Id == chatRequest.GroupId, update);
-
+        var result = await _chatRooms.UpdateOneAsync(cr => cr.ChatRoomId == chatRequest.GroupId, update);
         return result.ModifiedCount > 0;
     }
 
@@ -91,7 +90,7 @@ public class UploadChatServices : IUploadChatServices
         var update = Builders<ChatRoomModel>
             .Update.Push(cr => cr.ChatItems, newMedia);
 
-        var result = await _chatRooms.UpdateOneAsync(cr => cr.Id == chatRequest.GroupId, update);
+        var result = await _chatRooms.UpdateOneAsync(cr => cr.ChatRoomId == chatRequest.GroupId, update);
 
         return result.ModifiedCount > 0;
     }

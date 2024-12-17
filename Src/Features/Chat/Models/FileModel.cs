@@ -6,4 +6,5 @@ public class FileChatItem : ChatItem
     public string FileName { get; set; } = string.Empty;
     public long FileSize { get; set; }
     public string FileType { get; set; } = string.Empty;
+    public override object ToResponseData() => new { FileUrl,FileName,FileSize,FileType };
 }

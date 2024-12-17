@@ -23,7 +23,7 @@ public class ChatRoomService : IChatRoomService
         {
             ChatRoomModel newChatRoom = new()
             {
-                Id = Guid.NewGuid().ToString(),
+                ChatRoomId = Guid.NewGuid().ToString(),
                 Name = createGroupRequest.GroupName,
                 AvatarUrl = LocalValue.Get(KeyStore.DefaultUserImage),
                 UserIds = createGroupRequest.UserIds,
@@ -31,7 +31,7 @@ public class ChatRoomService : IChatRoomService
             };
 
             await _chatRooms.InsertOneAsync(newChatRoom); 
-            return newChatRoom.Id;
+            return newChatRoom.ChatRoomId;
         }
         catch
         {
@@ -46,7 +46,7 @@ public class ChatRoomService : IChatRoomService
         try
         {
             UpdateDefinition<ChatRoomModel> update = Builders<ChatRoomModel>.Update.Set(c => c.Name, newName); 
-            UpdateResult result = await _chatRooms.UpdateOneAsync(c => c.Id == id, update);
+            UpdateResult result = await _chatRooms.UpdateOneAsync(c => c.ChatRoomId == id, update);
 
             return result.ModifiedCount > 0; 
         }
@@ -62,7 +62,7 @@ public class ChatRoomService : IChatRoomService
     {
         try
         {
-            DeleteResult result = await _chatRooms.DeleteOneAsync(c => c.Id == id); // Xóa nhóm theo ID
+            DeleteResult result = await _chatRooms.DeleteOneAsync(c => c.ChatRoomId == id); // Xóa nhóm theo ID
             return result.DeletedCount > 0; // Kiểm tra xem có nhóm nào bị xóa không
         }
         catch
@@ -75,7 +75,7 @@ public class ChatRoomService : IChatRoomService
     // Lấy thông tin nhóm theo ID
     public async Task<ChatRoomModel> GetGroupByIdAsync(string id)
     {
-        return await _chatRooms.Find(c => c.Id == id).FirstOrDefaultAsync(); // Tìm nhóm theo ID
+        return await _chatRooms.Find(c => c.ChatRoomId == id).FirstOrDefaultAsync(); // Tìm nhóm theo ID
     }
     // Tim kiem group
     public async Task<List<SearchChatRoomReponse>> SearchGroupsAsync(string keyword)
@@ -92,7 +92,7 @@ public class ChatRoomService : IChatRoomService
         // Chỉ lấy các trường cần thiết và giới hạn số lượng kết quả
         var projection = Builders<ChatRoomModel>.Projection.Expression(cr => new SearchChatRoomReponse
         {
-            Id = cr.Id,
+            ChatRoomId = cr.ChatRoomId,
             GroupName = cr.Name,
             AvatarUrl = cr.AvatarUrl,
             TotalNumber = cr.UserIds.Count,
@@ -133,14 +133,8 @@ public class ChatRoomService : IChatRoomService
             SenderId = item.SenderId,
             Timestamp = item.Timestamp,
             Type = item.Type,
-            Data = item switch
-            {
-                MessageChatItem message => new { message.Content, message.Links },
-                MediaChatItem media => new { media.MediaUrls },
-                FileChatItem file => new { file.FileUrl, file.FileName, file.FileSize, file.FileType },
-                _ => null
-            }
-        });
+            Data = item.ToResponseData()
+        }).ToList();
 
         return response;
     }
@@ -148,7 +142,7 @@ public class ChatRoomService : IChatRoomService
         public async Task<List<ChatItem>> GetItemsAsync(GetChatHistoryRequest getChatHistoryRequest)
         {
             // Giả lập data từ `ChatRoomModel` (thay thế bằng kết nối DB thực tế)
-            var chatRoom = _chatRooms.Find(room => room.Id == getChatHistoryRequest.ChatRoomId).FirstOrDefault();
+            var chatRoom = _chatRooms.Find(room => room.ChatRoomId == getChatHistoryRequest.ChatRoomId).FirstOrDefault();
 
             if (chatRoom == null)
                 return new List<ChatItem>();

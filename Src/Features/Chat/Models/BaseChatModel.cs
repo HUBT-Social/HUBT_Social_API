@@ -6,6 +6,7 @@ public class ChatItem
     public string SenderId { get; set; } = string.Empty;
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     public string Type { get; set; } = string.Empty; // Loại tin nhắn (Message, Media, File)
+    public virtual object ToResponseData() => null;
 }
 
 
