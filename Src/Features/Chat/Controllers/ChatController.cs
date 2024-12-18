@@ -1,6 +1,9 @@
 using HUBT_Social_API.Core.Settings;
+using HUBT_Social_API.Features.Auth.Dtos.Reponse;
+using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
+using HUBT_Social_API.Src.Core.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -13,17 +16,28 @@ public class ChatController : ControllerBase
 {
 
     private readonly IUploadChatServices _uploadtService;
+    private readonly ITokenService _tokenService;
 
-    public ChatController(IUploadChatServices uploadtService)
+    public ChatController(IUploadChatServices uploadtService,ITokenService tokenService)
     {
         _uploadtService = uploadtService;
+        _tokenService = tokenService;
     }
 
     [HttpPost("send-message")]
-    public async Task<IActionResult> SendMessage(MessageRequest messageRequest)
+    public async Task<IActionResult> SendMessage(MessageInputRequest messageInputRequest)
     {
-        if (messageRequest == null || string.IsNullOrWhiteSpace(messageRequest.SenderId))
+        if (messageInputRequest == null)
             return BadRequest(new { message = "Invalid chat request." });
+
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (userResponse.Success == false)
+        {
+            BadRequest("Token is not validate");
+        }
+        
+        MessageRequest messageRequest = (MessageRequest)messageInputRequest;
+        messageRequest.SenderId = userResponse.User.Id.ToString();
         
         bool IsSent = await _uploadtService.UploadMessageAsync(messageRequest);
         return IsSent == true
@@ -32,13 +46,20 @@ public class ChatController : ControllerBase
     }
 
     [HttpPost("send-media")]
-    public async Task<IActionResult> SendMedia(FileRequest fileRequest)
+    public async Task<IActionResult> SendMedia(MediaInputRequest mediaInputRequest)
     {
-        if(string.IsNullOrWhiteSpace(fileRequest.GroupId) || string.IsNullOrWhiteSpace(fileRequest.SenderId) || fileRequest.Files.Count == 0)
+        if(string.IsNullOrWhiteSpace(mediaInputRequest.GroupId)  || mediaInputRequest.Files.Count == 0)
         {
             return BadRequest("value is null");
         }
-        bool IsSent = await _uploadtService.UploadMediaAsync(fileRequest);
+
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (userResponse.Success == false)
+        {
+            BadRequest("Token is not validate");
+        }
+        MediaRequest mediaRequest = (MediaRequest)mediaInputRequest;
+        bool IsSent = await _uploadtService.UploadMediaAsync(mediaRequest);
         return IsSent == true
             ? Ok("sent")
             : BadRequest("Sending failed");

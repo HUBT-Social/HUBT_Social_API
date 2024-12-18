@@ -13,4 +13,12 @@ public class ChatRoomModel
     public List<string> UserIds { get; set; } = new(); // Danh sách ID người dùng tham gia phòng chat
     public List<ChatItem> ChatItems { get; set; } = new(); // Danh sách các tin nhắn, file, media trong phòng chat
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Thời gian tạo phòng chat
+    public TypeChatRoom TypeChatRoom { get; set; } = TypeChatRoom.None;
+
+}
+public enum TypeChatRoom
+{
+    SingleChat,
+    GroupChat,
+    None
 }

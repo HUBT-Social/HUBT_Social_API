@@ -22,7 +22,7 @@ public static class ServiceRegistration
         services.AddScoped<IRegisterService, RegisterService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IChatRoomService, ChatRoomService>();
-
+        services.AddScoped<ChatHub>();
 
 /*            services.AddScoped<IUserManagerS, UserManagerS>();
 */
