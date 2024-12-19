@@ -2,7 +2,6 @@ using System.Globalization;
 using System.Net;
 using HUBT_Social_API.Core.Configurations;
 using HUBT_Social_API.Features.Chat.ChatHubs;
-using HUBT_Social_API.Features.Chat.ChatHubs.ChildChatHubs;
 using HUBT_Social_API.Src.Core.Configurations;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;

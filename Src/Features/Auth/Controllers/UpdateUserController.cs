@@ -38,6 +38,7 @@ public class UpdateUserController : BaseAuthController
                 new
                 {
                     AvatarUrl = userResponse.User.AvataUrl,
+                    UserName = userResponse.User.UserName,
                     FirstName = userResponse.User.FirstName,
                     LastName = userResponse.User.LastName,
                     Gender = userResponse.User.Gender,
@@ -49,6 +50,33 @@ public class UpdateUserController : BaseAuthController
         }
 
         return BadRequest(userResponse.Message);
+
+    }
+    [HttpGet("get-user-by-username")]
+    public async Task<IActionResult> GetUserByUserName(GetUserByUserNameRequest getUserByUserNameRequest)
+    {
+        if(string.IsNullOrEmpty(getUserByUserNameRequest.UserName))
+        {
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+        }
+        AUser? user = await _userService.FindUserByUserNameAsync(getUserByUserNameRequest.UserName);
+        if (user != null)
+        {
+            return Ok(
+                new
+                {
+                    AvatarUrl = user.AvataUrl,
+                    UserName = user.UserName,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Gender = user.Gender,
+                    Email = user.Email,
+                    BirthDay = user.DateOfBirth,
+                    PhoneNumber = user.PhoneNumber
+                }
+            );
+        }
+        return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
 
     }
     [HttpPost("get-url-from-image")]

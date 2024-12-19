@@ -30,7 +30,7 @@ public class UploadChatServices : IUploadChatServices
     public async Task<bool> UploadMessageAsync(MessageRequest chatRequest)
     {
         
-        if(!_chatRooms.Find(room => room.UserIds.Contains(chatRequest.SenderId)).Any()){return false;}
+        if(!_chatRooms.Find(room => room.Id.Contains(chatRequest.GroupId)).Any()){return false;}
 
         var (text, links) = ExtractLinksIfPresent(chatRequest.Content);
         
@@ -61,13 +61,13 @@ public class UploadChatServices : IUploadChatServices
         var update = Builders<ChatRoomModel>
             .Update.Push(cr => cr.ChatItems, newMessage);
 
-        var result = await _chatRooms.UpdateOneAsync(cr => cr.ChatRoomId == chatRequest.GroupId, update);
+        var result = await _chatRooms.UpdateOneAsync(cr => cr.Id == chatRequest.GroupId, update);
         return result.ModifiedCount > 0;
     }
 
     public async Task<bool> UploadMediaAsync(MediaRequest mediaRequest)
     {
-        if(!_chatRooms.Find(room => room.UserIds.Contains(mediaRequest.SenderId)).Any()){return false;}
+        if(!_chatRooms.Find(room => room.Id.Contains(mediaRequest.GroupId)).Any()){return false;}
 
         MediaChatItem newMedia = new()
         {
@@ -93,7 +93,7 @@ public class UploadChatServices : IUploadChatServices
         var update = Builders<ChatRoomModel>
             .Update.Push(cr => cr.ChatItems, newMedia);
 
-        var result = await _chatRooms.UpdateOneAsync(cr => cr.ChatRoomId == mediaRequest.GroupId, update);
+        var result = await _chatRooms.UpdateOneAsync(cr => cr.Id == mediaRequest.GroupId, update);
 
         return result.ModifiedCount > 0;
     }
