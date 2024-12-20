@@ -16,12 +16,24 @@ public class ChatService : IChatService
         _chatRooms = chatRooms;
     }
 
-    // Thêm nhóm chat mới
+    /// <summary>
+    /// Thêm một nhóm chat mới vào cơ sở dữ liệu.
+    /// </summary>
+    /// <param name="newRoomModel">
+    /// Đối tượng chứa thông tin của nhóm chat mới, bao gồm tên nhóm, danh sách thành viên, avatar, v.v.
+    /// </param>
+    /// <returns>
+    /// ID của nhóm chat vừa được thêm nếu thành công. 
+    /// Nếu không thành công, trả về null.
+    /// </returns>
+    /// <example>
+    /// Ví dụ:
+    /// var groupId = await CreateGroupAsync(new ChatRoomModel { Name = "Group A" });
+    /// </example>
     public async Task<string?> CreateGroupAsync(ChatRoomModel newRoomModel)
     {
         try
         {
-
             await _chatRooms.InsertOneAsync(newRoomModel); 
             return newRoomModel.Id;
         }
@@ -29,44 +41,77 @@ public class ChatService : IChatService
         {
             return null;
         }
-        
     }
 
-    
-
-    // Xóa nhóm chat
+    /// <summary>
+    /// Xóa một nhóm chat khỏi cơ sở dữ liệu dựa trên ID.
+    /// </summary>
+    /// <param name="id">
+    /// ID của nhóm chat cần xóa.
+    /// </param>
+    /// <returns>
+    /// Trả về true nếu xóa thành công, ngược lại false.
+    /// </returns>
+    /// <example>
+    /// Ví dụ:
+    /// var isDeleted = await DeleteGroupAsync("group123");
+    /// </example>
     public async Task<bool> DeleteGroupAsync(string id)
     {
         try
         {
-            DeleteResult result = await _chatRooms.DeleteOneAsync(c => c.Id == id); // Xóa nhóm theo ID
-            return result.DeletedCount > 0; // Kiểm tra xem có nhóm nào bị xóa không
+            DeleteResult result = await _chatRooms.DeleteOneAsync(c => c.Id == id); 
+            return result.DeletedCount > 0;
         }
         catch
         {
             return false;
         }
-        
     }
 
-    // Lấy thông tin nhóm theo ID
+    /// <summary>
+    /// Lấy thông tin chi tiết của một nhóm chat theo ID.
+    /// </summary>
+    /// <param name="id">
+    /// ID của nhóm chat cần lấy thông tin.
+    /// </param>
+    /// <returns>
+    /// Đối tượng `ChatRoomModel` chứa thông tin chi tiết của nhóm chat. 
+    /// Nếu không tìm thấy, trả về null.
+    /// </returns>
+    /// <example>
+    /// Ví dụ:
+    /// var group = await GetGroupByIdAsync("group123");
+    /// </example>
     public async Task<ChatRoomModel> GetGroupByIdAsync(string id)
     {
-        return await _chatRooms.Find(c => c.Id == id).FirstOrDefaultAsync(); // Tìm nhóm theo ID
+        return await _chatRooms.Find(c => c.Id == id).FirstOrDefaultAsync();
     }
-    // Tim kiem group
+
+    /// <summary>
+    /// Tìm kiếm các nhóm chat theo từ khóa.
+    /// </summary>
+    /// <param name="keyword">
+    /// Từ khóa cần tìm kiếm, áp dụng cho tên nhóm chat.
+    /// </param>
+    /// <returns>
+    /// Danh sách các nhóm chat khớp với từ khóa tìm kiếm, chứa các trường cần thiết.
+    /// Nếu từ khóa trống, trả về danh sách rỗng.
+    /// </returns>
+    /// <example>
+    /// Ví dụ:
+    /// var groups = await SearchGroupsAsync("team");
+    /// </example>
     public async Task<List<SearchChatRoomReponse>> SearchGroupsAsync(string keyword)
     {
         if (string.IsNullOrWhiteSpace(keyword))
-            return new List<SearchChatRoomReponse>(); // Trả về danh sách rỗng nếu từ khóa trống
+            return new List<SearchChatRoomReponse>();
 
-        // Sử dụng regex để tìm kiếm theo keyword
         var filter = Builders<ChatRoomModel>.Filter.Regex(
             cr => cr.Name, 
             new MongoDB.Bson.BsonRegularExpression(keyword, "i")
         );
 
-        // Chỉ lấy các trường cần thiết và giới hạn số lượng kết quả
         var projection = Builders<ChatRoomModel>.Projection.Expression(cr => new SearchChatRoomReponse
         {
             Id = cr.Id,
@@ -78,17 +123,24 @@ public class ChatService : IChatService
         return await _chatRooms
             .Find(filter)
             .Project(projection)
-            .Limit(10) // Giới hạn kết quả trả về là 10 nếu muốn nhiều hơn thì có thể truyền tham số đầu vào
+            .Limit(10)
             .ToListAsync();
     }
 
-
-    // Lấy tất cả nhóm chat
+    /// <summary>
+    /// Lấy danh sách tất cả các nhóm chat từ cơ sở dữ liệu.
+    /// </summary>
+    /// <returns>
+    /// Danh sách các đối tượng `ChatRoomModel` chứa thông tin của tất cả nhóm chat.
+    /// </returns>
+    /// <example>
+    /// Ví dụ:
+    /// var allRooms = await GetAllRoomsAsync();
+    /// </example>
     public async Task<List<ChatRoomModel>> GetAllRoomsAsync()
     {
-        return await _chatRooms.Find(_ => true).ToListAsync(); // Lấy tất cả nhóm từ MongoDB
+        return await _chatRooms.Find(_ => true).ToListAsync();
     }
-
     /// <summary>
     /// Lấy tất cả phòng chat có chứa ID người dùng.
     /// </summary>

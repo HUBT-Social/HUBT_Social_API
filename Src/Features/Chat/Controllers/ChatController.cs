@@ -51,7 +51,6 @@ public class ChatController : ControllerBase
             ? Ok(new { message = groupId })
             : BadRequest(new { message = LocalValue.Get(KeyStore.FailedToCreateGroup) });
     }
-
             // Phương thức kiểm tra đầu vào
             private string? ValidateCreateGroupRequest(CreateGroupRequest request)
             {
@@ -61,7 +60,6 @@ public class ChatController : ControllerBase
                     return LocalValue.Get(KeyStore.NotEnoughMembers);
                 return null;
             }
-
             // Phương thức tạo danh sách Participant
             private List<Participant> CreateParticipants(IEnumerable<string> userNames, string ownerUserName)
             {
@@ -82,7 +80,6 @@ public class ChatController : ControllerBase
                 
                 return participants;
             }
-
             // Phương thức tạo ChatRoomModel
             private ChatRoomModel CreateChatRoom(string groupName, List<Participant> participants)
             {
@@ -95,33 +92,8 @@ public class ChatController : ControllerBase
                     CreatedAt = DateTime.UtcNow
                 };
             }
-
+    
    
 
-    // [HttpPut("{id}/update-name")]
-    // public async Task<IActionResult> UpdateGroupName(string id, [FromBody] string newName)
-    // {
-        
-    // }
 
-
-    // [HttpDelete("{id}")]
-    // public async Task<IActionResult> DeleteGroup(string id)
-    // {
-       
-    // }
-
- 
-    // [HttpGet("{id}")]
-    // public async Task<IActionResult> GetGroupById(string id)
-    // {
-        
-    // }
-
-
-    // [HttpGet]
-    // public async Task<IActionResult> GetAllGroups()
-    // {
-        
-    // }
 }

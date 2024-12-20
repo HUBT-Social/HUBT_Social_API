@@ -8,6 +8,7 @@ public class ChatItem
     public string Type { get; set; } = string.Empty; // Loại tin nhắn (Message, Media, File)
     public bool Unsend { get; set; } = false;
     public bool IsPin { get; set; } = false;
+    public string ReplyFrom { get; set; } = string.Empty;
     public virtual object ToResponseData() => null;
 }
 
