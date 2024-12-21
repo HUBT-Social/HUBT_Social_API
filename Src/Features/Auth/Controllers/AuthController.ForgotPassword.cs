@@ -82,29 +82,35 @@ public partial class AuthController
         if (ipAddress == null) return BadRequest(
             new LoginResponse
             {
-                RequiresTwoFactor = false,
                 Message = LocalValue.Get(KeyStore.InvalidInformation)
             }
             );
 
-        Postcode? currentEmail = await _emailService.GetCurrentPostCode(userAgent, ipAddress);
+        Postcode? currentPostcode = await _emailService.GetCurrentPostCode(userAgent, ipAddress);
 
-        if (currentEmail == null)
+        if (currentPostcode == null)
             return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
 
         var result = await _emailService.ValidatePostcodeAsync(new ValidatePostcodeRequest
         {
             Postcode = request.Postcode,
-            Email = currentEmail.Email,
+            Email = currentPostcode.Email,
             UserAgent = userAgent
         });
-
-        return result is not null
-            ? Ok(LocalValue.Get(KeyStore.OtpVerificationSuccess))
-            : BadRequest(LocalValue.Get(KeyStore.OtpInvalid));
+        if (result is not null)
+        {
+            if (currentPostcode.ExtendPostcodeExpireTime(10))
+                await _emailService.UpdatePostcode(currentPostcode);
+            return Ok(LocalValue.Get(KeyStore.OtpVerificationSuccess));
+        }
+        return BadRequest(LocalValue.Get(KeyStore.OtpInvalid));
     }
-
-    [HttpPost("forgot-password/change-password")]
+    [HttpPut("forgot-password/password-verification/resend")]
+    public async Task<IActionResult> ResendForgetPasswordPostcode()
+    {
+        return await PostcodeHelper.ResendPostcode(HttpContext, Request, _emailService.CreatePostcodeForgetPasswordAsync, _emailService, PostcodeType.ForgetPassword);
+    }
+    [HttpPut("forgot-password/change-password")]
     public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
     {
         string? userAgent = Request.Headers.UserAgent.ToString();
@@ -122,9 +128,5 @@ public partial class AuthController
 
         return BadRequest(LocalValue.Get(KeyStore.ConfirmPasswordError));
     }
-    [HttpPost("forgot-password/password-verification/resend")]
-    public async Task<IActionResult> ResendForgetPasswordPostcode()
-    {
-        return await PostcodeHelper.ResendPostcode(HttpContext, Request, _emailService.CreatePostcodeForgetPasswordAsync, _emailService, PostcodeType.ForgetPassword);
-    }
+
 }

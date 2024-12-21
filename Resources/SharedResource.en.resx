@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,79 +26,79 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -119,228 +119,314 @@
   </resheader>
   <data name="InvalidInformation" xml:space="preserve">
     <value>Invalid information.</value>
+    <comment/>
   </data>
   <data name="RegistrationFailed" xml:space="preserve">
     <value>Registration failed.</value>
+    <comment/>
   </data>
   <data name="UnableToSendOTP" xml:space="preserve">
     <value>Unable to send OTP code.</value>
+    <comment/>
   </data>
   <data name="RegistrationSuccess" xml:space="preserve">
     <value>Registration successful.</value>
+    <comment/>
   </data>
   <data name="StepOneVerificationSuccess" xml:space="preserve">
     <value>Step one verification successful.</value>
+    <comment/>
   </data>
   <data name="AccountLocked" xml:space="preserve">
     <value>Account locked.</value>
+    <comment/>
   </data>
   <data name="LoginNotAllowed" xml:space="preserve">
     <value>Login not allowed.</value>
+    <comment/>
   </data>
   <data name="TwoFactorRequired" xml:space="preserve">
     <value>Two-factor authentication required.</value>
+    <comment/>
   </data>
   <data name="InvalidCredentials" xml:space="preserve">
     <value>Invalid login credentials.</value>
+    <comment/>
   </data>
   <data name="VerificationSuccess" xml:space="preserve">
     <value>Verification successful.</value>
+    <comment/>
   </data>
   <data name="OTPVerificationFailed" xml:space="preserve">
     <value>OTP verification failed.</value>
+    <comment/>
   </data>
   <data name="InvalidLanguage" xml:space="preserve">
     <value>Invalid language.</value>
+    <comment/>
   </data>
   <data name="LanguageChanged" xml:space="preserve">
     <value>Language changed successfully.</value>
+    <comment/>
   </data>
   <data name="LanguageChangeFailed" xml:space="preserve">
     <value>Failed to change language.</value>
+    <comment/>
   </data>
   <data name="InvalidMessageData" xml:space="preserve">
     <value>Invalid message data.</value>
+    <comment/>
   </data>
   <data name="MessageSentSuccessfully" xml:space="preserve">
     <value>Message sent successfully.</value>
+    <comment/>
   </data>
   <data name="FailedToSendMessage" xml:space="preserve">
     <value>Failed to send message.</value>
+    <comment/>
   </data>
   <data name="ChatRoomIdRequired" xml:space="preserve">
     <value>Chat room ID is required.</value>
+    <comment/>
   </data>
   <data name="NoMessagesFound" xml:space="preserve">
     <value>No messages found.</value>
+    <comment/>
   </data>
   <data name="MessageDeletedSuccessfully" xml:space="preserve">
     <value>Message deleted successfully.</value>
+    <comment/>
   </data>
   <data name="FailedToDeleteMessage" xml:space="preserve">
     <value>Failed to delete message.</value>
+    <comment/>
   </data>
   <data name="ChatRoomIdAndKeywordRequired" xml:space="preserve">
     <value>Chat room ID and keyword are required.</value>
+    <comment/>
   </data>
   <data name="MessagesFoundSuccessfully" xml:space="preserve">
     <value>Messages found successfully.</value>
+    <comment/>
   </data>
   <data name="ImageUploadedSuccessfully" xml:space="preserve">
     <value>Image uploaded successfully.</value>
+    <comment/>
   </data>
   <data name="FailedToUploadImage" xml:space="preserve">
     <value>Failed to upload image.</value>
+    <comment/>
   </data>
   <data name="FileUploadedSuccessfully" xml:space="preserve">
     <value>File uploaded successfully.</value>
+    <comment/>
   </data>
   <data name="FailedToUploadFile" xml:space="preserve">
     <value>Failed to upload file.</value>
+    <comment/>
   </data>
   <data name="GroupNameRequired" xml:space="preserve">
     <value>Group name is required.</value>
+    <comment/>
   </data>
   <data name="GroupCreatedSuccessfully" xml:space="preserve">
     <value>Chat group created successfully.</value>
+    <comment/>
   </data>
   <data name="FailedToCreateGroup" xml:space="preserve">
     <value>Failed to create chat group.</value>
+    <comment/>
   </data>
   <data name="GroupNameUpdatedSuccessfully" xml:space="preserve">
     <value>Group name updated successfully.</value>
+    <comment/>
   </data>
   <data name="FailedToUpdateGroup" xml:space="preserve">
     <value>Failed to update group name.</value>
+    <comment/>
   </data>
   <data name="GroupDeletedSuccessfully" xml:space="preserve">
     <value>Chat group deleted successfully.</value>
+    <comment/>
   </data>
   <data name="FailedToDeleteGroup" xml:space="preserve">
     <value>Failed to delete chat group.</value>
+    <comment/>
   </data>
   <data name="GroupNotFound" xml:space="preserve">
     <value>Chat group not found.</value>
+    <comment/>
   </data>
   <data name="UserAlreadyExists" xml:space="preserve">
     <value>User account already exists.</value>
+    <comment/>
   </data>
   <data name="UnableToStoreInDatabase" xml:space="preserve">
     <value>Unable to store in the database.</value>
+    <comment/>
   </data>
   <data name="EmailVerificationCodeSubject" xml:space="preserve">
     <value>Email verification code.</value>
+    <comment/>
   </data>
   <data name="EmailCannotBeEmpty" xml:space="preserve">
     <value>Email cannot be empty.</value>
+    <comment/>
   </data>
   <data name="EmailUpdated" xml:space="preserve">
     <value>Email updated successfully.</value>
+    <comment/>
   </data>
   <data name="EmailUpdateError" xml:space="preserve">
     <value>Failed to update email.</value>
+    <comment/>
   </data>
   <data name="PasswordCannotBeEmpty" xml:space="preserve">
     <value>Current password and new password cannot be empty.</value>
+    <comment/>
   </data>
   <data name="PasswordUpdated" xml:space="preserve">
     <value>Password updated successfully.</value>
+    <comment/>
   </data>
   <data name="PasswordUpdateError" xml:space="preserve">
     <value>Error updating password.</value>
+    <comment/>
   </data>
   <data name="NameUpdated" xml:space="preserve">
     <value>User name updated successfully.</value>
+    <comment/>
   </data>
   <data name="NameUpdateError" xml:space="preserve">
     <value>Error updating user name.</value>
+    <comment/>
   </data>
   <data name="PhoneNumberUpdated" xml:space="preserve">
     <value>Phone number updated successfully.</value>
+    <comment/>
   </data>
   <data name="PhoneNumberUpdateError" xml:space="preserve">
     <value>Error updating phone number.</value>
+    <comment/>
   </data>
   <data name="GenderUpdated" xml:space="preserve">
     <value>Gender updated successfully.</value>
+    <comment/>
   </data>
   <data name="GenderUpdateError" xml:space="preserve">
     <value>Error updating gender.</value>
+    <comment/>
   </data>
   <data name="DateOfBirthUpdated" xml:space="preserve">
     <value>Date of birth updated successfully.</value>
+    <comment/>
   </data>
   <data name="DateOfBirthUpdateError" xml:space="preserve">
     <value>Error updating date of birth.</value>
+    <comment/>
   </data>
   <data name="GeneralUpdateSuccess" xml:space="preserve">
     <value>User information updated successfully.</value>
+    <comment/>
   </data>
   <data name="GeneralUpdateError" xml:space="preserve">
     <value>Error updating user information.</value>
+    <comment/>
   </data>
   <data name="CurrentPasswordAndUsernameCannotBeEmpty" xml:space="preserve">
     <value>Username and current password cannot be empty.</value>
+    <comment/>
   </data>
   <data name="PasswordCorrect" xml:space="preserve">
     <value>Password is correct.</value>
+    <comment/>
   </data>
   <data name="PasswordIncorrect" xml:space="preserve">
     <value>Password is incorrect.</value>
+    <comment/>
   </data>
   <data name="UsernameCannotBeEmpty" xml:space="preserve">
     <value>Username cannot be empty.</value>
+    <comment/>
   </data>
   <data name="InvalidRequest" xml:space="preserve">
     <value>Invalid request.</value>
+    <comment/>
   </data>
   <data name="OtpSent" xml:space="preserve">
     <value>OTP code sent.</value>
+    <comment/>
   </data>
   <data name="OtpSendError" xml:space="preserve">
     <value>Error sending OTP code.</value>
+    <comment/>
   </data>
   <data name="OtpVerificationSuccess" xml:space="preserve">
     <value>OTP verification successful.</value>
+    <comment/>
   </data>
   <data name="OtpInvalid" xml:space="preserve">
     <value>OTP code is invalid.</value>
+    <comment/>
   </data>
   <data name="UserNotFound" xml:space="preserve">
     <value>User not found.</value>
+    <comment/>
   </data>
   <data name="UserInfoUpdatedSuccess" xml:space="preserve">
     <value>User information updated successfully.</value>
+    <comment/>
   </data>
   <data name="UserInfoUpdateError" xml:space="preserve">
     <value>Error updating user information.</value>
+    <comment/>
   </data>
   <data name="PasswordCheckEmptyError" xml:space="preserve">
     <value>Password cannot be empty</value>
+    <comment/>
   </data>
   <data name="OtpVerifyEmptyError" xml:space="preserve">
     <value>OTP code cannot be empty.</value>
+    <comment/>
   </data>
   <data name="TokenValid" xml:space="preserve">
     <value>Token is valid.</value>
+    <comment/>
   </data>
   <data name="AvatarUpdated" xml:space="preserve">
     <value>Avatar Updated.</value>
+    <comment/>
   </data>
   <data name="AvatarUpdateError" xml:space="preserve">
     <value>Error Updated Avatar.</value>
+    <comment/>
   </data>
   <data name="DefaultLoginError" xml:space="preserve">
     <value>An unexpected error occurred. Please try again later.</value>
+    <comment/>
   </data>
   <data name="DataNotAllowNull" xml:space="preserve">
     <value>Information cannot be left blank.</value>
+    <comment/>
   </data>
   <data name="ConfirmPasswordError" xml:space="preserve">
     <value>Confirm password doesn't match the password above.</value>
+    <comment/>
   </data>
   <data name="UnAuthorize" xml:space="preserve">
-    <value>UnAuthorize</value>
+    <value>UnAuthorize.</value>
+    <comment/>
+  </data>
+  <data name="UserDeleted" xml:space="preserve">
+    <value>User is deleted.</value>
+    <comment/>
+  </data>
+  <data name="UserDeletedError" xml:space="preserve">
+    <value>Deleted user faild.</value>
+    <comment/>
+  </data>
+  <data name="TokenDeleted" xml:space="preserve">
+    <value>Token has been deleted successfull</value>
   </data>
   <data name="NotEnoughMembers" xml:space="preserve">
     <value>The number of members is not enough to create a new chat group</value>

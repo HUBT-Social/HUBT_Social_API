@@ -79,6 +79,36 @@ public class UpdateUserController : BaseAuthController
         return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
 
     }
+    [HttpDelete("delete-user")]
+    public async Task<IActionResult> DeleteUser(DeleteUserRequest request)
+    {
+        try
+        {
+            if(string.IsNullOrEmpty(request.UserName))
+            {
+                return BadRequest(LocalValue.Get(KeyStore.UsernameCannotBeEmpty));
+            }
+
+            AUser user = await _userService.FindUserByUserNameAsync(request.UserName);
+            if(user == null)
+            {
+                return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+            }
+                
+            bool deleted = await _userService.DeleteUserAsync(user);
+            if(deleted)
+            {
+                return Ok(LocalValue.Get(KeyStore.UserDeleted));
+            }
+            
+        }
+        catch (Exception)
+        {
+            return BadRequest(LocalValue.Get(KeyStore.UserDeletedError));
+        }
+        return BadRequest(LocalValue.Get(KeyStore.UserDeletedError));
+    }
+
     [HttpPost("get-url-from-image")]
     public async Task<IActionResult> GetUrlFromImage(IFormFile file)
     {
@@ -166,7 +196,7 @@ public class UpdateUserController : BaseAuthController
         await UpdateHelper.HandleUserUpdate(KeyStore.DateOfBirthUpdated, KeyStore.DateOfBirthUpdateError, _userService.UpdateDateOfBirthAsync, request,Request,_tokenService);
 
     [HttpPost("update/general")]
-    public async Task<IActionResult> GeneralUpdate([FromForm] GeneralUpdateRequest request) =>
+    public async Task<IActionResult> GeneralUpdate(GeneralUpdateRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, request,Request,_tokenService);
     
     
@@ -210,14 +240,8 @@ public class UpdateUserController : BaseAuthController
     }
     
     [HttpPost("add-info-user")]
-    public async Task<IActionResult> AddInfoUser([FromForm] AddInfoUserRequest request)
+    public async Task<IActionResult> AddInfoUser(AddInfoUserRequest request)
     {
-            // Kiểm tra file upload
-        if (request.AvatarUrl == null)
-        {
-            request.AvatarUrl = KeyStore.GetRandomAvatarDefault(request.Gender);  
-        }
-
         
         // Gọi hàm xử lý cập nhật thông tin người dùng
         return await UpdateHelper.HandleUserUpdate(

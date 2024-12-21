@@ -3,6 +3,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.Src.Core.HttpContent;
 using HUBT_Social_API.Src.Core.Settings;
 using MailKit.Net.Smtp;
 using MailKit.Security;
@@ -14,6 +15,7 @@ using MongoDB.Driver;
 using System.ComponentModel;
 using System.IO;
 
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace HUBT_Social_API.Features.Auth.Services.Child;
 
@@ -211,6 +213,19 @@ public class EmailService : IEmailService
 
         emailMessage.Body = bodyBuilder.ToMessageBody();
         return emailMessage;
+            Sender = MailboxAddress.Parse(_emailSetting.Email),
+            Subject = emailRequest.Subject
+        };
+        email.To.Add(MailboxAddress.Parse(emailRequest.ToEmail));
+        var htmlContent = SendEmailHttpContent.GetSendPostcodeContent(emailRequest.Code);
+
+        var bodyBuilder = new BodyBuilder
+        {
+            HtmlBody = htmlContent,  
+            TextBody = $"Your code is: {emailRequest.Code}. Thank you for using our service!"
+        };
+        email.Body = bodyBuilder.ToMessageBody();
+        return email;
     }
 
 
@@ -272,4 +287,26 @@ public class EmailService : IEmailService
 
         
     }
+
+    public async Task<bool> UpdatePostcode(Postcode postcode)
+    {
+        try
+        {
+            var updatePostcode = Builders<Postcode>.Update.Set(pc => pc.Code, postcode.Code)
+                .Set(pc => pc.ExpireTime, DateTime.UtcNow)
+                .Set(pc => pc.Email, postcode.Email)
+                .Set(pc => pc.PostcodeType, postcode.PostcodeType);
+            await _postcode.UpdateOneAsync(
+                pc => pc.IPAddress == postcode.IPAddress && pc.UserAgent == postcode.UserAgent
+                , updatePostcode);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            return false;
+        }
+        
+    }
+    
 }

@@ -180,7 +180,6 @@ public class UserService : IUserService
         var user = await GetUserByNameAsync(userName);
         return user != null && await UpdateUserPropertyAsync(user, u =>
         {
-            if (!string.IsNullOrEmpty(request.AvatarUrl)) u.AvataUrl = request.AvatarUrl;
             if (!string.IsNullOrEmpty(request.Email)) u.Email = request.Email;
             if (!string.IsNullOrEmpty(request.FirstName)) u.FirstName = request.FirstName;
             if (!string.IsNullOrEmpty(request.LastName)) u.LastName = request.LastName;
@@ -194,13 +193,18 @@ public class UserService : IUserService
         var user = await GetUserByNameAsync(userName);
         return user != null && await UpdateUserPropertyAsync(user, u =>
         {
-            u.AvataUrl = request.AvatarUrl;
             u.FirstName = request.FirstName;
             u.LastName = request.LastName;
             u.PhoneNumber = request.PhoneNumber;
             u.Gender = request.Gender;
             u.DateOfBirth = request.DateOfBirth;
         });
+    }
+
+    public async Task<bool> DeleteUserAsync(AUser user)
+    {
+        IdentityResult deleted = await _userManager.DeleteAsync(user);
+        return deleted.Succeeded == true; 
     }
     
 

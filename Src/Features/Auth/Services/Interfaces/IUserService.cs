@@ -28,4 +28,6 @@ public interface IUserService
 
     // Phương thức cập nhật tổng quát
     Task<bool> GeneralUpdateAsync(string userName, GeneralUpdateRequest request);
+
+    Task<bool> DeleteUserAsync(AUser user);
 }

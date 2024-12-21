@@ -16,4 +16,15 @@ public class Postcode
 
     [BsonElement("ExpireTime"),BsonDateTimeOptions]
     public DateTime ExpireTime { get; set; }
+
+    public bool ExtendPostcodeExpireTime(int time)
+    {
+        if (time >= 0)
+        {
+            ExpireTime = DateTime.Now.AddMinutes(time);
+            if (time > 30) ExpireTime = DateTime.Now.AddMinutes(time);
+            return true;
+        }
+        return false;
+    }
 }

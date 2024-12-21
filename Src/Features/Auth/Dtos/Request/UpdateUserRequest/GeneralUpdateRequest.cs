@@ -5,7 +5,6 @@ namespace HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 
 public class GeneralUpdateRequest
 {
-    public string? AvatarUrl { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;

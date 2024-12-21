@@ -46,14 +46,15 @@ public partial class AuthController
         catch (Exception)
         {
             return StatusCode(
-                500,
-                LocalValue.Get(KeyStore.UnableToSendOTP)
-            );
+                500, LocalValue.Get(KeyStore.UnableToSendOTP));
         }
 
-        return Ok(
-             LocalValue.Get(KeyStore.RegistrationSuccess)
-        );
+        if (_emailService.MaskEmail(request.Email, out string maskEmail))
+        {
+            
+            return Ok(LocalValue.Get(KeyStore.OtpSent));
+        }
+        return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
     }
 
     [HttpPost("sign-up/verify-otp")]
@@ -142,7 +143,7 @@ public partial class AuthController
             }
         );
     }
-    [HttpPost("sign-up/verify-otp/resend")]
+    [HttpPut("sign-up/verify-otp/resend")]
     public async Task<IActionResult> ResendSignUpPostcode()
     {
 

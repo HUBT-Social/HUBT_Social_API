@@ -6,21 +6,13 @@ namespace HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
     public class AddInfoUserRequest
     {
 
-        [FromForm]
-        public string AvatarUrl { get; set; } = string.Empty; // URL ảnh hoặc avatar mặc định
-
-        [FromForm]
         public string FirstName { get; set; } = string.Empty;
 
-        [FromForm]
         public string LastName { get; set; } = string.Empty;
 
-        [FromForm]
         public string PhoneNumber { get; set; } = string.Empty;
 
-        [FromForm]
         public Gender Gender { get; set; } =0;
 
-        [FromForm]
         public DateTime DateOfBirth { get; set; } // Ngày sinh
     }
