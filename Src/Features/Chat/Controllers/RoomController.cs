@@ -79,7 +79,7 @@ public class RoomController : ControllerBase
             : BadRequest("Sending failed");
 
     }
-    [HttpPost("get-history-chat")]
+    [HttpGet("get-history-chat")]
     public async Task<IActionResult> GetHistoryChat([FromBody] GetHistoryRequest getHistoryRequest)
     {
         if (getHistoryRequest == null)
@@ -101,11 +101,11 @@ public class RoomController : ControllerBase
         {
             getItemsHistoryRequest.Time = DateTime.Now;
         }
-        IEnumerable<ChatHistoryResponse> chatItems = await _roomService.GetChatHistoryAsync(getItemsHistoryRequest);
+        IEnumerable<ChatItemResponse> chatItems = await _roomService.GetChatHistoryAsync(getItemsHistoryRequest);
 
         return Ok(chatItems);
     }
-    [HttpPost("get-medias")]
+    [HttpGet("get-medias")]
     public async Task<IActionResult> GetMediasHistory([FromBody] GetHistoryRequest getHistoryRequest)
     {
 
@@ -133,7 +133,7 @@ public class RoomController : ControllerBase
 
         return Ok(chatItems);
     }
-    [HttpPost("get-files")]
+    [HttpGet("get-files")]
     public async Task<IActionResult> GetFilesHistory([FromBody] GetHistoryRequest getHistoryRequest)
     {
 
@@ -161,7 +161,7 @@ public class RoomController : ControllerBase
 
         return Ok(chatItems);
     }
-    [HttpPost("get-Links")]
+    [HttpGet("get-Links")]
     public async Task<IActionResult> GetLinksHistory([FromBody] GetHistoryRequest getHistoryRequest)
     {
 
@@ -189,7 +189,7 @@ public class RoomController : ControllerBase
 
         return Ok(chatItems);
     }
-     [HttpPost("get-voices")]
+     [HttpGet("get-voices")]
     public async Task<IActionResult> GetVoicesHistory([FromBody] GetHistoryRequest getHistoryRequest)
     {
 
@@ -218,7 +218,7 @@ public class RoomController : ControllerBase
         return Ok(chatItems);
     }
     // API to update group name
-    [HttpPost("update-group-name")]
+    [HttpPut("update-group-name")]
     public async Task<IActionResult> UpdateGroupName([FromBody] UpdateGroupNameRequest request)
     {
         if (request == null || string.IsNullOrEmpty(request.Id) || string.IsNullOrEmpty(request.NewName))
@@ -235,7 +235,7 @@ public class RoomController : ControllerBase
     }
 
     // API to update avatar
-    [HttpPost("update-avatar")]
+    [HttpPut("update-avatar")]
     public async Task<IActionResult> UpdateAvatar([FromBody] UpdateAvatarRequest request)
     {
         if (request == null || string.IsNullOrEmpty(request.Id) || request.file == null)
@@ -278,7 +278,7 @@ public class RoomController : ControllerBase
     }
 
     // API to remove a member from the group
-    [HttpPost("remove-member")]
+    [HttpDelete("remove-member")]
     public async Task<IActionResult> RemoveMember([FromBody] RemoveMemberRequest request)
     {
         // Kiểm tra đầu vào

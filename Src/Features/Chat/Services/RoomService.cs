@@ -1,6 +1,7 @@
 
 
 using System.ComponentModel;
+using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.Controllers;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
@@ -14,10 +15,12 @@ public class RoomService : IRoomService
 {
 
     private readonly IMongoCollection<ChatRoomModel> _chatRooms;
+    private readonly IUserService _userService;
 
-    public RoomService(IMongoCollection<ChatRoomModel> chatRooms)
+    public RoomService(IMongoCollection<ChatRoomModel> chatRooms,IUserService userService)
     {
         _chatRooms = chatRooms;
+        _userService = userService;
     }
 // Update methods
     /// <summary>
@@ -279,19 +282,26 @@ public class RoomService : IRoomService
     }
     
     //Get methods
-    public async Task<IEnumerable<ChatHistoryResponse>> GetChatHistoryAsync(GetItemsHistoryRequest getItemsHistoryRequest)
+    public async Task<IEnumerable<ChatItemResponse>> GetChatHistoryAsync(GetItemsHistoryRequest getItemsHistoryRequest)
     {
-        
+        // Lấy danh sách các ChatItems từ phương thức GetItemsAsync
         var chatItems = await GetItemsAsync(getItemsHistoryRequest);
 
-        var response = chatItems.Select(item => new ChatHistoryResponse
+        // Duyệt qua từng ChatItem để tạo danh sách ChatItemResponse
+        var response = new List<ChatItemResponse>();
+        foreach (var item in chatItems)
         {
-            Id = item.Id,
-            UserName = item.UserName,
-            Timestamp = item.Timestamp,
-            Type = item.Type,
-            Data = item.ToResponseData()
-        }).ToList();
+            var chatItemResponse = new ChatItemResponse
+            {
+                Id = item.Id,
+                NickName = await GetNickNameAsync(getItemsHistoryRequest.ChatRoomId, item.UserName) ?? item.UserName,
+                AvatarUrl = await _userService.GetAvatarUrlFromUserName(item.UserName),
+                Timestamp = item.Timestamp,
+                Type = item.Type,
+                Data = item.ToResponseData()
+            };
+            response.Add(chatItemResponse);
+        }
 
         return response;
     }
@@ -349,4 +359,27 @@ public class RoomService : IRoomService
         // Kiểm tra kết quả
         return participant?.Role;
     }
+    public async Task<string?> GetNickNameAsync(string roomId, string userName)
+    {
+        // Tìm phòng chat theo RoomId và UserName
+        var filter = Builders<ChatRoomModel>.Filter.And(
+            Builders<ChatRoomModel>.Filter.Eq(r => r.Id, roomId),
+            Builders<ChatRoomModel>.Filter.ElemMatch(r => r.Participant, p => p.UserName == userName)
+        );
+
+        // Chỉ lấy trường Participant
+        var projection = Builders<ChatRoomModel>.Projection.Expression(r => 
+            r.Participant.FirstOrDefault(p => p.UserName == userName));
+
+        // Thực hiện truy vấn
+        var participant = await _chatRooms
+            .Find(filter)
+            .Project(projection)
+            .FirstOrDefaultAsync();
+
+        // Kiểm tra kết quả
+        return participant?.NickName;
+    }
+
+
 }

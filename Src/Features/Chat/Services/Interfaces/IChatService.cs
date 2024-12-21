@@ -10,6 +10,7 @@ public interface IChatService
     Task<string?> CreateGroupAsync(ChatRoomModel newRoomModel);
     Task<bool> DeleteGroupAsync(string idGroup);
     Task<ChatRoomModel> GetGroupByIdAsync(string id);
+    Task<List<SearchChatRoomReponse>> SearchGroupsAsync(string keyword);
     Task<List<ChatRoomModel>> GetAllRoomsAsync();
     Task<List<ChatRoomModel>> GetRoomsByUserNameAsync(string userName);
 

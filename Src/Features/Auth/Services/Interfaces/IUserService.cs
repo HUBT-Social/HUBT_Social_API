@@ -6,6 +6,7 @@ namespace HUBT_Social_API.Features.Auth.Services.Interfaces;
 
 public interface IUserService
 {
+    Task<string> GetAvatarUrlFromUserName(string userName);
     Task<AUser?> FindUserByUserNameAsync(string userName);
     Task<AUser?> FindUserByEmailAsync(string email);
     Task<bool> PromoteUserAccountAsync(string currentUserName, string targetUserName, string roleName);

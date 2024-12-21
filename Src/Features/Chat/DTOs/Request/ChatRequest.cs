@@ -32,3 +32,24 @@ public class MediaRequest : MediaInputRequest
 {
     public string UserName { get; set; } = string.Empty;
 }
+
+
+public class DeleteGroupRequest
+    {
+        public string GroupId { get; set; }
+    }
+public class GetGroupByIdRequest
+    {
+        public string GroupId { get; set; }
+    }
+public class SearchGroupsRequest
+    {
+        public string Keyword { get; set; }
+    }
+
+public class GetRoomsByUserRequest
+    {
+        public string UserName { get; set; }
+    }
+
+

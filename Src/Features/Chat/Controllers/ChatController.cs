@@ -1,3 +1,4 @@
+using CloudinaryDotNet.Actions;
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
@@ -15,12 +16,14 @@ namespace HUBT_Social_API.Features.Chat.Controllers;
 [Route("api/chat")]
 public class ChatController : ControllerBase
 {
-    private readonly IChatService _chatRoomService;
+    private readonly IChatService _chatService;
     private readonly ITokenService _tokenService;
-    public ChatController(IChatService chatRoomService,ITokenService tokenService)
+    private readonly IRoomService _roomService;
+    public ChatController(IChatService chatService,ITokenService tokenService,IRoomService roomService)
     {
-        _chatRoomService = chatRoomService;
+        _chatService = chatService;
         _tokenService = tokenService;
+        _roomService = roomService;
     }
 
     /// <summary>
@@ -46,7 +49,7 @@ public class ChatController : ControllerBase
         var newChatRoom = CreateChatRoom(createGroupRequest.GroupName, participants);
 
         // Lưu ChatRoom vào database
-        var groupId = await _chatRoomService.CreateGroupAsync(newChatRoom);
+        var groupId = await _chatService.CreateGroupAsync(newChatRoom);
         return groupId != null
             ? Ok(new { message = groupId })
             : BadRequest(new { message = LocalValue.Get(KeyStore.FailedToCreateGroup) });
@@ -85,7 +88,6 @@ public class ChatController : ControllerBase
             {
                 return new ChatRoomModel
                 {
-                    Id = Guid.NewGuid().ToString(),
                     Name = groupName,
                     AvatarUrl = LocalValue.Get(KeyStore.DefaultUserImage),
                     Participant = participants,
@@ -93,6 +95,77 @@ public class ChatController : ControllerBase
                 };
             }
     
+
+    [HttpDelete("delete-group")]
+    public async Task<IActionResult> DeleteGroupAsync(DeleteGroupRequest request)
+    {
+        if (string.IsNullOrEmpty(request.GroupId))
+            return BadRequest(new { message = "Group ID is required." });
+
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (!userResponse.Success)
+            return BadRequest("Token is not valid");
+
+        if(await _roomService.GetRoleAsync(request.GroupId,userResponse.User.UserName) != ParticipantRole.Admin)
+        {
+            return BadRequest("You cant delete this group because you are not owner.");
+        }
+
+        var result = await _chatService.DeleteGroupAsync(request.GroupId);
+        if (result)
+            return Ok("Group deleted successfully.");
+
+        return NotFound("Group not found or could not be deleted.");
+    }
+    
+
+    [HttpGet("get-group-by-id")]
+    public async Task<IActionResult> GetGroupByIdAsync(GetGroupByIdRequest request)
+    {
+        if (string.IsNullOrEmpty(request.GroupId))
+            return BadRequest("Group ID is required.");
+
+        var group = await _chatService.GetGroupByIdAsync(request.GroupId);
+        if (group != null)
+            return Ok(group);
+
+        return NotFound("Group not found.");
+    }
+    
+    [HttpGet("search-group-by-keyword")]
+    public async Task<IActionResult> SearchGroupsAsync(SearchGroupsRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Keyword))
+            return BadRequest("Keyword is required.");
+
+        var groups = await _chatService.SearchGroupsAsync(request.Keyword);
+        if (groups.Any())
+            return Ok(groups);
+
+        return NotFound("No groups found matching the keyword.");
+    }
+    
+    [HttpGet("get-all-group")]
+    public async Task<IActionResult> GetAllRoomsAsync()
+    {
+        var rooms = await _chatService.GetAllRoomsAsync();
+        return Ok(rooms);
+    }
+    
+
+    [HttpGet("user/rooms")]
+    public async Task<IActionResult> GetRoomsByUserNameAsync(GetRoomsByUserRequest request)
+    {
+        if (string.IsNullOrEmpty(request.UserName))
+            return BadRequest("Username is required.");
+
+        var rooms = await _chatService.GetRoomsByUserNameAsync(request.UserName);
+        if (rooms.Any())
+            return Ok(rooms);
+
+        return NotFound("No rooms found for the user.");
+    }
+
    
 
 

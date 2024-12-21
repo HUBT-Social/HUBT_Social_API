@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
@@ -34,6 +37,21 @@ public class ChatService : IChatService
     {
         try
         {
+            do
+            {
+                // Sinh ID mới dựa trên tên phòng
+                newRoomModel.Id = await GenerateGroupId(newRoomModel.Name);
+
+                // Kiểm tra xem ID đã tồn tại trong cơ sở dữ liệu hay không
+                var roomExists = await _chatRooms.Find(r => r.Id == newRoomModel.Id).AnyAsync();
+
+                // Nếu ID chưa tồn tại thì thoát vòng lặp
+                if (!roomExists)
+                {
+                    break;
+                }
+            } while (true);
+                        
             await _chatRooms.InsertOneAsync(newRoomModel); 
             return newRoomModel.Id;
         }
@@ -42,6 +60,27 @@ public class ChatService : IChatService
             return null;
         }
     }
+        private async Task<string> GenerateGroupId(string groupName)
+        {
+            // Loại bỏ dấu và ký tự biểu tượng (icon, emoji)
+            string normalizedGroupName = new string(groupName
+                .Normalize(NormalizationForm.FormD)
+                .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark && c <= 127) // Loại bỏ emoji và chỉ giữ ký tự ASCII
+                .ToArray())
+                .Normalize(NormalizationForm.FormC)
+                .ToLowerInvariant();
+
+            // Thay thế khoảng trắng bằng dấu '.' và loại bỏ ký tự không hợp lệ
+            normalizedGroupName = Regex.Replace(normalizedGroupName, @"\s+", "."); // Thay thế khoảng trắng bằng '.'
+            normalizedGroupName = Regex.Replace(normalizedGroupName, @"[^a-z0-9\.]", string.Empty); // Loại bỏ ký tự không hợp lệ
+
+            // Tạo chuỗi ngẫu nhiên gồm 5 chữ số
+            Random random = new Random();
+            string randomPart = random.Next(10000, 99999).ToString();
+
+            // Kết hợp thành ID nhóm
+            return $"@{normalizedGroupName}.{randomPart}";
+        }
 
     /// <summary>
     /// Xóa một nhóm chat khỏi cơ sở dữ liệu dựa trên ID.

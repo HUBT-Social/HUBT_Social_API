@@ -17,11 +17,11 @@ public static class ServiceRegistration
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IUploadChatServices, UploadChatServices>();
-        services.AddScoped<IChatRoomService, ChatRoomService>();
+        services.AddScoped<IChatService, ChatService>();
         services.AddScoped<ILoginService, LoginService>();
         services.AddScoped<IRegisterService, RegisterService>();
         services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IChatRoomService, ChatRoomService>();
+        services.AddScoped<IRoomService, RoomService>();
         services.AddScoped<ChatHub>();
 
 /*            services.AddScoped<IUserManagerS, UserManagerS>();
