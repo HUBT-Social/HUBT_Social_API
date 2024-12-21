@@ -43,7 +43,7 @@ public class RoomController : ControllerBase
         {
             GroupId = messageInputRequest.GroupId,
             Content = messageInputRequest.Content,
-            SenderId = userResponse.User.Id.ToString()
+            UserName = userResponse.User.UserName.ToString()
         };
 
         bool isSent = await _uploadtService.UploadMessageAsync(messageRequest);
@@ -71,7 +71,7 @@ public class RoomController : ControllerBase
         {
             GroupId = mediaInputRequest.GroupId,
             Files = mediaInputRequest.Files,
-            SenderId = userResponse.User.Id.ToString()
+            UserName = userResponse.User.UserName.ToString()
         };
         bool IsSent = await _uploadtService.UploadMediaAsync(mediaRequest);
         return IsSent == true

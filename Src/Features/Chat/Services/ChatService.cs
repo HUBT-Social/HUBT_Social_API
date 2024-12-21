@@ -158,12 +158,18 @@ public class ChatService : IChatService
     /// </example>
    public async Task<List<ChatRoomModel>> GetRoomsByUserNameAsync(string userName)
     {
-        // Tìm các room chứa userName trong danh sách Participant
+        var filter = Builders<ChatRoomModel>.Filter.ElemMatch(
+            r => r.Participant,
+            p => p.UserName == userName
+        );
+
+        var sort = Builders<ChatRoomModel>.Sort.Descending("Participant.LastInteractionTime");
+
         var chatRooms = await _chatRooms
-            .Find(room => room.Participant.Any(p => p.UserName == userName))
+            .Find(filter)
+            .Sort(sort)
             .ToListAsync();
 
-        // Trả về danh sách rỗng nếu không tìm thấy
         return chatRooms ?? new List<ChatRoomModel>();
     }
 

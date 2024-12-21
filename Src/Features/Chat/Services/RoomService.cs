@@ -277,6 +277,7 @@ public class RoomService : IRoomService
             return false;
         }
     }
+    
     //Get methods
     public async Task<IEnumerable<ChatHistoryResponse>> GetChatHistoryAsync(GetItemsHistoryRequest getItemsHistoryRequest)
     {
@@ -286,7 +287,7 @@ public class RoomService : IRoomService
         var response = chatItems.Select(item => new ChatHistoryResponse
         {
             Id = item.Id,
-            SenderId = item.SenderId,
+            UserName = item.UserName,
             Timestamp = item.Timestamp,
             Type = item.Type,
             Data = item.ToResponseData()

@@ -23,6 +23,7 @@ public class Participant
     public string UserName { get; set; } = string.Empty; // Id của người dùng
     public ParticipantRole Role { get; set; } = ParticipantRole.Member; // Vai trò của người dùng (vd: Admin, Member)
     public string NickName { get; set; } = string.Empty;
+    public DateTime LastInteractionTime { get; set; } // Thời gian tương tác gần nhất
 }
 public enum TypeChatRoom
 {

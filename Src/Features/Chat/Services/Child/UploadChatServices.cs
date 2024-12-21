@@ -37,7 +37,7 @@ public class UploadChatServices : IUploadChatServices
         // Tạo một tin nhắn mới
         MessageChatItem newMessage = new()
         {
-            SenderId = chatRequest.SenderId,
+            UserName = chatRequest.UserName,
             Type = "Message",
             Content = text,
             Links = new()
@@ -57,11 +57,19 @@ public class UploadChatServices : IUploadChatServices
 
         await _chatHub.SendMessage(chatRequest.GroupId, newMessage); 
 
-        // Cập nhật vào MongoDB
-        var update = Builders<ChatRoomModel>
-            .Update.Push(cr => cr.ChatItems, newMessage);
+        // Tạo filter cho GroupId và UserName
+        var filter = Builders<ChatRoomModel>.Filter.And(
+            Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, chatRequest.GroupId),
+            Builders<ChatRoomModel>.Filter.ElemMatch(cr => cr.Participant, p => p.UserName == chatRequest.UserName)
+        );
 
-        var result = await _chatRooms.UpdateOneAsync(cr => cr.Id == chatRequest.GroupId, update);
+        // Tạo update để cập nhật cả LastInteractionTime và thêm tin nhắn mới vào ChatItems
+        var update = Builders<ChatRoomModel>.Update
+            .Set("Participant.$.LastInteractionTime", DateTime.UtcNow) // Cập nhật thời gian tương tác gần nhất
+            .Push(cr => cr.ChatItems, newMessage); // Thêm tin nhắn mới vào danh sách ChatItems
+
+        // Cập nhật MongoDB
+        var result = await _chatRooms.UpdateOneAsync(filter, update);
         return result.ModifiedCount > 0;
     }
 
@@ -71,7 +79,7 @@ public class UploadChatServices : IUploadChatServices
 
         MediaChatItem newMedia = new()
         {
-            SenderId = mediaRequest.SenderId,
+            UserName = mediaRequest.UserName,
             Type = "Media",
             MediaUrls = new()
         };
@@ -87,14 +95,21 @@ public class UploadChatServices : IUploadChatServices
                 }
             }
          }
-        await _chatHub.SendMedia(mediaRequest.SenderId, newMedia);
+        await _chatHub.SendMedia(mediaRequest.UserName, newMedia);
 
-        // Cập nhật vào MongoDB
-        var update = Builders<ChatRoomModel>
-            .Update.Push(cr => cr.ChatItems, newMedia);
+        // Tạo filter cho GroupId và UserName
+        var filter = Builders<ChatRoomModel>.Filter.And(
+            Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, mediaRequest.GroupId),
+            Builders<ChatRoomModel>.Filter.ElemMatch(cr => cr.Participant, p => p.UserName == mediaRequest.UserName)
+        );
 
-        var result = await _chatRooms.UpdateOneAsync(cr => cr.Id == mediaRequest.GroupId, update);
+        // Tạo update để cập nhật cả LastInteractionTime và thêm tin nhắn mới vào ChatItems
+        var update = Builders<ChatRoomModel>.Update
+            .Set("Participant.$.LastInteractionTime", DateTime.UtcNow) // Cập nhật thời gian tương tác gần nhất
+            .Push(cr => cr.ChatItems, newMedia); // Thêm tin nhắn mới vào danh sách ChatItems
 
+        // Cập nhật MongoDB
+        var result = await _chatRooms.UpdateOneAsync(filter, update);
         return result.ModifiedCount > 0;
     }
 

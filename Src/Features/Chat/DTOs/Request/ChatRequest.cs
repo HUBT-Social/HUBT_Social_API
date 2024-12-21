@@ -25,10 +25,10 @@ public class MediaInputRequest : ChatRequestBase
 
 public class MessageRequest : MessageInputRequest
 {
-    public string SenderId { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
     
 }
 public class MediaRequest : MediaInputRequest
 {
-    public string SenderId { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
 }
