@@ -28,7 +28,7 @@ public class UpdateUserController : BaseAuthController
         _uploadServices = uploadServices;
     }
 
-    [HttpPost("get-user")]
+    [HttpGet("get-user")]
     public async Task<IActionResult> GetCurrentUser()
     {
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
@@ -52,7 +52,7 @@ public class UpdateUserController : BaseAuthController
         return BadRequest(userResponse.Message);
 
     }
-    [HttpPost("get-user-by-username")]
+    [HttpGet("get-user-by-username")]
     public async Task<IActionResult> GetUserByUserName(GetUserByUserNameRequest getUserByUserNameRequest)
     {
         if(string.IsNullOrEmpty(getUserByUserNameRequest.UserName))
@@ -144,7 +144,7 @@ public class UpdateUserController : BaseAuthController
         );
     }
 
-    [HttpPost("update/avatar")]
+    [HttpPut("update/avatar")]
     public async Task<IActionResult> UpdateAvatar(IFormFile file)
     {
         if(file !=null){
@@ -164,11 +164,11 @@ public class UpdateUserController : BaseAuthController
         return BadRequest(KeyStore.AvatarUpdateError);
     }
         
-    [HttpPost("update/email")]
+    [HttpPut("update/email")]
     public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.EmailUpdated, KeyStore.EmailUpdateError, _userService.UpdateEmailAsync, request,Request,_tokenService);
 
-    [HttpPost("update/password")]
+    [HttpPut("update/password")]
     public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
     {
         if(request.NewPassword == request.ConfirmNewPassword)
@@ -179,23 +179,23 @@ public class UpdateUserController : BaseAuthController
     }
         
 
-    [HttpPost("update/name")]
+    [HttpPut("update/name")]
     public async Task<IActionResult> UpdateName([FromBody] UpdateNameRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.NameUpdated, KeyStore.NameUpdateError, _userService.UpdateNameAsync, request,Request,_tokenService);
 
-    [HttpPost("update/phone-number")]
+    [HttpPut("update/phone-number")]
     public async Task<IActionResult> UpdatePhoneNumber([FromBody] UpdatePhoneNumberRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.PhoneNumberUpdated, KeyStore.PhoneNumberUpdateError, _userService.UpdatePhoneNumberAsync, request,Request,_tokenService);
 
-    [HttpPost("update/gender")]
+    [HttpPut("update/gender")]
     public async Task<IActionResult> UpdateGender([FromBody] UpdateGenderRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.GenderUpdated, KeyStore.GenderUpdateError, _userService.UpdateGenderAsync, request,Request,_tokenService);
 
-    [HttpPost("update/date-of-birth")]
+    [HttpPut("update/date-of-birth")]
     public async Task<IActionResult> UpdateDateOfBirth([FromBody] UpdateDateOfBornRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.DateOfBirthUpdated, KeyStore.DateOfBirthUpdateError, _userService.UpdateDateOfBirthAsync, request,Request,_tokenService);
 
-    [HttpPost("update/general")]
+    [HttpPut("update/general")]
     public async Task<IActionResult> GeneralUpdate(GeneralUpdateRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, request,Request,_tokenService);
     
@@ -239,7 +239,7 @@ public class UpdateUserController : BaseAuthController
         }
     }
     
-    [HttpPost("add-info-user")]
+    [HttpPut("add-info-user")]
     public async Task<IActionResult> AddInfoUser(AddInfoUserRequest request)
     {
         
