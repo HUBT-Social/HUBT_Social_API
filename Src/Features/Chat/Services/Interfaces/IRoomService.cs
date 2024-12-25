@@ -78,8 +78,8 @@ public interface IRoomService
     /// <param name="UserName">Tên người dùng muốn rời khỏi phòng.</param>
     /// <returns>Trả về true nếu rời phòng thành công, ngược lại false.</returns>
     Task<bool> LeaveRoomAsync(string GroupId, string UserName);
-    Task<ParticipantRole?> GetRoleAsync(string roomId, string userName);
-    Task<string?> GetNickNameAsync(string roomId, string userName);
+    Task<bool> UnsendMessageAsync(string GroupId, string MessageId);
+
 
     //Get methods
     Task<IEnumerable<ChatItemResponse>> GetChatHistoryAsync(GetItemsHistoryRequest getItemsHistoryRequest);

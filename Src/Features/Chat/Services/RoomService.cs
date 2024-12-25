@@ -2,9 +2,11 @@
 
 using System.ComponentModel;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.Features.Chat.ChatHubs;
 using HUBT_Social_API.Features.Chat.Controllers;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
+using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
@@ -16,11 +18,13 @@ public class RoomService : IRoomService
 
     private readonly IMongoCollection<ChatRoomModel> _chatRooms;
     private readonly IUserService _userService;
+    private readonly ChatHub _chatHub;
 
-    public RoomService(IMongoCollection<ChatRoomModel> chatRooms,IUserService userService)
+    public RoomService(IMongoCollection<ChatRoomModel> chatRooms,IUserService userService,ChatHub chatHub)
     {
         _chatRooms = chatRooms;
         _userService = userService;
+        _chatHub = chatHub;
     }
 // Update methods
     /// <summary>
@@ -281,6 +285,39 @@ public class RoomService : IRoomService
         }
     }
     
+    public async Task<bool> UnsendMessageAsync(string GroupId, string MessageId)
+    {
+        try
+        {
+            var filter = Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, GroupId);
+            ChatRoomModel? chatRoom = await _chatRooms.Find(filter).FirstOrDefaultAsync();
+            if(chatRoom == null)
+            {
+                return false;
+            }
+            var message = chatRoom.ChatItems.FirstOrDefault(ci => ci.Id == MessageId);
+            if (message == null)
+            {
+                return false;
+            }
+            // Cập nhật trạng thái Unsend
+            message.Unsend = true;
+
+            // Lưu thay đổi vào cơ sở dữ liệu
+            var update = Builders<ChatRoomModel>.Update.Set(cr => cr.ChatItems, chatRoom.ChatItems);
+            await _chatRooms.UpdateOneAsync(filter, update);
+
+            // Gửi sự kiện đến tất cả người dùng trong phòng
+            await _chatHub.UnSendChatItem(GroupId, MessageId);
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+        
+    }
     //Get methods
     public async Task<IEnumerable<ChatItemResponse>> GetChatHistoryAsync(GetItemsHistoryRequest getItemsHistoryRequest)
     {
@@ -294,7 +331,7 @@ public class RoomService : IRoomService
             var chatItemResponse = new ChatItemResponse
             {
                 Id = item.Id,
-                NickName = await GetNickNameAsync(getItemsHistoryRequest.ChatRoomId, item.UserName) ?? item.UserName,
+                NickName = await RoomChatHelper.GetNickNameAsync(getItemsHistoryRequest.ChatRoomId, item.UserName) ?? item.UserName,
                 AvatarUrl = await _userService.GetAvatarUrlFromUserName(item.UserName),
                 Timestamp = item.Timestamp,
                 Type = item.Type,
@@ -337,49 +374,6 @@ public class RoomService : IRoomService
         }
 
 
-    //Methods get info
-    public async Task<ParticipantRole?> GetRoleAsync(string roomId, string userName)
-    {
-        // Tìm phòng chat theo RoomId và UserName
-        var filter = Builders<ChatRoomModel>.Filter.And(
-            Builders<ChatRoomModel>.Filter.Eq(r => r.Id, roomId),
-            Builders<ChatRoomModel>.Filter.ElemMatch(r => r.Participant, p => p.UserName == userName)
-        );
-
-        // Chỉ lấy trường Participant
-        var projection = Builders<ChatRoomModel>.Projection.Expression(r => 
-            r.Participant.FirstOrDefault(p => p.UserName == userName));
-
-        // Thực hiện truy vấn
-        var participant = await _chatRooms
-            .Find(filter)
-            .Project(projection)
-            .FirstOrDefaultAsync();
-
-        // Kiểm tra kết quả
-        return participant?.Role;
-    }
-    public async Task<string?> GetNickNameAsync(string roomId, string userName)
-    {
-        // Tìm phòng chat theo RoomId và UserName
-        var filter = Builders<ChatRoomModel>.Filter.And(
-            Builders<ChatRoomModel>.Filter.Eq(r => r.Id, roomId),
-            Builders<ChatRoomModel>.Filter.ElemMatch(r => r.Participant, p => p.UserName == userName)
-        );
-
-        // Chỉ lấy trường Participant
-        var projection = Builders<ChatRoomModel>.Projection.Expression(r => 
-            r.Participant.FirstOrDefault(p => p.UserName == userName));
-
-        // Thực hiện truy vấn
-        var participant = await _chatRooms
-            .Find(filter)
-            .Project(projection)
-            .FirstOrDefaultAsync();
-
-        // Kiểm tra kết quả
-        return participant?.NickName;
-    }
-
+    
 
 }

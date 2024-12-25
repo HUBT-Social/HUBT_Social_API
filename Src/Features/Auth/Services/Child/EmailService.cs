@@ -213,25 +213,7 @@ public class EmailService : IEmailService
 
         emailMessage.Body = bodyBuilder.ToMessageBody();
         return emailMessage;
-            Sender = MailboxAddress.Parse(_emailSetting.Email),
-            Subject = emailRequest.Subject
-        };
-        email.To.Add(MailboxAddress.Parse(emailRequest.ToEmail));
-        var htmlContent = SendEmailHttpContent.GetSendPostcodeContent(emailRequest.Code);
-
-        var bodyBuilder = new BodyBuilder
-        {
-            HtmlBody = htmlContent,  
-            TextBody = $"Your code is: {emailRequest.Code}. Thank you for using our service!"
-        };
-        email.Body = bodyBuilder.ToMessageBody();
-        return email;
     }
-
-
-
-
-
     public bool IsValidEmail(string email)
     {
         try

@@ -2,6 +2,7 @@
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
+using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.SignalR;
 
@@ -11,13 +12,12 @@ public class ChatHub : Hub
 {
     private readonly IHubContext<ChatHub> _hubContext;
     private readonly IUserService _userService;
-    private readonly IRoomService _roomService;
 
-    public ChatHub(IHubContext<ChatHub> hubContext, IUserService userService, IRoomService roomService)
+
+    public ChatHub(IHubContext<ChatHub> hubContext, IUserService userService)
     {
         _hubContext = hubContext;
         _userService = userService;
-        _roomService = roomService;
     }
 
     // Gửi tin nhắn hoặc phương tiện đến nhóm
@@ -28,7 +28,7 @@ public class ChatHub : Hub
             var chatItemResponse = new ChatItemResponse
             {
                 Id = chatItem.Id,
-                NickName = await _roomService.GetNickNameAsync(groupId, chatItem.UserName) ?? chatItem.UserName,
+                NickName = await RoomChatHelper.GetNickNameAsync(groupId, chatItem.UserName) ?? chatItem.UserName,
                 AvatarUrl = await _userService.GetAvatarUrlFromUserName(chatItem.UserName),
                 Timestamp = chatItem.Timestamp,
                 Type = chatItem.Type,
@@ -61,7 +61,7 @@ public class ChatHub : Hub
     {
         try
         {
-            await _hubContext.Clients.Group(roomId).SendAsync("ReceiveSignalTyping", userId);
+            await _hubContext.Clients.Group(roomId).SendAsync("ReceiveTyping", userId);
         }
         catch (Exception ex)
         {
@@ -69,4 +69,42 @@ public class ChatHub : Hub
             Console.WriteLine($"Error notifying typing: {ex.Message}");
         }
     }
+    //Thông báo có người gỡ tin nhắn.
+    public async Task UnSendChatItem(string groupId, string MessageId)
+    {
+        try
+        {
+            await _hubContext.Clients.Group(groupId).SendAsync("ReceiveUnSendItem", MessageId);
+        }
+        catch
+        {
+            // Log lỗi và xử lý tùy theo nhu cầu
+            Console.WriteLine($"Error unsend message:");
+        }
+    }
+    // thong bao co nguoi tham gia nhom
+    public async Task JoinRoom(string groupId, string userId)
+    {
+        try
+        {
+            await _hubContext.Clients.Group(groupId).SendAsync("JoinGroup", userId);
+        }
+        catch
+        {
+            Console.WriteLine("Err");
+        }
+    }
+     // thong bao co nguoi tham gia nhom
+    public async Task LeaveRoom(string groupId, string userId)
+    {
+        try
+        {
+            await _hubContext.Clients.Group(groupId).SendAsync("LeaveRoom", userId);
+        }
+        catch
+        {
+            Console.WriteLine("Err");
+        }
+    }
 }
+

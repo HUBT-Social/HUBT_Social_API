@@ -1,5 +1,7 @@
-namespace HUBTSOCIAL.Src.Features.Chat.Models;
+using MongoDB.Bson.Serialization.Attributes;
 
+namespace HUBTSOCIAL.Src.Features.Chat.Models;
+[BsonDiscriminator("FileChatItem")]
 public class FileChatItem : ChatItem
 {
     public string FileUrl { get; set; } = string.Empty;

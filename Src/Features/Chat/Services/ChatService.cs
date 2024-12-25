@@ -5,6 +5,7 @@ using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBTSOCIAL.Src.Features.Chat.DTOs;
+using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using MongoDB.Driver;
 
@@ -13,10 +14,12 @@ namespace HUBT_Social_API.Features.Chat.Services;
 public class ChatService : IChatService
 {
     private readonly IMongoCollection<ChatRoomModel> _chatRooms;
+    private readonly IRoomService _roomService;
 
-    public ChatService(IMongoCollection<ChatRoomModel> chatRooms)
+    public ChatService(IMongoCollection<ChatRoomModel> chatRooms,IRoomService roomService)
     {
         _chatRooms = chatRooms;
+        _roomService = roomService;
     }
 
     /// <summary>
@@ -108,25 +111,7 @@ public class ChatService : IChatService
         }
     }
 
-    /// <summary>
-    /// Lấy thông tin chi tiết của một nhóm chat theo ID.
-    /// </summary>
-    /// <param name="id">
-    /// ID của nhóm chat cần lấy thông tin.
-    /// </param>
-    /// <returns>
-    /// Đối tượng `ChatRoomModel` chứa thông tin chi tiết của nhóm chat. 
-    /// Nếu không tìm thấy, trả về null.
-    /// </returns>
-    /// <example>
-    /// Ví dụ:
-    /// var group = await GetGroupByIdAsync("group123");
-    /// </example>
-    public async Task<ChatRoomModel> GetGroupByIdAsync(string id)
-    {
-        return await _chatRooms.Find(c => c.Id == id).FirstOrDefaultAsync();
-    }
-
+    
     /// <summary>
     /// Tìm kiếm các nhóm chat theo từ khóa.
     /// </summary>
@@ -141,17 +126,17 @@ public class ChatService : IChatService
     /// Ví dụ:
     /// var groups = await SearchGroupsAsync("team");
     /// </example>
-    public async Task<List<SearchChatRoomReponse>> SearchGroupsAsync(string keyword)
+    public async Task<List<RoomSearchReponse>> SearchGroupsAsync(string keyword)
     {
         if (string.IsNullOrWhiteSpace(keyword))
-            return new List<SearchChatRoomReponse>();
+            return new List<RoomSearchReponse>();
 
         var filter = Builders<ChatRoomModel>.Filter.Regex(
             cr => cr.Name, 
             new MongoDB.Bson.BsonRegularExpression(keyword, "i")
         );
 
-        var projection = Builders<ChatRoomModel>.Projection.Expression(cr => new SearchChatRoomReponse
+        var projection = Builders<ChatRoomModel>.Projection.Expression(cr => new RoomSearchReponse
         {
             Id = cr.Id,
             GroupName = cr.Name,
@@ -176,9 +161,23 @@ public class ChatService : IChatService
     /// Ví dụ:
     /// var allRooms = await GetAllRoomsAsync();
     /// </example>
-    public async Task<List<ChatRoomModel>> GetAllRoomsAsync()
+    public async Task<List<RoomSearchReponse>> GetAllRoomsAsync()
     {
-        return await _chatRooms.Find(_ => true).ToListAsync();
+        var projection = Builders<ChatRoomModel>.Projection.Expression(cr => new RoomSearchReponse
+        {
+            Id = cr.Id,
+            GroupName = cr.Name,
+            AvatarUrl = cr.AvatarUrl,
+            TotalNumber = cr.Participant.Count,
+        });
+
+        // Truy vấn tất cả các nhóm
+        var results = await _chatRooms
+            .Find(Builders<ChatRoomModel>.Filter.Empty) // Lấy tất cả tài liệu
+            .Project(projection)
+            .ToListAsync();
+
+        return results;
     }
     /// <summary>
     /// Lấy tất cả phòng chat có chứa ID người dùng.
@@ -195,21 +194,135 @@ public class ChatService : IChatService
     /// Ví dụ: 
     /// var rooms = await GetRoomsByIdUserAsync("user123");
     /// </example>
-   public async Task<List<ChatRoomModel>> GetRoomsByUserNameAsync(string userName)
+   public async Task<List<RoomLoadingRespone>> GetRoomsOfUserNameAsync(string userName)
     {
-        var filter = Builders<ChatRoomModel>.Filter.ElemMatch(
-            r => r.Participant,
-            p => p.UserName == userName
-        );
+        // Tạo bộ lọc để tìm các phòng chat có chứa userName trong danh sách Participant
+    var filter = Builders<ChatRoomModel>.Filter.ElemMatch(
+        cr => cr.Participant,
+        p => p.UserName == userName
+    );
 
-        var sort = Builders<ChatRoomModel>.Sort.Descending("Participant.LastInteractionTime");
+    // Lấy tất cả các phòng chat phù hợp với bộ lọc
+    var chatRooms = await _chatRooms
+    .Find(filter)
+    .SortByDescending(cr => cr.LastInteractionTime)
+    .ToListAsync();
 
-        var chatRooms = await _chatRooms
-            .Find(filter)
-            .Sort(sort)
-            .ToListAsync();
 
-        return chatRooms ?? new List<ChatRoomModel>();
+        // Duyệt qua các phòng chat và gọi GetGroupByIdAsync cho từng phòng song song
+        var tasks = chatRooms.Select(cr => GetGroupByIdAsync(cr.Id)).ToList();
+
+        // Chờ tất cả các tác vụ hoàn thành
+        var listRespone = await Task.WhenAll(tasks);
+
+        // Lọc các kết quả không phải là null
+        return listRespone.Where(r => r != null).ToList();
+    }
+
+    private async Task<RoomLoadingRespone?> GetGroupByIdAsync(string id)
+    {
+        // Tìm phòng chat theo ID
+        ChatRoomModel chatRoom = await _chatRooms.Find(c => c.Id == id).FirstOrDefaultAsync();
+
+        // Nếu không tìm thấy phòng, trả về null
+        if (chatRoom == null)
+            return null;
+
+        // Lấy tin nhắn gần đây và thời gian tương tác
+        var (LastInteraction, LastTime) = await GetRecentChatItemAsync(chatRoom);
+
+        // Trả về đối tượng RoomLoadingRespone với thông tin cần thiết
+        return new RoomLoadingRespone
+        {
+            Id = chatRoom.Id,
+            GroupName = chatRoom.Name,
+            AvatarUrl = chatRoom.AvatarUrl,
+            LastMessage = LastInteraction,
+            LastInteractionTime = LastTime
+        };
+    }
+
+    private async Task<(string LastInteraction, string LastTime)> GetRecentChatItemAsync(ChatRoomModel chatRoom)
+    {
+        // Nếu không có danh sách ChatItems hoặc rỗng, trả về chuỗi rỗng
+        if (chatRoom.ChatItems == null || !chatRoom.ChatItems.Any())
+            return (string.Empty, string.Empty);
+
+        // Lấy tin nhắn mới nhất dựa vào Timestamp
+        var recentMessage = chatRoom.ChatItems
+            .OrderByDescending(m => m.Timestamp)
+            .FirstOrDefault();
+        
+        string LastTime = FormatLastInteractionTime(recentMessage.Timestamp);
+
+        // Lấy nickname bất đồng bộ
+        var nickName = await RoomChatHelper.GetNickNameAsync(recentMessage.Id, recentMessage.UserName);
+
+        // Kiểm tra nếu tin nhắn là loại "Message"
+        if (recentMessage.Type == "Message")
+        {
+            var recent = (MessageChatItem)recentMessage;
+            // Trả về chuỗi hiển thị
+            return (GetMessagePreview(nickName, recent.Content), LastTime);
+        }
+        if (recentMessage.Type == "Media")
+        {
+            return ($"{nickName}: [Photo/Media]", LastTime);
+        }
+        if (recentMessage.Type == "File")
+        {
+            return ($"{nickName}: [File]", LastTime);
+        }
+        if (recentMessage.Type == "Voice")
+        {
+            return ($"{nickName}: [Voice]", LastTime);
+        }
+
+        // Nếu không phải loại "Message", trả về chuỗi rỗng hoặc thông báo khác
+        return (string.Empty, string.Empty);
+    }
+
+    private string FormatLastInteractionTime(DateTime timestamp)
+    {
+        var now = DateTime.Now;
+
+        // Nếu trong cùng một ngày
+        if (timestamp.Date == now.Date)
+        {
+            return timestamp.ToString("HH:mm"); // {giờ:phút}
+        }
+
+        // Nếu thuộc ngày trước (trong cùng năm và tháng)
+        if (timestamp.Year == now.Year && timestamp.Month == now.Month && timestamp.Day == now.Day - 1)
+        {
+            return "Hôm qua";
+        }
+
+        // Kiểm tra nếu cùng tuần (trước ngày hôm qua)
+        if (timestamp.Year == now.Year && timestamp.DayOfYear >= now.DayOfYear - 7 && timestamp.DayOfYear < now.DayOfYear - 1)
+        {
+            return timestamp.ToString("dddd"); // {thứ}
+        }
+
+        // Nếu cùng năm nhưng khác tháng
+        if (timestamp.Year == now.Year)
+        {
+            return timestamp.ToString("dd/MM"); // {ngày+tháng}
+        }
+
+        // Nếu khác năm
+        return timestamp.ToString("MM/yyyy"); // {tháng+năm}
+    }
+
+    private string GetMessagePreview(string nickName, string content)
+    {
+        // Kết hợp tên người gửi và nội dung tin nhắn
+        string fullMessage = $"{nickName}: {content}";
+
+        // Nếu chuỗi dài hơn 30 ký tự, cắt và thêm dấu "..."
+        return fullMessage.Length > 30
+            ? fullMessage.Substring(0, 30) + "..."
+            : fullMessage;
     }
 
 

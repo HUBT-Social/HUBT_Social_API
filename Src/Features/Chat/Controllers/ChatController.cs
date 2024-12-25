@@ -6,6 +6,7 @@ using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBT_Social_API.Src.Core.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.DTOs;
+using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -106,7 +107,7 @@ public class ChatController : ControllerBase
         if (!userResponse.Success)
             return BadRequest("Token is not valid");
 
-        if(await _roomService.GetRoleAsync(request.GroupId,userResponse.User.UserName) != ParticipantRole.Admin)
+        if(await RoomChatHelper.GetRoleAsync(request.GroupId,userResponse.User.UserName) != ParticipantRole.Admin)
         {
             return BadRequest("You cant delete this group because you are not owner.");
         }
@@ -118,21 +119,8 @@ public class ChatController : ControllerBase
         return NotFound("Group not found or could not be deleted.");
     }
     
-
-    [HttpGet("get-group-by-id")]
-    public async Task<IActionResult> GetGroupByIdAsync(GetGroupByIdRequest request)
-    {
-        if (string.IsNullOrEmpty(request.GroupId))
-            return BadRequest("Group ID is required.");
-
-        var group = await _chatService.GetGroupByIdAsync(request.GroupId);
-        if (group != null)
-            return Ok(group);
-
-        return NotFound("Group not found.");
-    }
     
-    [HttpGet("search-group-by-keyword")]
+    [HttpPost("search-group-by-keyword")]
     public async Task<IActionResult> SearchGroupsAsync(SearchGroupsRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Keyword))
@@ -145,7 +133,7 @@ public class ChatController : ControllerBase
         return NotFound("No groups found matching the keyword.");
     }
     
-    [HttpGet("get-all-group")]
+    [HttpPost("get-all-group")]
     public async Task<IActionResult> GetAllRoomsAsync()
     {
         var rooms = await _chatService.GetAllRoomsAsync();
@@ -153,13 +141,27 @@ public class ChatController : ControllerBase
     }
     
 
-    [HttpGet("user/rooms")]
+    [HttpPost("user/get-rooms-by-id")]
     public async Task<IActionResult> GetRoomsByUserNameAsync(GetRoomsByUserRequest request)
     {
         if (string.IsNullOrEmpty(request.UserName))
             return BadRequest("Username is required.");
 
-        var rooms = await _chatService.GetRoomsByUserNameAsync(request.UserName);
+        var rooms = await _chatService.GetRoomsOfUserNameAsync(request.UserName);
+        if (rooms.Any())
+            return Ok(rooms);
+
+        return NotFound("No rooms found for the user.");
+    }
+    [HttpPost("user/get-rooms")]
+    public async Task<IActionResult> GetRoomsByTokenTokenAsync()
+    {
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (userResponse.Success == false)
+        {
+            return BadRequest("Token is not valid");
+        }
+        var rooms = await _chatService.GetRoomsOfUserNameAsync(userResponse.User.UserName);
         if (rooms.Any())
             return Ok(rooms);
 

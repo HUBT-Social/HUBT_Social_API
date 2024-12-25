@@ -24,6 +24,16 @@ public static class BsonClassMapConfig
         {
             cm.AutoMap();
         });
+         // Đăng ký lớp con MediaChatItem
+        BsonClassMap.RegisterClassMap<FileChatItem>(cm =>
+        {
+            cm.AutoMap();
+        });
+         // Đăng ký lớp con MediaChatItem
+        BsonClassMap.RegisterClassMap<VoiceChatItem>(cm =>
+        {
+            cm.AutoMap();
+        });
         return services;
     }
 }

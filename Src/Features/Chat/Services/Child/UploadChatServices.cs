@@ -65,7 +65,7 @@ public class UploadChatServices : IUploadChatServices
 
         // Tạo update để cập nhật cả LastInteractionTime và thêm tin nhắn mới vào ChatItems
         var update = Builders<ChatRoomModel>.Update
-            .Set("Participant.$.LastInteractionTime", DateTime.UtcNow) // Cập nhật thời gian tương tác gần nhất
+            .Set(cr => cr.LastInteractionTime, DateTime.Now) // Cập nhật thời gian tương tác gần nhất
             .Push(cr => cr.ChatItems, newMessage); // Thêm tin nhắn mới vào danh sách ChatItems
 
         // Cập nhật MongoDB
@@ -105,7 +105,7 @@ public class UploadChatServices : IUploadChatServices
 
         // Tạo update để cập nhật cả LastInteractionTime và thêm tin nhắn mới vào ChatItems
         var update = Builders<ChatRoomModel>.Update
-            .Set("Participant.$.LastInteractionTime", DateTime.UtcNow) // Cập nhật thời gian tương tác gần nhất
+            .Set(cr => cr.LastInteractionTime, DateTime.Now) // Cập nhật thời gian tương tác gần nhất
             .Push(cr => cr.ChatItems, newMedia); // Thêm tin nhắn mới vào danh sách ChatItems
 
         // Cập nhật MongoDB

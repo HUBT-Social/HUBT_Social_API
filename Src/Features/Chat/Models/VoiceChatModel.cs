@@ -1,4 +1,7 @@
+using MongoDB.Bson.Serialization.Attributes;
+
 namespace HUBTSOCIAL.Src.Features.Chat.Models;
+[BsonDiscriminator("VoiceChatItem")]
 public class VoiceChatItem : ChatItem
 {
     public string Url { get; set; } = string.Empty;

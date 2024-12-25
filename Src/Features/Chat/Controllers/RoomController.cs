@@ -4,8 +4,10 @@ using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBT_Social_API.Src.Core.Helpers;
+using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Localization;
 
 namespace HUBT_Social_API.Features.Chat.Controllers;
@@ -79,8 +81,8 @@ public class RoomController : ControllerBase
             : BadRequest("Sending failed");
 
     }
-    [HttpGet("get-history-chat")]
-    public async Task<IActionResult> GetHistoryChat([FromBody] GetHistoryRequest getHistoryRequest)
+    [HttpPost("get-history-chat")]
+    public async Task<IActionResult> GetHistoryChat(GetHistoryRequest getHistoryRequest)
     {
         if (getHistoryRequest == null)
         {
@@ -105,8 +107,8 @@ public class RoomController : ControllerBase
 
         return Ok(chatItems);
     }
-    [HttpGet("get-medias")]
-    public async Task<IActionResult> GetMediasHistory([FromBody] GetHistoryRequest getHistoryRequest)
+    [HttpPost("get-medias")]
+    public async Task<IActionResult> GetMediasHistory(GetHistoryRequest getHistoryRequest)
     {
 
         if (getHistoryRequest == null)
@@ -133,8 +135,8 @@ public class RoomController : ControllerBase
 
         return Ok(chatItems);
     }
-    [HttpGet("get-files")]
-    public async Task<IActionResult> GetFilesHistory([FromBody] GetHistoryRequest getHistoryRequest)
+    [HttpPost("get-files")]
+    public async Task<IActionResult> GetFilesHistory(GetHistoryRequest getHistoryRequest)
     {
 
         if (getHistoryRequest == null)
@@ -161,8 +163,8 @@ public class RoomController : ControllerBase
 
         return Ok(chatItems);
     }
-    [HttpGet("get-Links")]
-    public async Task<IActionResult> GetLinksHistory([FromBody] GetHistoryRequest getHistoryRequest)
+    [HttpPost("get-Links")]
+    public async Task<IActionResult> GetLinksHistory(GetHistoryRequest getHistoryRequest)
     {
 
         if (getHistoryRequest == null)
@@ -189,8 +191,8 @@ public class RoomController : ControllerBase
 
         return Ok(chatItems);
     }
-     [HttpGet("get-voices")]
-    public async Task<IActionResult> GetVoicesHistory([FromBody] GetHistoryRequest getHistoryRequest)
+     [HttpPost("get-voices")]
+    public async Task<IActionResult> GetVoicesHistory(GetHistoryRequest getHistoryRequest)
     {
 
         if (getHistoryRequest == null)
@@ -218,8 +220,8 @@ public class RoomController : ControllerBase
         return Ok(chatItems);
     }
     // API to update group name
-    [HttpPut("update-group-name")]
-    public async Task<IActionResult> UpdateGroupName([FromBody] UpdateGroupNameRequest request)
+    [HttpPost("update-group-name")]
+    public async Task<IActionResult> UpdateGroupName(UpdateGroupNameRequest request)
     {
         if (request == null || string.IsNullOrEmpty(request.Id) || string.IsNullOrEmpty(request.NewName))
         {
@@ -235,8 +237,8 @@ public class RoomController : ControllerBase
     }
 
     // API to update avatar
-    [HttpPut("update-avatar")]
-    public async Task<IActionResult> UpdateAvatar([FromBody] UpdateAvatarRequest request)
+    [HttpPost("update-avatar")]
+    public async Task<IActionResult> UpdateAvatar(UpdateAvatarRequest request)
     {
         if (request == null || string.IsNullOrEmpty(request.Id) || request.file == null)
         {
@@ -252,7 +254,7 @@ public class RoomController : ControllerBase
         return StatusCode(500, "Failed to update avatar.");
     }
 
-    [HttpPut("update-nickname")]
+    [HttpPost("update-nickname")]
     public async Task<IActionResult> UpdateNickNameAsync(UpdateNickNameRequest request)
     {
         var result = await _roomService.UpdateNickNameAsync(request.GroupId, request.UserName, request.NewNickName);
@@ -262,7 +264,7 @@ public class RoomController : ControllerBase
     }
     // API to add a member to the group
     [HttpPost("add-member")]
-    public async Task<IActionResult> AddMember([FromBody] AddMemberRequest request)
+    public async Task<IActionResult> AddMember(AddMemberRequest request)
     {
         if (request == null || string.IsNullOrEmpty(request.GroupId) || string.IsNullOrEmpty(request.UserName))
         {
@@ -278,8 +280,8 @@ public class RoomController : ControllerBase
     }
 
     // API to remove a member from the group
-    [HttpDelete("remove-member")]
-    public async Task<IActionResult> RemoveMember([FromBody] RemoveMemberRequest request)
+    [HttpPost("remove-member")]
+    public async Task<IActionResult> RemoveMember(RemoveMemberRequest request)
     {
         // Kiểm tra đầu vào
         if (request == null || string.IsNullOrEmpty(request.GroupId) || string.IsNullOrEmpty(request.UserName))
@@ -295,8 +297,8 @@ public class RoomController : ControllerBase
         }
 
         // Lấy vai trò của người thực hiện hành động (kicker) và người bị kick (kicked)
-        ParticipantRole? kickerRole = await _roomService.GetRoleAsync(request.GroupId, userResponse.User.UserName);
-        ParticipantRole? kickedRole = await _roomService.GetRoleAsync(request.GroupId, request.UserName);
+        ParticipantRole? kickerRole = await RoomChatHelper.GetRoleAsync(request.GroupId, userResponse.User.UserName);
+        ParticipantRole? kickedRole = await RoomChatHelper.GetRoleAsync(request.GroupId, request.UserName);
 
         // Kiểm tra quyền hạn của kicker
         if (kickerRole == null || kickedRole == null)
@@ -334,6 +336,31 @@ public class RoomController : ControllerBase
         }
         bool leftSucceeded = await _roomService.LeaveRoomAsync(leaveRoomRequest.GroupId,userResponse.User.UserName);
         return leftSucceeded ? Ok("Left succeeded.") : BadRequest("Error to leave.");
+    }
+    [HttpPost("unsend-message")]
+    public async Task<ActionResult> UnSendMessage(UnsendMessageRequest unsendMessageRequest)
+    {
+        if(string.IsNullOrEmpty(unsendMessageRequest.UserId) || string.IsNullOrEmpty(unsendMessageRequest.ChatRoomId) || string.IsNullOrEmpty(unsendMessageRequest.MessageId))
+        {
+            return BadRequest("Invalid request.");
+        }
+        // Lấy thông tin người dùng từ Token
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (userResponse == null || !userResponse.Success)
+        {
+            return BadRequest("Invalid or missing token.");
+        }
+        string? senderOfItem = await RoomChatHelper.GetInfoMessageAsync(unsendMessageRequest.ChatRoomId,unsendMessageRequest.MessageId);
+        if(senderOfItem == null)
+        {
+            return BadRequest("Invalid value request.");
+        }
+        if(senderOfItem != userResponse.User.UserName)
+        {
+            return BadRequest("You are not owner of this message");
+        }
+        var isUnsent = await _roomService.UnsendMessageAsync(unsendMessageRequest.ChatRoomId,unsendMessageRequest.MessageId);
+        return isUnsent ? Ok("UnSent") : BadRequest("Err to Unsend.");
     }
 
 }

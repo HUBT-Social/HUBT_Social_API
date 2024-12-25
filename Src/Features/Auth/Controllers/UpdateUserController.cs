@@ -21,14 +21,14 @@ namespace HUBT_Social_API.Controllers;
 [Authorize]
 public class UpdateUserController : BaseAuthController
 {
-    private readonly UploadChatServices _uploadServices;
-    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService,UploadChatServices uploadServices)
+    private readonly IUploadChatServices _uploadServices;
+    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService,IUploadChatServices uploadServices)
     :base (null,tokenService,emailService,null,userService)
     {
         _uploadServices = uploadServices;
     }
 
-    [HttpGet("get-user")]
+    [HttpPost("get-user")]
     public async Task<IActionResult> GetCurrentUser()
     {
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
@@ -52,7 +52,7 @@ public class UpdateUserController : BaseAuthController
         return BadRequest(userResponse.Message);
 
     }
-    [HttpGet("get-user-by-username")]
+    [HttpPost("get-user-by-username")]
     public async Task<IActionResult> GetUserByUserName(GetUserByUserNameRequest getUserByUserNameRequest)
     {
         if(string.IsNullOrEmpty(getUserByUserNameRequest.UserName))
