@@ -442,5 +442,13 @@
 <data name="Email2Text13" xml:space="preserve">
   <value/>
 </data>
-
+<data name="UserDeleted" xml:space="preserve">
+  <value />
+</data>
+<data name="UserDeletedError" xml:space="preserve">
+  <value />
+</data>
+<data name="TokenDeleted" xml:space="preserve">
+  <value />
+</data>
 </root>

@@ -13,9 +13,9 @@ using MimeKit;
 using MimeKit.Text;
 using MongoDB.Driver;
 using System.ComponentModel;
-using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 using System.IO;
 
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace HUBT_Social_API.Features.Auth.Services.Child;
 
@@ -214,11 +214,6 @@ public class EmailService : IEmailService
         emailMessage.Body = bodyBuilder.ToMessageBody();
         return emailMessage;
     }
-
-
-
-
-
     public bool IsValidEmail(string email)
     {
         try

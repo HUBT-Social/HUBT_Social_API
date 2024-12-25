@@ -54,7 +54,11 @@ public partial class AuthController
                     {
                         ToEmail = code.Email,
                         Code = code.Code,
-                        Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject)
+                        Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
+                        FullName = user.FirstName + " " + user.LastName,
+                        Device = userAgent,
+                        Location = await ServerHelper.GetLocationFromIpAsync(ipAddress),
+                        DateTime = ServerHelper.ConvertToCustomString(DateTime.UtcNow) 
                     });
 
                     return Ok(new LoginResponse
@@ -64,25 +68,11 @@ public partial class AuthController
                         Message = LocalValue.Get(KeyStore.StepOneVerificationSuccess)
                     });
                 }
-
-                await _emailService.SendEmailAsync(new EmailRequest
-                {
-                    ToEmail = code.Email,
-                    Code = code.Code,
-                    Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
-                    FullName = user.FirstName + " " + user.LastName,
-                    Device = userAgent,
-                    Location = await ServerHelper.GetLocationFromIpAsync(ipAddress),
-                    DateTime = ServerHelper.ConvertToCustomString(DateTime.UtcNow) 
-                });
-
-                return Ok(new LoginResponse
+                return BadRequest(new LoginResponse
                 {
                     RequiresTwoFactor = true,
                     Message = LocalValue.Get(KeyStore.InvalidCredentials)
                 });
-
-
             }
 
             // Xử lý các trường hợp đăng nhập thất bại

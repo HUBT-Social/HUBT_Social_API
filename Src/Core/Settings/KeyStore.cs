@@ -136,7 +136,8 @@ namespace HUBT_Social_API.Core.Settings
         public const string Email2Text11 = "Email2Text11";
         public const string Email2Text12 = "Email2Text12";
         public const string Email2Text13 = "Email2Text13";
-                
+
+
 
         public const string TokenValid =  "TokenValid";
         public const string AvatarDefaultFemale1 = "https://res.cloudinary.com/dnx8aew1t/image/upload/v1731811655/qqgtqqr9igqnz6pj8zjn.jpg";

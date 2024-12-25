@@ -1,3 +1,4 @@
+using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
@@ -35,9 +36,13 @@ public class UserService : IUserService
         if (string.IsNullOrWhiteSpace(userName)) return null;
         return await _userManager.FindByNameAsync(userName);
     }
-
+    public async Task<string> GetAvatarUrlFromUserName(string userName)
+    {
+        AUser user = await GetUserByNameAsync(userName);
+        if (user == null) return LocalValue.Get(KeyStore.DefaultUserImage);
+        return user.AvataUrl;
+    }
     public async Task<AUser?> FindUserByUserNameAsync(string userName) => await GetUserByNameAsync(userName);
-
     public async Task<AUser?> FindUserByEmailAsync(string email)
     {
         if (string.IsNullOrWhiteSpace(email)) return null;

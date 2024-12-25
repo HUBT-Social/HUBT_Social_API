@@ -2,7 +2,6 @@ using System.Globalization;
 using System.Net;
 using HUBT_Social_API.Core.Configurations;
 using HUBT_Social_API.Features.Chat.ChatHubs;
-using HUBT_Social_API.Features.Chat.ChatHubs.ChildChatHubs;
 using HUBT_Social_API.Src.Core.Configurations;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
@@ -32,7 +31,7 @@ namespace HUBT_Social_API;
             builder.Services.AddChatMongoCollections(builder.Configuration);
             builder.Services.AddAuthMongoCollections(builder.Configuration);
             // Cấu hình ChatItems
-            //builder.Services.RegisterClassMaps();
+            builder.Services.RegisterClassMaps();
         }
 
         private static void InitServices(WebApplicationBuilder builder) 

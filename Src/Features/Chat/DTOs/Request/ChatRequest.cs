@@ -6,18 +6,50 @@ public enum StatusSending
     Sent,
     SendingFaild
 }
-public class MessageRequest
+public class ChatRequestBase
 {
     public string GroupId { get; set; } = string.Empty;
-    public string SenderId { get; set; } = string.Empty;
+
+}
+public class MessageInputRequest : ChatRequestBase
+{
     public string? Content { get; set; } =string.Empty;
 }
-
-
-public class FileRequest
+public class MediaInputRequest : ChatRequestBase
 {
-    public string GroupId { get; set; } = string.Empty;
-    public string SenderId { get; set; } = string.Empty;
     public List<IFormFile>? Files { get; set; } = [];
-
 }
+
+
+
+
+public class MessageRequest : MessageInputRequest
+{
+    public string UserName { get; set; } = string.Empty;
+    
+}
+public class MediaRequest : MediaInputRequest
+{
+    public string UserName { get; set; } = string.Empty;
+}
+
+
+public class DeleteGroupRequest
+    {
+        public string GroupId { get; set; }
+    }
+public class GetGroupByIdRequest
+    {
+        public string GroupId { get; set; }
+    }
+public class SearchGroupsRequest
+    {
+        public string Keyword { get; set; }
+    }
+
+public class GetRoomsByUserRequest
+    {
+        public string UserName { get; set; }
+    }
+
+
