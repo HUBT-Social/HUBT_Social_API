@@ -53,7 +53,7 @@ public class UpdateUserController : BaseAuthController
 
     }
     [HttpGet("get-user-by-username")]
-    public async Task<IActionResult> GetUserByUserName(GetUserByUserNameRequest getUserByUserNameRequest)
+    public async Task<IActionResult> GetUserByUserName([FromQuery] GetUserByUserNameRequest getUserByUserNameRequest)
     {
         if(string.IsNullOrEmpty(getUserByUserNameRequest.UserName))
         {

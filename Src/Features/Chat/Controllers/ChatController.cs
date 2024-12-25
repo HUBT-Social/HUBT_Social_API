@@ -133,7 +133,7 @@ public class ChatController : ControllerBase
         return NotFound("No groups found matching the keyword.");
     }
     
-    [HttpPost("get-all-group")]
+    [HttpGet("get-all-group")]
     public async Task<IActionResult> GetAllRoomsAsync()
     {
         var rooms = await _chatService.GetAllRoomsAsync();
@@ -141,8 +141,8 @@ public class ChatController : ControllerBase
     }
     
 
-    [HttpPost("user/get-rooms-by-id")]
-    public async Task<IActionResult> GetRoomsByUserNameAsync(GetRoomsByUserRequest request)
+    [HttpGet("user/get-rooms-by-id")]
+    public async Task<IActionResult> GetRoomsByUserNameAsync([FromQuery] GetRoomsByUserRequest request)
     {
         if (string.IsNullOrEmpty(request.UserName))
             return BadRequest("Username is required.");
@@ -153,7 +153,7 @@ public class ChatController : ControllerBase
 
         return NotFound("No rooms found for the user.");
     }
-    [HttpPost("user/get-rooms")]
+    [HttpGet("user/get-rooms")]
     public async Task<IActionResult> GetRoomsByTokenTokenAsync()
     {
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
