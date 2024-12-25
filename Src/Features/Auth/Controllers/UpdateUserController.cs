@@ -28,7 +28,7 @@ public class UpdateUserController : BaseAuthController
         _uploadServices = uploadServices;
     }
 
-    [HttpPost("get-user")]
+    [HttpGet("get-user")]
     public async Task<IActionResult> GetCurrentUser()
     {
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
@@ -52,8 +52,8 @@ public class UpdateUserController : BaseAuthController
         return BadRequest(userResponse.Message);
 
     }
-    [HttpPost("get-user-by-username")]
-    public async Task<IActionResult> GetUserByUserName(GetUserByUserNameRequest getUserByUserNameRequest)
+    [HttpGet("get-user-by-username")]
+    public async Task<IActionResult> GetUserByUserName([FromQuery] GetUserByUserNameRequest getUserByUserNameRequest)
     {
         if(string.IsNullOrEmpty(getUserByUserNameRequest.UserName))
         {

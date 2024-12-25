@@ -81,8 +81,8 @@ public class RoomController : ControllerBase
             : BadRequest("Sending failed");
 
     }
-    [HttpPost("get-history-chat")]
-    public async Task<IActionResult> GetHistoryChat(GetHistoryRequest getHistoryRequest)
+    [HttpGet("get-history-chat")]
+    public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest getHistoryRequest)
     {
         if (getHistoryRequest == null)
         {
@@ -107,8 +107,8 @@ public class RoomController : ControllerBase
 
         return Ok(chatItems);
     }
-    [HttpPost("get-medias")]
-    public async Task<IActionResult> GetMediasHistory(GetHistoryRequest getHistoryRequest)
+    [HttpGet("get-medias")]
+    public async Task<IActionResult> GetMediasHistory([FromQuery] GetHistoryRequest getHistoryRequest)
     {
 
         if (getHistoryRequest == null)
@@ -135,8 +135,8 @@ public class RoomController : ControllerBase
 
         return Ok(chatItems);
     }
-    [HttpPost("get-files")]
-    public async Task<IActionResult> GetFilesHistory(GetHistoryRequest getHistoryRequest)
+    [HttpGet("get-files")]
+    public async Task<IActionResult> GetFilesHistory([FromQuery] GetHistoryRequest getHistoryRequest)
     {
 
         if (getHistoryRequest == null)
@@ -163,8 +163,8 @@ public class RoomController : ControllerBase
 
         return Ok(chatItems);
     }
-    [HttpPost("get-Links")]
-    public async Task<IActionResult> GetLinksHistory(GetHistoryRequest getHistoryRequest)
+    [HttpGet("get-Links")]
+    public async Task<IActionResult> GetLinksHistory([FromQuery] GetHistoryRequest getHistoryRequest)
     {
 
         if (getHistoryRequest == null)
@@ -191,8 +191,8 @@ public class RoomController : ControllerBase
 
         return Ok(chatItems);
     }
-     [HttpPost("get-voices")]
-    public async Task<IActionResult> GetVoicesHistory(GetHistoryRequest getHistoryRequest)
+     [HttpGet("get-voices")]
+    public async Task<IActionResult> GetVoicesHistory([FromQuery] GetHistoryRequest getHistoryRequest)
     {
 
         if (getHistoryRequest == null)
@@ -220,7 +220,7 @@ public class RoomController : ControllerBase
         return Ok(chatItems);
     }
     // API to update group name
-    [HttpPost("update-group-name")]
+    [HttpPut("update-group-name")]
     public async Task<IActionResult> UpdateGroupName(UpdateGroupNameRequest request)
     {
         if (request == null || string.IsNullOrEmpty(request.Id) || string.IsNullOrEmpty(request.NewName))
@@ -237,7 +237,7 @@ public class RoomController : ControllerBase
     }
 
     // API to update avatar
-    [HttpPost("update-avatar")]
+    [HttpPut("update-avatar")]
     public async Task<IActionResult> UpdateAvatar(UpdateAvatarRequest request)
     {
         if (request == null || string.IsNullOrEmpty(request.Id) || request.file == null)
@@ -254,7 +254,7 @@ public class RoomController : ControllerBase
         return StatusCode(500, "Failed to update avatar.");
     }
 
-    [HttpPost("update-nickname")]
+    [HttpPut("update-nickname")]
     public async Task<IActionResult> UpdateNickNameAsync(UpdateNickNameRequest request)
     {
         var result = await _roomService.UpdateNickNameAsync(request.GroupId, request.UserName, request.NewNickName);
@@ -263,7 +263,7 @@ public class RoomController : ControllerBase
         return BadRequest("Failed to update nickname.");
     }
     // API to add a member to the group
-    [HttpPost("add-member")]
+    [HttpPut("add-member")]
     public async Task<IActionResult> AddMember(AddMemberRequest request)
     {
         if (request == null || string.IsNullOrEmpty(request.GroupId) || string.IsNullOrEmpty(request.UserName))
@@ -337,7 +337,7 @@ public class RoomController : ControllerBase
         bool leftSucceeded = await _roomService.LeaveRoomAsync(leaveRoomRequest.GroupId,userResponse.User.UserName);
         return leftSucceeded ? Ok("Left succeeded.") : BadRequest("Error to leave.");
     }
-    [HttpPost("unsend-message")]
+    [HttpPut("unsend-message")]
     public async Task<ActionResult> UnSendMessage(UnsendMessageRequest unsendMessageRequest)
     {
         if(string.IsNullOrEmpty(unsendMessageRequest.UserId) || string.IsNullOrEmpty(unsendMessageRequest.ChatRoomId) || string.IsNullOrEmpty(unsendMessageRequest.MessageId))
