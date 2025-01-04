@@ -1,3 +1,4 @@
+using HUBT_Social_API.Core.Service.Upload;
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Controllers;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
@@ -21,11 +22,11 @@ namespace HUBT_Social_API.Controllers;
 [Authorize]
 public class UpdateUserController : BaseAuthController
 {
-    private readonly IUploadChatServices _uploadServices;
-    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService,IUploadChatServices uploadServices)
+
+    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService)
     :base (null,tokenService,emailService,null,userService)
     {
-        _uploadServices = uploadServices;
+
     }
 
     [HttpGet("get-user")]
@@ -110,12 +111,12 @@ public class UpdateUserController : BaseAuthController
     }
 
     [HttpPost("get-url-from-image")]
-    public async Task<IActionResult> GetUrlFromImage(IFormFile file)
+    public async Task<IActionResult> GetUrlFromImage(List<IFormFile> files)
     {
-        string avatarUrl;
+        List<string> avatarUrl;
         try
         {
-            avatarUrl = await _uploadServices.UploadToStorageAsync(file);
+            avatarUrl = await UploadToStoreS3.CloudinaryService.UploadsToStorageAsync(files);
         }
         catch (Exception)
         {
@@ -132,7 +133,7 @@ public class UpdateUserController : BaseAuthController
                 new
                 {
                     Success = true,
-                    Data = avatarUrl
+                    Data = avatarUrl.ToList()
                 });
         }
         return BadRequest(
@@ -148,18 +149,14 @@ public class UpdateUserController : BaseAuthController
     public async Task<IActionResult> UpdateAvatar(IFormFile file)
     {
         if(file !=null){
-            string avatarUrl;
-            try
+            string? avatarUrl = avatarUrl = await UploadToStoreS3.CloudinaryService.UploadToStorageAsync(file); 
+            if(avatarUrl != null)
             {
-                avatarUrl = await _uploadServices.UploadToStorageAsync(file); 
+                UpdateAvatarUrlRequest request = new();
+                request.AvatarUrl = avatarUrl;
+                return await UpdateHelper.HandleUserUpdate(KeyStore.AvatarUpdated, KeyStore.AvatarUpdateError, _userService.UpdateAvatarUrlAsync, request,Request,_tokenService);
             }
-            catch (Exception ex)
-            {
-                return BadRequest($"{LocalValue.Get(KeyStore.InvalidFileData)}");
-            }
-            UpdateAvatarUrlRequest request = new();
-            request.AvatarUrl = avatarUrl;
-            return await UpdateHelper.HandleUserUpdate(KeyStore.AvatarUpdated, KeyStore.AvatarUpdateError, _userService.UpdateAvatarUrlAsync, request,Request,_tokenService);
+            return BadRequest(LocalValue.Get(KeyStore.AvatarUpdateError));
         }
         return BadRequest(KeyStore.AvatarUpdateError);
     }

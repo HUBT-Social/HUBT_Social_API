@@ -30,7 +30,7 @@ public class MessageRequest : MessageInputRequest
 }
 public class MediaRequest : MediaInputRequest
 {
-    public string UserName { get; set; } = string.Empty;
+    public string? UserName { get; set; } = string.Empty;
 }
 
 

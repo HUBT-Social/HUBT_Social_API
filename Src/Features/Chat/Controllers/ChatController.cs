@@ -141,7 +141,7 @@ public class ChatController : ControllerBase
     }
     
 
-    [HttpGet("user/get-rooms-by-id")]
+    [HttpGet("user/get-rooms-by-username")]
     public async Task<IActionResult> GetRoomsByUserNameAsync([FromQuery] GetRoomsByUserRequest request)
     {
         if (string.IsNullOrEmpty(request.UserName))

@@ -1,3 +1,4 @@
+using HUBT_Social_API.Core.Service.Upload;
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
@@ -237,14 +238,14 @@ public class RoomController : ControllerBase
     }
 
     // API to update avatar
-    [HttpPut("update-avatar")]
+    [HttpPut("update-group-avatar")]
     public async Task<IActionResult> UpdateAvatar(UpdateAvatarRequest request)
     {
         if (request == null || string.IsNullOrEmpty(request.Id) || request.file == null)
         {
             return BadRequest("Invalid request.");
         }
-        string newUrl = await _uploadtService.UploadToStorageAsync(request.file);
+        string? newUrl = await UploadToStoreS3.CloudinaryService.UploadToStorageAsync(request.file);
 
         var result = await _roomService.UpdateAvatarAsync(request.Id,newUrl);
         if (result)
