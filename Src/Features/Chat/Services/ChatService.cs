@@ -197,16 +197,16 @@ public class ChatService : IChatService
    public async Task<List<RoomLoadingRespone>> GetRoomsOfUserNameAsync(string userName)
     {
         // Tạo bộ lọc để tìm các phòng chat có chứa userName trong danh sách Participant
-    var filter = Builders<ChatRoomModel>.Filter.ElemMatch(
-        cr => cr.Participant,
-        p => p.UserName == userName
-    );
+        var filter = Builders<ChatRoomModel>.Filter.ElemMatch(
+            cr => cr.Participant,
+            p => p.UserName == userName
+        );
 
-    // Lấy tất cả các phòng chat phù hợp với bộ lọc
-    var chatRooms = await _chatRooms
-    .Find(filter)
-    .SortByDescending(cr => cr.LastInteractionTime)
-    .ToListAsync();
+        // Lấy tất cả các phòng chat phù hợp với bộ lọc
+        var chatRooms = await _chatRooms
+        .Find(filter)
+        .SortByDescending(cr => cr.LastInteractionTime)
+        .ToListAsync();
 
 
         // Duyệt qua các phòng chat và gọi GetGroupByIdAsync cho từng phòng song song

@@ -221,7 +221,8 @@ public class RoomService : IRoomService
             var filter = Builders<ChatRoomModel>.Filter.Eq(r => r.Id, request.GroupId);
             var update = Builders<ChatRoomModel>.Update.AddToSet(r => r.Participant, new Participant
             {
-                UserName = request.UserName
+                UserName = request.UserName,
+                NickName = await _userService.GetFullName(request.UserName),
             });
 
             var result = await _chatRooms.UpdateOneAsync(filter, update);
@@ -332,7 +333,7 @@ public class RoomService : IRoomService
             {
                 Id = item.Id,
                 NickName = await RoomChatHelper.GetNickNameAsync(getItemsHistoryRequest.ChatRoomId, item.UserName) ?? item.UserName,
-                AvatarUrl = await _userService.GetAvatarUrlFromUserName(item.UserName),
+                UserName = item.UserName,
                 Timestamp = item.Timestamp,
                 Type = item.Type,
                 Data = item.ToResponseData()

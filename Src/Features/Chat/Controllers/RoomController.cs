@@ -152,7 +152,7 @@ public class RoomController : ControllerBase
 
         GetItemsHistoryRequest getItemsHistoryRequest = new GetItemsHistoryRequest
         {
-            ChatRoomId = getHistoryRequest.ChatRoomId,
+            ChatRoomId = getHistoryRequest.ChatRoomId, 
             Types = new List<string> {"File"}
         };
         if (string.IsNullOrEmpty(getHistoryRequest.Time.ToString()))

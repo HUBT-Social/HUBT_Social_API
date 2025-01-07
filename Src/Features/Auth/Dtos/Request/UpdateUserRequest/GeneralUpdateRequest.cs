@@ -13,5 +13,5 @@ public class GeneralUpdateRequest
 
     public Gender Gender { get; set; }
 
-    public DateTime DateOfBirth { get; set; }
+    public DateTime? DateOfBirth { get; set; } 
 }

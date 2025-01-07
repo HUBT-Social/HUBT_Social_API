@@ -1,4 +1,5 @@
 
+using System.Security.Claims;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
@@ -10,15 +11,47 @@ namespace HUBT_Social_API.Features.Chat.ChatHubs;
 
 public class ChatHub : Hub
 {
-    private readonly IHubContext<ChatHub> _hubContext;
-    private readonly IUserService _userService;
 
-
-    public ChatHub(IHubContext<ChatHub> hubContext, IUserService userService)
+    public override async Task OnConnectedAsync()
     {
-        _hubContext = hubContext;
-        _userService = userService;
+        try
+        {
+            var connectionId = Context.ConnectionId;
+            
+            // Lấy UserName từ Claims
+            var userName = Context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+
+            if (userName != null)
+            {
+                // Sử dụng userName thay vì userId
+                var groupIds = await RoomChatHelper.GetUserGroupConnected(userName);  // Giả sử bạn lưu nhóm theo userName
+
+                foreach (var groupId in groupIds)
+                {
+                    await Groups.AddToGroupAsync(connectionId, groupId);
+                    await Clients.Group(groupId).SendAsync("UserRejoined", connectionId);
+                }
+            }
+
+            await base.OnConnectedAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reconnecting user: {ex.Message}");
+        }
     }
+    public override async Task OnDisconnectedAsync(Exception exception)
+    {
+        try
+        {
+            await base.OnDisconnectedAsync(exception);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error disconnecting user: {ex.Message}");
+        }
+    }
+    
 
     // Gửi tin nhắn hoặc phương tiện đến nhóm
     private async Task SendChatItem<T>(string groupId, T chatItem, string eventName) where T : ChatItem
@@ -29,13 +62,13 @@ public class ChatHub : Hub
             {
                 Id = chatItem.Id,
                 NickName = await RoomChatHelper.GetNickNameAsync(groupId, chatItem.UserName) ?? chatItem.UserName,
-                AvatarUrl = await _userService.GetAvatarUrlFromUserName(chatItem.UserName),
+                UserName = chatItem.UserName,
                 Timestamp = chatItem.Timestamp,
                 Type = chatItem.Type,
                 Data = chatItem.ToResponseData()
             };
 
-            await _hubContext.Clients.Group(groupId).SendAsync(eventName, chatItemResponse);
+            await Clients.Group(groupId).SendAsync(eventName, chatItemResponse);
         }
         catch (Exception ex)
         {
@@ -57,11 +90,11 @@ public class ChatHub : Hub
     }
 
     // Thông báo người dùng đang gõ
-    public async Task TypingText(string roomId, string userId)
+    public async Task TypingText(string groupId, string userId)
     {
         try
         {
-            await _hubContext.Clients.Group(roomId).SendAsync("ReceiveTyping", userId);
+            await Clients.Group(groupId).SendAsync("ReceiveTyping", userId);
         }
         catch (Exception ex)
         {
@@ -74,7 +107,7 @@ public class ChatHub : Hub
     {
         try
         {
-            await _hubContext.Clients.Group(groupId).SendAsync("ReceiveUnSendItem", MessageId);
+            await Clients.Group(groupId).SendAsync("ReceiveUnSendItem", MessageId);
         }
         catch
         {
@@ -82,28 +115,34 @@ public class ChatHub : Hub
             Console.WriteLine($"Error unsend message:");
         }
     }
-    // thong bao co nguoi tham gia nhom
+    // Phương thức JoinRoom
     public async Task JoinRoom(string groupId, string userId)
     {
         try
         {
-            await _hubContext.Clients.Group(groupId).SendAsync("JoinGroup", userId);
+            // Kiểm tra nếu người dùng đã ở trong nhóm
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
+            await Clients.Group(groupId).SendAsync("JoinGroup", userId);
+            Console.WriteLine($"User {userId} joined group {groupId}");
         }
-        catch
+        catch (Exception ex)
         {
-            Console.WriteLine("Err");
+            Console.WriteLine($"Error joining group {groupId}: {ex.Message}");
         }
     }
-     // thong bao co nguoi tham gia nhom
+
+    // Phương thức LeaveRoom
     public async Task LeaveRoom(string groupId, string userId)
     {
         try
         {
-            await _hubContext.Clients.Group(groupId).SendAsync("LeaveRoom", userId);
+            await Clients.Group(groupId).SendAsync("LeaveRoom", userId);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupId);
+            Console.WriteLine($"User {userId} left group {groupId}");
         }
-        catch
+        catch (Exception ex)
         {
-            Console.WriteLine("Err");
+            Console.WriteLine($"Error leaving group {groupId}: {ex.Message}");
         }
     }
 }

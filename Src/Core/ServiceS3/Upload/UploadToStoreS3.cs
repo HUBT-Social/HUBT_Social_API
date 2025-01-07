@@ -64,6 +64,22 @@ public static class UploadToStoreS3
                 return null;
             }
         }
+        public static async Task<string?> UpdateAvatarAsync(string filePath, IFormFile file)
+        {
+            if (file.Length <= 0) return null;
+
+            using var stream = file.OpenReadStream();
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(file.FileName, stream),
+                PublicId = filePath, // Cố định PublicId
+                Overwrite = true // Ghi đè ảnh cũ
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            return uploadResult?.SecureUrl.ToString(); // Trả về URL đầy đủ của ảnh gốc
+        }
 
     }
 

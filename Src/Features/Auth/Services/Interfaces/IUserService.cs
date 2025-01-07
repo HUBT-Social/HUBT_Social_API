@@ -6,7 +6,7 @@ namespace HUBT_Social_API.Features.Auth.Services.Interfaces;
 
 public interface IUserService
 {
-    Task<string> GetAvatarUrlFromUserName(string userName);
+    Task<string> GetFullName(string userName);
     Task<AUser?> FindUserByUserNameAsync(string userName);
     Task<AUser?> FindUserByEmailAsync(string email);
     Task<bool> PromoteUserAccountAsync(string currentUserName, string targetUserName, string roleName);
@@ -16,10 +16,6 @@ public interface IUserService
     Task<bool> UpdateEmailAsync(string userName, UpdateEmailRequest request);
     Task<bool> VerifyCurrentPasswordAsync(string userName, CheckPasswordRequest request);
     Task<bool> UpdatePasswordAsync(string userName, UpdatePasswordRequest request);
-    Task<bool> UpdateNameAsync(string userName, UpdateNameRequest request);
-    Task<bool> UpdatePhoneNumberAsync(string userName, UpdatePhoneNumberRequest request);
-    Task<bool> UpdateGenderAsync(string userName, UpdateGenderRequest request);
-    Task<bool> UpdateDateOfBirthAsync(string userName, UpdateDateOfBornRequest request);
     Task<bool> AddInfoUser(string userName, AddInfoUserRequest request);
 
     Task<bool> EnableTwoFactor(string userName);

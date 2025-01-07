@@ -36,11 +36,11 @@ public class UserService : IUserService
         if (string.IsNullOrWhiteSpace(userName)) return null;
         return await _userManager.FindByNameAsync(userName);
     }
-    public async Task<string> GetAvatarUrlFromUserName(string userName)
+    public async Task<string> GetFullName(string userName)
     {
         AUser user = await GetUserByNameAsync(userName);
         if (user == null) return LocalValue.Get(KeyStore.DefaultUserImage);
-        return user.AvataUrl;
+        return user.FirstName + " " + user.LastName;
     }
     public async Task<AUser?> FindUserByUserNameAsync(string userName) => await GetUserByNameAsync(userName);
     public async Task<AUser?> FindUserByEmailAsync(string email)
@@ -147,33 +147,6 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<bool> UpdateNameAsync(string userName, UpdateNameRequest request)
-    {
-        var user = await GetUserByNameAsync(userName);
-        return user != null && await UpdateUserPropertyAsync(user, u =>
-        {
-            u.FirstName = request.FirstName;
-            u.LastName = request.LastName;
-        });
-    }
-
-    public async Task<bool> UpdatePhoneNumberAsync(string userName, UpdatePhoneNumberRequest request)
-    {
-        var user = await GetUserByNameAsync(userName);
-        return user != null && await UpdateUserPropertyAsync(user, u => u.PhoneNumber = request.PhoneNumber);
-    }
-
-    public async Task<bool> UpdateGenderAsync(string userName, UpdateGenderRequest request)
-    {
-        var user = await GetUserByNameAsync(userName);
-        return user != null && await UpdateUserPropertyAsync(user, u => u.Gender = request.Gender);
-    }
-
-    public async Task<bool> UpdateDateOfBirthAsync(string userName, UpdateDateOfBornRequest request)
-    {
-        var user = await GetUserByNameAsync(userName);
-        return user != null && await UpdateUserPropertyAsync(user, u => u.DateOfBirth = request.DateOfBirth);
-    }
 
     public async Task<bool> GeneralUpdateAsync(string userName, GeneralUpdateRequest request)
     {
@@ -185,7 +158,7 @@ public class UserService : IUserService
             if (!string.IsNullOrEmpty(request.LastName)) u.LastName = request.LastName;
             if (!string.IsNullOrEmpty(request.PhoneNumber)) u.PhoneNumber = request.PhoneNumber;
             if (!string.IsNullOrEmpty(request.Gender.ToString())) u.Gender = request.Gender;
-            if (request.DateOfBirth != DateTime.MinValue) u.DateOfBirth = request.DateOfBirth;
+            if (request.DateOfBirth != null) u.DateOfBirth = request.DateOfBirth??DateTime.MinValue;;
         });
     }
     public async Task<bool> AddInfoUser(string userName, AddInfoUserRequest request)

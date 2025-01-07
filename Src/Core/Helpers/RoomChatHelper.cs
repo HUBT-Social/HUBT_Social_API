@@ -64,5 +64,24 @@ namespace HUBTSOCIAL.Src.Features.Chat.Helpers
 
             return message?.UserName;
         }
+        public static async Task<List<string>> GetUserGroupConnected(string userName)
+        {
+            // Tạo bộ lọc để tìm các phòng chat có chứa userName trong danh sách Participant
+            var filter = Builders<ChatRoomModel>.Filter.ElemMatch(
+                cr => cr.Participant,
+                p => p.UserName == userName
+            );
+
+            // Lấy tất cả các phòng chat phù hợp với bộ lọc, sắp xếp theo LastInteractionTime
+            var chatRooms = await _chatRooms
+                .Find(filter)
+                .SortByDescending(cr => cr.LastInteractionTime)
+                .ToListAsync();
+
+            // Lấy danh sách các Id của phòng chat
+            var response = chatRooms.Select(cr => cr.Id).ToList();
+
+            return response;
+        }
     }
 }
