@@ -1,6 +1,4 @@
 ﻿using FirebaseAdmin;
-using FireSharp.Config;
-using FireSharp.Interfaces;
 using Google.Apis.Auth.OAuth2;
 using System.IO;
 

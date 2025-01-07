@@ -24,7 +24,6 @@ public static class ServiceRegistration
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoomService, RoomService>();
         services.AddScoped<ChatHub>();
-        services.AddScoped<IChatRoomService, ChatRoomService>();
         services.AddScoped<IFireBaseNotificationService, FireBaseNotificationService>();
 
         /*            services.AddScoped<IUserManagerS, UserManagerS>();

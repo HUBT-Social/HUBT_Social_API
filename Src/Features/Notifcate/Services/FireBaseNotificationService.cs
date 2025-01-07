@@ -1,6 +1,7 @@
 ﻿using FirebaseAdmin.Messaging;
 using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBT_Social_API.Src.Features.Notifcate.Models.Requests;
+using MongoDB.Bson;
 
 namespace HUBT_Social_API.Src.Features.Notifcate.Services
 {
@@ -16,10 +17,14 @@ namespace HUBT_Social_API.Src.Features.Notifcate.Services
                     Title = request.Title,
                     Body = request.Body,
                 },
+                Data = new Dictionary<string, string>
+                {
+                    { "type", "chat" }
+                }
             };
 
             string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
-            Console.WriteLine($"Successfully sent message: {response}");
+            Console.WriteLine($"Successfully sent message: {message.ToJson()}");
         }
     }
 }

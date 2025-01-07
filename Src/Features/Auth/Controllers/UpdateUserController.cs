@@ -1,13 +1,17 @@
+using Amazon.Runtime.Internal;
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Controllers;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
+using HUBT_Social_API.Features.Auth.Services.Child;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBT_Social_API.Src.Core.Helpers;
+using HUBT_Social_API.Src.Features.Auth.Dtos.Collections;
+using HUBT_Social_API.Src.Features.Auth.Dtos.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -22,10 +26,12 @@ namespace HUBT_Social_API.Controllers;
 public class UpdateUserController : BaseAuthController
 {
     private readonly IUploadChatServices _uploadServices;
-    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService,IUploadChatServices uploadServices)
+    private readonly IAuthService _authService;
+    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService,IUploadChatServices uploadServices, IAuthService authService)
     :base (null,tokenService,emailService,null,userService)
     {
         _uploadServices = uploadServices;
+        _authService = authService;
     }
 
     [HttpGet("get-user")]
@@ -251,6 +257,26 @@ public class UpdateUserController : BaseAuthController
             request,
             Request,_tokenService
         );
+    }
+    [HttpPost("store-fcm-token")]
+    public async Task<IActionResult> StoreFcm(string fcmToken)
+    {
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        string diviceId = Request.Headers.UserAgent.ToString();
+        if (userResponse.Success && userResponse.User != null)
+        {
+            StoreFCMRequest request = new()
+            {
+                UserID = userResponse.User.Id.ToString(),
+                DeviceID = diviceId,
+                FcmToken = fcmToken,
+            };
+            if (await _authService.StoreFcmTokenAsync(request))
+            {
+                return Ok();
+            }
+        }
+        return BadRequest();
     }
     
 }
