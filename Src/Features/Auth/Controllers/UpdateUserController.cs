@@ -5,6 +5,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBT_Social_API.Src.Core.Helpers;
 using Microsoft.AspNetCore.Authorization;
@@ -20,11 +21,11 @@ namespace HUBT_Social_API.Controllers;
 [Authorize]
 public class UpdateUserController : BaseAuthController
 {
-    private readonly IImageService _imageService;
-    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService,IImageService imageService)
+    private readonly IUploadChatServices _uploadServices;
+    public UpdateUserController(ITokenService tokenService, IEmailService emailService,IUserService userService,IUploadChatServices uploadServices)
     :base (null,tokenService,emailService,null,userService)
     {
-        _imageService = imageService;
+        _uploadServices = uploadServices;
     }
 
     [HttpGet("get-user")]
@@ -37,6 +38,7 @@ public class UpdateUserController : BaseAuthController
                 new
                 {
                     AvatarUrl = userResponse.User.AvataUrl,
+                    UserName = userResponse.User.UserName,
                     FirstName = userResponse.User.FirstName,
                     LastName = userResponse.User.LastName,
                     Gender = userResponse.User.Gender,
@@ -50,13 +52,70 @@ public class UpdateUserController : BaseAuthController
         return BadRequest(userResponse.Message);
 
     }
+    [HttpGet("get-user-by-username")]
+    public async Task<IActionResult> GetUserByUserName([FromQuery] GetUserByUserNameRequest getUserByUserNameRequest)
+    {
+        if(string.IsNullOrEmpty(getUserByUserNameRequest.UserName))
+        {
+            return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+        }
+        AUser? user = await _userService.FindUserByUserNameAsync(getUserByUserNameRequest.UserName);
+        if (user != null)
+        {
+            return Ok(
+                new
+                {
+                    AvatarUrl = user.AvataUrl,
+                    UserName = user.UserName,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Gender = user.Gender,
+                    Email = user.Email,
+                    BirthDay = user.DateOfBirth,
+                    PhoneNumber = user.PhoneNumber
+                }
+            );
+        }
+        return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+
+    }
+    [HttpDelete("delete-user")]
+    public async Task<IActionResult> DeleteUser(DeleteUserRequest request)
+    {
+        try
+        {
+            if(string.IsNullOrEmpty(request.UserName))
+            {
+                return BadRequest(LocalValue.Get(KeyStore.UsernameCannotBeEmpty));
+            }
+
+            AUser user = await _userService.FindUserByUserNameAsync(request.UserName);
+            if(user == null)
+            {
+                return BadRequest(LocalValue.Get(KeyStore.UserNotFound));
+            }
+                
+            bool deleted = await _userService.DeleteUserAsync(user);
+            if(deleted)
+            {
+                return Ok(LocalValue.Get(KeyStore.UserDeleted));
+            }
+            
+        }
+        catch (Exception)
+        {
+            return BadRequest(LocalValue.Get(KeyStore.UserDeletedError));
+        }
+        return BadRequest(LocalValue.Get(KeyStore.UserDeletedError));
+    }
+
     [HttpPost("get-url-from-image")]
     public async Task<IActionResult> GetUrlFromImage(IFormFile file)
     {
         string avatarUrl;
         try
         {
-            avatarUrl = await _imageService.GetUrlFormFileAsync(file);
+            avatarUrl = await _uploadServices.UploadToStorageAsync(file);
         }
         catch (Exception)
         {
@@ -85,14 +144,14 @@ public class UpdateUserController : BaseAuthController
         );
     }
 
-    [HttpPost("update/avatar")]
+    [HttpPut("update/avatar")]
     public async Task<IActionResult> UpdateAvatar(IFormFile file)
     {
         if(file !=null){
             string avatarUrl;
             try
             {
-                avatarUrl = await _imageService.GetUrlFormFileAsync(file); 
+                avatarUrl = await _uploadServices.UploadToStorageAsync(file); 
             }
             catch (Exception ex)
             {
@@ -105,11 +164,11 @@ public class UpdateUserController : BaseAuthController
         return BadRequest(KeyStore.AvatarUpdateError);
     }
         
-    [HttpPost("update/email")]
+    [HttpPut("update/email")]
     public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.EmailUpdated, KeyStore.EmailUpdateError, _userService.UpdateEmailAsync, request,Request,_tokenService);
 
-    [HttpPost("update/password")]
+    [HttpPut("update/password")]
     public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
     {
         if(request.NewPassword == request.ConfirmNewPassword)
@@ -120,24 +179,24 @@ public class UpdateUserController : BaseAuthController
     }
         
 
-    [HttpPost("update/name")]
+    [HttpPut("update/name")]
     public async Task<IActionResult> UpdateName([FromBody] UpdateNameRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.NameUpdated, KeyStore.NameUpdateError, _userService.UpdateNameAsync, request,Request,_tokenService);
 
-    [HttpPost("update/phone-number")]
+    [HttpPut("update/phone-number")]
     public async Task<IActionResult> UpdatePhoneNumber([FromBody] UpdatePhoneNumberRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.PhoneNumberUpdated, KeyStore.PhoneNumberUpdateError, _userService.UpdatePhoneNumberAsync, request,Request,_tokenService);
 
-    [HttpPost("update/gender")]
+    [HttpPut("update/gender")]
     public async Task<IActionResult> UpdateGender([FromBody] UpdateGenderRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.GenderUpdated, KeyStore.GenderUpdateError, _userService.UpdateGenderAsync, request,Request,_tokenService);
 
-    [HttpPost("update/date-of-birth")]
+    [HttpPut("update/date-of-birth")]
     public async Task<IActionResult> UpdateDateOfBirth([FromBody] UpdateDateOfBornRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.DateOfBirthUpdated, KeyStore.DateOfBirthUpdateError, _userService.UpdateDateOfBirthAsync, request,Request,_tokenService);
 
-    [HttpPost("update/general")]
-    public async Task<IActionResult> GeneralUpdate([FromForm] GeneralUpdateRequest request) =>
+    [HttpPut("update/general")]
+    public async Task<IActionResult> GeneralUpdate(GeneralUpdateRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, request,Request,_tokenService);
     
     
@@ -180,15 +239,9 @@ public class UpdateUserController : BaseAuthController
         }
     }
     
-    [HttpPost("add-info-user")]
-    public async Task<IActionResult> AddInfoUser([FromForm] AddInfoUserRequest request)
+    [HttpPut("add-info-user")]
+    public async Task<IActionResult> AddInfoUser(AddInfoUserRequest request)
     {
-            // Kiểm tra file upload
-        if (request.AvatarUrl == null)
-        {
-            request.AvatarUrl = KeyStore.GetRandomAvatarDefault(request.Gender);  
-        }
-
         
         // Gọi hàm xử lý cập nhật thông tin người dùng
         return await UpdateHelper.HandleUserUpdate(

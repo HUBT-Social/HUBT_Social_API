@@ -36,20 +36,25 @@ public partial class AuthController
             {
                 Code = code.Code,
                 Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
-                ToEmail = request.Email
+                ToEmail = request.Email,
+                FullName = request.UserName,
+                Device = userAgent,
+                Location = await ServerHelper.GetLocationFromIpAsync(ipAddress),
+                DateTime = ServerHelper.ConvertToCustomString(DateTime.UtcNow)  
             });
         }
         catch (Exception)
         {
             return StatusCode(
-                500,
-                LocalValue.Get(KeyStore.UnableToSendOTP)
-            );
+                500, LocalValue.Get(KeyStore.UnableToSendOTP));
         }
 
-        return Ok(
-             LocalValue.Get(KeyStore.RegistrationSuccess)
-        );
+        if (_emailService.MaskEmail(request.Email, out string maskEmail))
+        {
+            
+            return Ok(LocalValue.Get(KeyStore.OtpSent));
+        }
+        return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
     }
 
     [HttpPost("sign-up/verify-otp")]

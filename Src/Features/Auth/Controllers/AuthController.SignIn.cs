@@ -48,26 +48,30 @@ public partial class AuthController
             if (result.RequiresTwoFactor && user?.Email is not null)
             {
                 Postcode? code = await _emailService.CreatePostcodeSignInAsync(userAgent, user.Email,ipAddress.ToString());
-                if (code == null)
+                if (code != null && _emailService.MaskEmail(user.Email, out string maskEmail))
                 {
-                    return BadRequest(new LoginResponse
+                    await _emailService.SendEmailAsync(new EmailRequest
+                    {
+                        ToEmail = code.Email,
+                        Code = code.Code,
+                        Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
+                        FullName = user.FirstName + " " + user.LastName,
+                        Device = userAgent,
+                        Location = await ServerHelper.GetLocationFromIpAsync(ipAddress),
+                        DateTime = ServerHelper.ConvertToCustomString(DateTime.UtcNow) 
+                    });
+
+                    return Ok(new LoginResponse
                     {
                         RequiresTwoFactor = true,
-                        Message = LocalValue.Get(KeyStore.InvalidCredentials)
+                        MaskEmail = maskEmail,
+                        Message = LocalValue.Get(KeyStore.StepOneVerificationSuccess)
                     });
                 }
-
-                await _emailService.SendEmailAsync(new EmailRequest
-                {
-                    ToEmail = code.Email,
-                    Code = code.Code,
-                    Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject)
-                });
-
-                return Ok(new LoginResponse
+                return BadRequest(new LoginResponse
                 {
                     RequiresTwoFactor = true,
-                    Message = LocalValue.Get(KeyStore.StepOneVerificationSuccess)
+                    Message = LocalValue.Get(KeyStore.InvalidCredentials)
                 });
             }
 

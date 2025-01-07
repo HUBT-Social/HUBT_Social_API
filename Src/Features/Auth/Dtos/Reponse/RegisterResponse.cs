@@ -2,7 +2,7 @@
 
 public class RegisterResponse
 {
-    public bool Success { get; set; }
+    public string MaskEmail { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
     
 }

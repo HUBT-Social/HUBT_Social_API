@@ -30,6 +30,8 @@ namespace HUBT_Social_API;
 
             builder.Services.AddChatMongoCollections(builder.Configuration);
             builder.Services.AddAuthMongoCollections(builder.Configuration);
+            // Cấu hình ChatItems
+            builder.Services.RegisterClassMaps();
         }
 
         private static void InitServices(WebApplicationBuilder builder) 

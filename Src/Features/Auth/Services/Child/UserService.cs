@@ -1,3 +1,4 @@
+using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
@@ -35,9 +36,13 @@ public class UserService : IUserService
         if (string.IsNullOrWhiteSpace(userName)) return null;
         return await _userManager.FindByNameAsync(userName);
     }
-
+    public async Task<string> GetAvatarUrlFromUserName(string userName)
+    {
+        AUser user = await GetUserByNameAsync(userName);
+        if (user == null) return LocalValue.Get(KeyStore.DefaultUserImage);
+        return user.AvataUrl;
+    }
     public async Task<AUser?> FindUserByUserNameAsync(string userName) => await GetUserByNameAsync(userName);
-
     public async Task<AUser?> FindUserByEmailAsync(string email)
     {
         if (string.IsNullOrWhiteSpace(email)) return null;
@@ -175,7 +180,6 @@ public class UserService : IUserService
         var user = await GetUserByNameAsync(userName);
         return user != null && await UpdateUserPropertyAsync(user, u =>
         {
-            if (!string.IsNullOrEmpty(request.AvatarUrl)) u.AvataUrl = request.AvatarUrl;
             if (!string.IsNullOrEmpty(request.Email)) u.Email = request.Email;
             if (!string.IsNullOrEmpty(request.FirstName)) u.FirstName = request.FirstName;
             if (!string.IsNullOrEmpty(request.LastName)) u.LastName = request.LastName;
@@ -189,13 +193,18 @@ public class UserService : IUserService
         var user = await GetUserByNameAsync(userName);
         return user != null && await UpdateUserPropertyAsync(user, u =>
         {
-            u.AvataUrl = request.AvatarUrl;
             u.FirstName = request.FirstName;
             u.LastName = request.LastName;
             u.PhoneNumber = request.PhoneNumber;
             u.Gender = request.Gender;
             u.DateOfBirth = request.DateOfBirth;
         });
+    }
+
+    public async Task<bool> DeleteUserAsync(AUser user)
+    {
+        IdentityResult deleted = await _userManager.DeleteAsync(user);
+        return deleted.Succeeded == true; 
     }
     
 

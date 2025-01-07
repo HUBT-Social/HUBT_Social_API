@@ -342,7 +342,113 @@
   <data name="UnAuthorize" xml:space="preserve">
     <value />
   </data>
+  <data name="UserDeleted" xml:space="preserve">
+    <value />
+  </data>
+  <data name="UserDeletedError" xml:space="preserve">
+    <value />
+  </data>
+
   <data name="TokenDeleted" xml:space="preserve">
     <value />
   </data>
+  <data name="NotEnoughMembers" xml:space="preserve">
+    <value />
+  </data>
+  <data name="EmailContentHeaderContent1" xml:space="preserve">
+  <value/>
+</data>
+<data name="EmailContentHeaderContent2" xml:space="preserve">
+  <value/>
+</data>
+<data name="EmailContentHeaderContent3" xml:space="preserve">
+  <value/>
+</data>
+<data name="EmailContentHeaderContent4" xml:space="preserve">
+  <value/>
+</data>
+<data name="EmailContentOTP0" xml:space="preserve">
+  <value/>
+</data>
+<data name="EmailContentOTP1" xml:space="preserve">
+  <value/>
+</data>
+<data name="EmailContentOTP2" xml:space="preserve">
+  <value/>
+</data>
+<data name="EmailContentOTP3" xml:space="preserve">
+  <value/>
+</data>
+<data name="EmailContentOTP4" xml:space="preserve">
+  <value/>
+</data>
+<data name="EmailContentOTP5" xml:space="preserve">
+  <value/>
+</data>
+<data name="EmailContentOTP6" xml:space="preserve">
+  <value/>
+</data>
+<data name="EmailContentFooter1" xml:space="preserve">
+  <value/>
+</data>
+<data name="EmailContentFooter2" xml:space="preserve">
+  <value/>
+</data>
+<data name="EmailContentFooter3" xml:space="preserve">
+  <value/>
+</data>
+<data name="EmailContentFooter4" xml:space="preserve">
+  <value/>
+</data>
+<data name="Email2Text0" xml:space="preserve">
+  <value/>
+</data>
+<data name="Email2Text1" xml:space="preserve">
+  <value/>
+</data>
+<data name="Email2Text2" xml:space="preserve">
+  <value/>
+</data>
+<data name="Email2Text3" xml:space="preserve">
+  <value/>
+</data>
+<data name="Email2Text4" xml:space="preserve">
+  <value/>
+</data>
+<data name="Email2Text5" xml:space="preserve">
+  <value/>
+</data>
+<data name="Email2Text6" xml:space="preserve">
+  <value/>
+</data>
+<data name="Email2Text7" xml:space="preserve">
+  <value/>
+</data>
+<data name="Email2Text8" xml:space="preserve">
+  <value/>
+</data>
+<data name="Email2Text9" xml:space="preserve">
+  <value/>
+</data>
+<data name="Email2Text10" xml:space="preserve">
+  <value/>
+</data>
+<data name="Email2Text11" xml:space="preserve">
+  <value/>
+</data>
+<data name="Email2Text12" xml:space="preserve">
+  <value/>
+</data>
+<data name="Email2Text13" xml:space="preserve">
+  <value/>
+</data>
+<data name="UserDeleted" xml:space="preserve">
+  <value />
+</data>
+<data name="UserDeletedError" xml:space="preserve">
+  <value />
+</data>
+<data name="TokenDeleted" xml:space="preserve">
+  <value />
+</data>
 </root>

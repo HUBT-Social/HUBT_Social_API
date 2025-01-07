@@ -1,48 +1,110 @@
-using HUBT_Social_API.Features.Chat.ChatHubs.IHubs;
+
+using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.Features.Chat.DTOs;
+using HUBT_Social_API.Features.Chat.Services.Interfaces;
+using HUBTSOCIAL.Src.Features.Chat.Helpers;
+using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.SignalR;
 
 namespace HUBT_Social_API.Features.Chat.ChatHubs;
 
 public class ChatHub : Hub
 {
-    private readonly IChatFileHub _chatFileHub;
-    private readonly IChatImageHub _chatImageHub;
-    private readonly IChatMessageHub _chatMessageHub;
+    private readonly IHubContext<ChatHub> _hubContext;
+    private readonly IUserService _userService;
 
-    public ChatHub(IChatMessageHub chatMessageHub, IChatFileHub chatFileHub, IChatImageHub chatImageHub)
+
+    public ChatHub(IHubContext<ChatHub> hubContext, IUserService userService)
     {
-        _chatMessageHub = chatMessageHub;
-        _chatImageHub = chatImageHub;
-        _chatFileHub = chatFileHub;
+        _hubContext = hubContext;
+        _userService = userService;
+    }
+
+    // Gửi tin nhắn hoặc phương tiện đến nhóm
+    private async Task SendChatItem<T>(string groupId, T chatItem, string eventName) where T : ChatItem
+    {
+        try
+        {
+            var chatItemResponse = new ChatItemResponse
+            {
+                Id = chatItem.Id,
+                NickName = await RoomChatHelper.GetNickNameAsync(groupId, chatItem.UserName) ?? chatItem.UserName,
+                AvatarUrl = await _userService.GetAvatarUrlFromUserName(chatItem.UserName),
+                Timestamp = chatItem.Timestamp,
+                Type = chatItem.Type,
+                Data = chatItem.ToResponseData()
+            };
+
+            await _hubContext.Clients.Group(groupId).SendAsync(eventName, chatItemResponse);
+        }
+        catch (Exception ex)
+        {
+            // Log lỗi và xử lý tùy theo nhu cầu
+            Console.WriteLine($"Error sending {eventName}: {ex.Message}");
+        }
     }
 
     // Chuyển tiếp tin nhắn
-    public async Task SendMessage(string chatRoomId, string userId, string messageContent)
+    public async Task SendMessage(string groupId, MessageChatItem messageModel)
     {
-        await _chatMessageHub.SendMessage(chatRoomId, userId, messageContent);
+        await SendChatItem(groupId, messageModel, "ReceiveMessage");
     }
 
-    // Tham gia vào phòng chat
-    public async Task JoinRoom(string chatRoomId)
+    // Chuyển tiếp phương tiện
+    public async Task SendMedia(string groupId, MediaChatItem mediaModel)
     {
-        await _chatMessageHub.JoinRoom(chatRoomId);
+        await SendChatItem(groupId, mediaModel, "ReceiveMedia");
     }
 
-    // Rời khỏi phòng chat
-    public async Task LeaveRoom(string chatRoomId)
+    // Thông báo người dùng đang gõ
+    public async Task TypingText(string roomId, string userId)
     {
-        await _chatMessageHub.LeaveRoom(chatRoomId);
+        try
+        {
+            await _hubContext.Clients.Group(roomId).SendAsync("ReceiveTyping", userId);
+        }
+        catch (Exception ex)
+        {
+            // Log lỗi và xử lý tùy theo nhu cầu
+            Console.WriteLine($"Error notifying typing: {ex.Message}");
+        }
     }
-
-    //Chuyển tiếp phương thức gửi anh
-    public async Task SendImage(string chatRoomId, string userId, byte[] fileData)
+    //Thông báo có người gỡ tin nhắn.
+    public async Task UnSendChatItem(string groupId, string MessageId)
     {
-        await _chatImageHub.SendImage(chatRoomId, userId, fileData);
+        try
+        {
+            await _hubContext.Clients.Group(groupId).SendAsync("ReceiveUnSendItem", MessageId);
+        }
+        catch
+        {
+            // Log lỗi và xử lý tùy theo nhu cầu
+            Console.WriteLine($"Error unsend message:");
+        }
     }
-
-    // Chuyển tiếp phương thức gửi file
-    public async Task SendFile(string chatRoomId, string userId, byte[] fileData, string fileName)
+    // thong bao co nguoi tham gia nhom
+    public async Task JoinRoom(string groupId, string userId)
     {
-        await _chatFileHub.SendFile(chatRoomId, userId, fileData, fileName);
+        try
+        {
+            await _hubContext.Clients.Group(groupId).SendAsync("JoinGroup", userId);
+        }
+        catch
+        {
+            Console.WriteLine("Err");
+        }
+    }
+     // thong bao co nguoi tham gia nhom
+    public async Task LeaveRoom(string groupId, string userId)
+    {
+        try
+        {
+            await _hubContext.Clients.Group(groupId).SendAsync("LeaveRoom", userId);
+        }
+        catch
+        {
+            Console.WriteLine("Err");
+        }
     }
 }
+

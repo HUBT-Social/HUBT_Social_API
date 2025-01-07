@@ -1,14 +1,16 @@
 using HUBT_Social_API.Features.Chat.DTOs;
+using HUBTSOCIAL.Src.Features.Chat.DTOs;
 using HUBTSOCIAL.Src.Features.Chat.Models;
+using static HUBT_Social_API.Features.Chat.Services.ChatService;
 
 namespace HUBT_Social_API.Features.Chat.Services.Interfaces;
 
 public interface IChatService
 {
-    Task<bool> SendMessageAsync(MessageDTO messageDto);
-    Task<List<MessageModel>?> GetMessagesInChatRoomAsync(string chatRoomId);
-    Task<bool> DeleteMessageAsync(string chatRoomId, string messageId);
-    Task<List<MessageModel>> SearchMessagesInChatRoomAsync(string chatRoomId, string keyword);
-    Task<bool> UploadImageAsync(string userId, string chatRoomId, byte[] imageData);
-    Task<bool> UploadFileAsync(string chatRoomId, byte[] fileData, string fileName);
+    Task<string?> CreateGroupAsync(ChatRoomModel newRoomModel);
+    Task<bool> DeleteGroupAsync(string idGroup);
+    Task<List<RoomSearchReponse>> SearchGroupsAsync(string keyword);
+    Task<List<RoomSearchReponse>> GetAllRoomsAsync();
+    Task<List<RoomLoadingRespone>> GetRoomsOfUserNameAsync(string userName);
+
 }

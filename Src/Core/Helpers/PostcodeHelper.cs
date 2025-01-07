@@ -43,7 +43,10 @@ namespace HUBT_Social_API.Src.Core.Helpers
                 {
                     Code = code.Code,
                     Subject = LocalValue.Get(KeyStore.EmailVerificationCodeSubject),
-                    ToEmail = existingPostcode.Email
+                    ToEmail = existingPostcode.Email,
+                    Device = userAgent,
+                    Location = await ServerHelper.GetLocationFromIpAsync(ipAddress),
+                    DateTime = ServerHelper.ConvertToCustomString(DateTime.UtcNow)
                 });
                 return result ? new OkObjectResult(LocalValue.Get(KeyStore.OtpSent)) : new BadRequestObjectResult(LocalValue.Get(KeyStore.OtpSendError));
             }
