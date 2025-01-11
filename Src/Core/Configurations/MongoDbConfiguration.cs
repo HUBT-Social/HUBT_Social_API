@@ -17,7 +17,7 @@ public static class MongoDbConfiguration
 
         services.AddScoped<IMongoCollection<UserToken>>(s => database.GetCollection<UserToken>("RefreshTokens"));
         services.AddScoped<IMongoCollection<Postcode>>(s => database.GetCollection<Postcode>("Postcode"));
-        services.AddScoped<IMongoCollection<UserFCMToken>>(s => database.GetCollection<UserFCMToken>("UserFCMToken"));
+        services.AddScoped<IMongoCollection<PromotedStore>>(s => database.GetCollection<PromotedStore>("UserFCMToken"));
         services.AddScoped<IMongoCollection<TempUserRegister>>(s =>
             database.GetCollection<TempUserRegister>("TempUserRegister"));
 

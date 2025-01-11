@@ -17,5 +17,4 @@ public interface IAuthService
 
     Task<TempUserRegister?> GetTempUser(string email);
 
-    Task<bool> StoreFcmTokenAsync(StoreFCMRequest fcmToken);
 }

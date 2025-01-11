@@ -12,6 +12,7 @@ using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBT_Social_API.Src.Core.Helpers;
 using HUBT_Social_API.Src.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Src.Features.Auth.Dtos.Request;
+using HUBT_Social_API.Src.Features.Auth.Dtos.Request.UpdateUserRequest;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -214,6 +215,13 @@ public class UpdateUserController : BaseAuthController
     [HttpPut("two-factor-disable")]
     public async Task<IActionResult> DisableTwoFactor() =>
         await UpdateHelper.HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.DisableTwoFactor(userName), new object(),Request,_tokenService);
+    [HttpPut("update/status")]
+    public async Task<IActionResult> UpdateStatus(UpdateStatusRequest request) =>
+        await UpdateHelper.HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.UpdateStatusAsync(userName,request.Bio), new object(),Request,_tokenService);
+
+    [HttpPut("update/fcm-token")]
+    public async Task<IActionResult> StoreFcm(StoreFCMRequest request) =>
+        await UpdateHelper.HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.UpdateStatusAsync(userName,request.FcmToken), new object(),Request,_tokenService);
 
     
     [HttpPost("promote")]
@@ -258,25 +266,22 @@ public class UpdateUserController : BaseAuthController
             Request,_tokenService
         );
     }
-    [HttpPost("store-fcm-token")]
-    public async Task<IActionResult> StoreFcm(string fcmToken)
+    [HttpPost("store-UserPromotion")]
+    public async Task<IActionResult> StoreUserPromotion(PromotedStoreRequest request)
     {
+
+        if (!ModelState.IsValid)
+            return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-        string diviceId = Request.Headers.UserAgent.ToString();
         if (userResponse.Success && userResponse.User != null)
         {
-            StoreFCMRequest request = new()
-            {
-                UserID = userResponse.User.Id.ToString(),
-                DeviceID = diviceId,
-                FcmToken = fcmToken,
-            };
-            if (await _authService.StoreFcmTokenAsync(request))
-            {
-                return Ok();
-            }
+            AUser user = userResponse.User;
+            return await _userService.StoreUserPromotionAsync(user.Id.ToString(), user.Email, request) ? 
+                Ok(LocalValue.Get(KeyStore.StoreSuccessfull)):BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
+
         }
-        return BadRequest();
+        return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
     }
-    
+
+
 }

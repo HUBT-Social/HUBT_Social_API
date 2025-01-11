@@ -19,6 +19,9 @@ public class AUser : MongoIdentityUser<Guid>
     public Gender Gender { get; set; } = Gender.Other;
 
     public DateTime DateOfBirth { get; set; }
+    public bool IsAuthorticated { get; set; }
+    public string FCMToken { get; set; } = string.Empty;
+    public string status { get; set; } = string.Empty;
 
     public AUser()
     {

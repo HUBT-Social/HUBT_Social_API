@@ -1,6 +1,7 @@
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
+using HUBT_Social_API.Src.Features.Auth.Dtos.Request;
 
 namespace HUBT_Social_API.Features.Auth.Services.Interfaces;
 
@@ -19,6 +20,7 @@ public interface IUserService
     Task<bool> UpdateNameAsync(string userName, UpdateNameRequest request);
     Task<bool> UpdatePhoneNumberAsync(string userName, UpdatePhoneNumberRequest request);
     Task<bool> UpdateGenderAsync(string userName, UpdateGenderRequest request);
+    Task<bool> UpdateStatusAsync(string userName, string bio);
     Task<bool> UpdateDateOfBirthAsync(string userName, UpdateDateOfBornRequest request);
     Task<bool> AddInfoUser(string userName, AddInfoUserRequest request);
 
@@ -30,4 +32,8 @@ public interface IUserService
     Task<bool> GeneralUpdateAsync(string userName, GeneralUpdateRequest request);
 
     Task<bool> DeleteUserAsync(AUser user);
+
+    Task<bool> UpdateFcmTokenAsync(string userName, string fcmToken);
+
+    Task<bool> StoreUserPromotionAsync(string userName, string userEmail, PromotedStoreRequest request);
 }
