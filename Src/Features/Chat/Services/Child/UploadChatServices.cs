@@ -20,26 +20,31 @@ public class UploadChatServices : IUploadChatServices
     private readonly IMessageUploadService _messageUploadService;
     private readonly IMediaUploadService _mediaUploadService;
     private readonly IFileUploadService _fileUploadService;
+    private readonly IHubContext<ChatHub> _hubContext;
     public UploadChatServices
     (
         IMessageUploadService messageUploadService,
         IMediaUploadService mediaUploadService,
-        IFileUploadService fileUploadService
+        IFileUploadService fileUploadService,
+        IHubContext<ChatHub> hubContext
     )
     {
         _messageUploadService = messageUploadService;
         _mediaUploadService = mediaUploadService;
         _fileUploadService = fileUploadService;
+        _hubContext = hubContext;
         
     }
-    public async Task<bool> UploadMessageAsync(MessageRequest chatRequest) 
-        => await _messageUploadService.UploadMessageAsync(chatRequest);
+    public async Task<bool> SendMessageAsync(MessageRequest chatRequest,string eventName) 
+        => await _messageUploadService.UploadMessageAsync(chatRequest,_hubContext,eventName);
          
-    public async Task<bool> UploadMediaAsync(MediaRequest chatRequest)
-        => await _mediaUploadService.UploadMediaAsync(chatRequest);
+    public async Task<bool> SendMediaAsync(MediaRequest chatRequest,string eventName)
+        => await _mediaUploadService.UploadMediaAsync(chatRequest,_hubContext,eventName);
 
-    public Task<bool> UploadFileAsync(IFormFile file)
+    public Task<bool> SendFileAsync(IFormFile file)
         => _fileUploadService.UploadFileAsync(file);
+
+
 }
 
 

@@ -11,11 +11,13 @@ public class GetHistoryRequest
     /// </summary>
     [Required]
     public string ChatRoomId { get; set; } = string.Empty;
+    public int Page { get; set; }
+    public int Limit { get; set; }
 
     /// <summary>
     /// The optional timestamp to filter messages before or after this time.
     /// </summary>
-    public DateTime? Time { get; set; }
+    public DateTime? Time { get; set; } = DateTime.Now;
 
 
 }

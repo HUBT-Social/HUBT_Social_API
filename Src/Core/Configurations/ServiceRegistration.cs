@@ -26,6 +26,8 @@ public static class ServiceRegistration
         services.AddScoped<IMessageUploadService, MessageUploadService>();
         services.AddScoped<IMediaUploadService, MediaUploadService>();
         services.AddScoped<IFileUploadService, FileUploadService>();
+        services.AddScoped<IUploadChatServices, UploadChatServices>();
+        services.AddSingleton<IUserConnectionManager, UserConnectionManager>();
 
 /*            services.AddScoped<IUserManagerS, UserManagerS>();
 */

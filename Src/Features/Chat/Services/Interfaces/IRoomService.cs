@@ -16,7 +16,7 @@ public interface IRoomService
     /// <param name="id">ID của phòng chat cần cập nhật.</param>
     /// <param name="newName">Tên nhóm mới.</param>
     /// <returns>Trả về true nếu cập nhật thành công, ngược lại false.</returns>
-    Task<bool> UpdateGroupNameAsync(string id, string newName);
+    Task<bool> UpdateGroupNameAsync(string id, string userName, string newName);
 
     /// <summary>
     /// Cập nhật URL avatar cho phòng chat.
@@ -24,7 +24,7 @@ public interface IRoomService
     /// <param name="id">ID của phòng chat cần cập nhật.</param>
     /// <param name="newUrl">URL mới cho avatar.</param>
     /// <returns>Trả về true nếu cập nhật thành công, ngược lại false.</returns>
-    Task<bool> UpdateAvatarAsync(string id, string newUrl);
+    Task<bool> UpdateAvatarAsync(string id, string userName, string newUrl);
 
     /// <summary>
     /// Cập nhật biệt danh (nickname) của một thành viên trong phòng chat.
@@ -33,7 +33,7 @@ public interface IRoomService
     /// <param name="userName">Tên người dùng cần cập nhật biệt danh.</param>
     /// <param name="newNickName">Biệt danh mới.</param>
     /// <returns>Trả về true nếu cập nhật thành công, ngược lại false.</returns>
-    Task<bool> UpdateNickNameAsync(string roomId, string userName, string newNickName);
+    Task<bool> UpdateNickNameAsync(string roomId,string changerName ,string userName, string newNickName);
     /// <summary>
     /// Cập nhật vai trò của một thành viên trong phòng chat.
     /// </summary>
@@ -41,7 +41,7 @@ public interface IRoomService
     /// <param name="userName">Tên người dùng cần cập nhật vai trò.</param>
     /// <param name="newParticipantRole">Vai trò mới cần gán.</param>
     /// <returns>Trả về true nếu cập nhật thành công, ngược lại false.</returns>
-    Task<bool> UpdateParticipantRole(string roomId, string userName,ParticipantRole newParticipantRole);
+    Task<bool> UpdateParticipantRoleAsync(string roomId, string userName, ParticipantRole newParticipantRole);
     /// <summary>
     /// Cập nhật trạng thái `Unsend` cho một `ChatItem`
     /// </summary>
@@ -49,7 +49,7 @@ public interface IRoomService
     /// <param name="chatItemId">ID của `ChatItem` cần cập nhật</param>
     /// <param name="unsend">Giá trị mới cho `Unsend`</param>
     /// <returns>Trả về `true` nếu cập nhật thành công, ngược lại `false`</returns>
-    Task<bool> UpdateUnsendStatusAsync(string roomId, string chatItemId, bool unsend);
+    Task<bool> UpdateUnsendStatusAsync(string roomId, string chatItemId);
 
     /// <summary>
     /// Cập nhật trạng thái `IsPin` cho một `ChatItem`
@@ -58,27 +58,21 @@ public interface IRoomService
     /// <param name="chatItemId">ID của `ChatItem` cần cập nhật</param>
     /// <param name="isPin">Giá trị mới cho `IsPin`</param>
     /// <returns>Trả về `true` nếu cập nhật thành công, ngược lại `false`</returns>
-    Task<bool> UpdatePinStatusAsync(string roomId, string chatItemId, bool isPin);
+    Task<bool> UpdatePinStatusAsync(string roomId, string chatItemId);
     /// <summary>
     /// Thêm một thành viên mới vào phòng chat.
     /// </summary>
     /// <param name="request">Yêu cầu thêm thành viên.</param>
     /// <returns>Trả về true nếu thêm thành công, ngược lại false.</returns>
-    Task<bool> AddMemberAsync(AddMemberRequest request);
+    Task<bool> JoinRoomAsync(AddMemberRequest request,string AdderName);
     /// <summary>
     /// Xóa một thành viên khỏi phòng chat.
     /// </summary>
     /// <param name="request">Yêu cầu xóa thành viên.</param>
     /// <returns>Trả về true nếu xóa thành công, ngược lại false.</returns>
-    Task<bool> RemoveMemberAsync(RemoveMemberRequest request);
-    /// <summary>
-    /// Cho phép một thành viên rời khỏi phòng chat.
-    /// </summary>
-    /// <param name="GroupId">ID của phòng chat.</param>
-    /// <param name="UserName">Tên người dùng muốn rời khỏi phòng.</param>
-    /// <returns>Trả về true nếu rời phòng thành công, ngược lại false.</returns>
-    Task<bool> LeaveRoomAsync(string GroupId, string UserName);
-    Task<bool> UnsendMessageAsync(string GroupId, string MessageId);
+    Task<bool> KickMemberAsync(RemoveMemberRequest request,string KickerName);
+    Task<bool> LeaveRoomAsync(string groupId,string userName);
+
 
 
     //Get methods

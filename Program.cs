@@ -51,9 +51,19 @@ namespace HUBT_Social_API;
                         // Gọi hàm cấu hình và đăng ký dịch vụ
             InitConfigures(builder);
             InitServices(builder);
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigin", policy =>
+                {
+                    policy.WithOrigins("http://localhost:3000")  // Chỉ cho phép origin này
+                        .AllowAnyMethod()   // Cho phép bất kỳ phương thức HTTP nào
+                        .AllowAnyHeader()   // Cho phép bất kỳ header nào
+                        .AllowCredentials(); // Cho phép gửi credentials như cookies, authorization headers
+                });
+            });
 
             var app = builder.Build();
-
+            app.UseCors("AllowSpecificOrigin");
             // Cấu hình HTTP request pipeline
             // if (app.Environment.IsDevelopment())
             {

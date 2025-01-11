@@ -18,70 +18,16 @@ namespace HUBT_Social_API.Features.Chat.Controllers;
 public class RoomController : ControllerBase
 {
 
-    private readonly IUploadChatServices _uploadtService;
     private readonly ITokenService _tokenService;
     private readonly IRoomService _roomService;
 
-    public RoomController(IUploadChatServices uploadtService,ITokenService tokenService,IRoomService roomService)
+    public RoomController(ITokenService tokenService,IRoomService roomService)
     {
-        _uploadtService = uploadtService;
         _tokenService = tokenService;
         _roomService = roomService;
     }
 
-    [HttpPost("send-message")]
-    public async Task<IActionResult> SendMessage(MessageInputRequest messageInputRequest)
-    {
-        if (messageInputRequest == null)
-            return BadRequest(new { message = "Invalid chat request." });
 
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-        if (userResponse.Success == false)
-        {
-            return BadRequest("Token is not valid");
-        }
-
-        // Tạo một đối tượng MessageRequest từ MessageInputRequest
-        MessageRequest messageRequest = new MessageRequest
-        {
-            GroupId = messageInputRequest.GroupId,
-            Content = messageInputRequest.Content,
-            UserName = userResponse.User.UserName.ToString()
-        };
-
-        bool isSent = await _uploadtService.UploadMessageAsync(messageRequest);
-
-        return isSent
-            ? Ok("sent")
-            : BadRequest("Sending failed");
-    }
-
-    [HttpPost("send-media")]
-    public async Task<IActionResult> SendMedia(MediaInputRequest mediaInputRequest)
-    {
-        if(string.IsNullOrWhiteSpace(mediaInputRequest.GroupId)  || mediaInputRequest.Files.Count == 0)
-        {
-            return BadRequest("value is null");
-        }
-
-        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-        if (userResponse.Success == false)
-        {
-            BadRequest("Token is not validate");
-        }
-        // Tạo một đối tượng MediaRequest từ MediaInputRequest
-        MediaRequest mediaRequest = new MediaRequest
-        {
-            GroupId = mediaInputRequest.GroupId,
-            Files = mediaInputRequest.Files,
-            UserName = userResponse.User.UserName.ToString()
-        };
-        bool IsSent = await _uploadtService.UploadMediaAsync(mediaRequest);
-        return IsSent == true
-            ? Ok("sent")
-            : BadRequest("Sending failed");
-
-    }
     [HttpGet("get-history-chat")]
     public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest getHistoryRequest)
     {
@@ -98,7 +44,11 @@ public class RoomController : ControllerBase
         GetItemsHistoryRequest getItemsHistoryRequest = new GetItemsHistoryRequest
         {
             ChatRoomId = getHistoryRequest.ChatRoomId,
-            Types = new List<string> { "Message", "Media", "File"}
+            Types = new List<string> { "Message", "Media", "File"},
+            Page = getHistoryRequest.Page,
+            Limit = getHistoryRequest.Limit,
+            Time = getHistoryRequest.Time
+            
         };
         if (string.IsNullOrEmpty(getHistoryRequest.Time.ToString()))
         {
@@ -125,7 +75,10 @@ public class RoomController : ControllerBase
         GetItemsHistoryRequest getItemsHistoryRequest = new GetItemsHistoryRequest
         {
             ChatRoomId = getHistoryRequest.ChatRoomId,
-            Types = new List<string> {"Media"}
+            Types = new List<string> {"Media"},
+            Page = getHistoryRequest.Page,
+            Limit = getHistoryRequest.Limit,
+            Time = getHistoryRequest.Time
         };
         if (string.IsNullOrEmpty(getHistoryRequest.Time.ToString()))
         {
@@ -153,7 +106,10 @@ public class RoomController : ControllerBase
         GetItemsHistoryRequest getItemsHistoryRequest = new GetItemsHistoryRequest
         {
             ChatRoomId = getHistoryRequest.ChatRoomId, 
-            Types = new List<string> {"File"}
+            Types = new List<string> {"File"},
+            Page = getHistoryRequest.Page,
+            Limit = getHistoryRequest.Limit,
+            Time = getHistoryRequest.Time
         };
         if (string.IsNullOrEmpty(getHistoryRequest.Time.ToString()))
         {
@@ -181,7 +137,10 @@ public class RoomController : ControllerBase
         GetItemsHistoryRequest getItemsHistoryRequest = new GetItemsHistoryRequest
         {
             ChatRoomId = getHistoryRequest.ChatRoomId,
-            Types = new List<string> {"Link"}
+            Types = new List<string> {"Link"},
+            Page = getHistoryRequest.Page,
+            Limit = getHistoryRequest.Limit,
+            Time = getHistoryRequest.Time
         };
         if (string.IsNullOrEmpty(getHistoryRequest.Time.ToString()))
         {
@@ -209,7 +168,10 @@ public class RoomController : ControllerBase
         GetItemsHistoryRequest getItemsHistoryRequest = new GetItemsHistoryRequest
         {
             ChatRoomId = getHistoryRequest.ChatRoomId,
-            Types = new List<string> {"Voice"}
+            Types = new List<string> {"Voice"},
+            Page = getHistoryRequest.Page,
+            Limit = getHistoryRequest.Limit,
+            Time = getHistoryRequest.Time
         };
         if (string.IsNullOrEmpty(getHistoryRequest.Time.ToString()))
         {
@@ -228,8 +190,14 @@ public class RoomController : ControllerBase
         {
             return BadRequest("Invalid request.");
         }
+        // Lấy thông tin người dùng từ Token
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (userResponse == null || !userResponse.Success)
+        {
+            return BadRequest("Invalid or missing token.");
+        }
 
-        var result = await _roomService.UpdateGroupNameAsync(request.Id,request.NewName);
+        var result = await _roomService.UpdateGroupNameAsync(request.Id,userResponse.User.UserName,request.NewName);
         if (result)
         {
             return Ok("Group name updated successfully.");
@@ -239,15 +207,21 @@ public class RoomController : ControllerBase
 
     // API to update avatar
     [HttpPut("update-group-avatar")]
-    public async Task<IActionResult> UpdateAvatar(UpdateAvatarRequest request)
+    public async Task<IActionResult> UpdateAvatar(string GroupId,IFormFile file)
     {
-        if (request == null || string.IsNullOrEmpty(request.Id) || request.file == null)
+        if (string.IsNullOrEmpty(GroupId) || file == null)
         {
             return BadRequest("Invalid request.");
         }
-        string? newUrl = await UploadToStoreS3.CloudinaryService.UploadToStorageAsync(request.file);
+        // Lấy thông tin người dùng từ Token
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (userResponse == null || !userResponse.Success)
+        {
+            return BadRequest("Invalid or missing token.");
+        }
+        string? newUrl = await UploadToStoreS3.CloudinaryService.UploadToStorageAsync(file);
 
-        var result = await _roomService.UpdateAvatarAsync(request.Id,newUrl);
+        var result = await _roomService.UpdateAvatarAsync(GroupId,userResponse.User.UserName,newUrl);
         if (result)
         {
             return Ok("Avatar updated successfully.");
@@ -258,21 +232,44 @@ public class RoomController : ControllerBase
     [HttpPut("update-nickname")]
     public async Task<IActionResult> UpdateNickNameAsync(UpdateNickNameRequest request)
     {
-        var result = await _roomService.UpdateNickNameAsync(request.GroupId, request.UserName, request.NewNickName);
+        if (request == null 
+            || string.IsNullOrEmpty(request.GroupId) 
+            || string.IsNullOrEmpty(request.UserName)
+            || string.IsNullOrEmpty(request.NewNickName)
+            )
+        {
+            return BadRequest("Invalid request.");
+        }
+        // Lấy thông tin người dùng từ Token
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (userResponse == null || !userResponse.Success)
+        {
+            return BadRequest("Invalid or missing token.");
+        }
+
+        var result = await _roomService.UpdateNickNameAsync(request.GroupId,userResponse.User.UserName, request.UserName, request.NewNickName);
         if (result)
             return Ok("Nickname updated successfully.");
         return BadRequest("Failed to update nickname.");
     }
     // API to add a member to the group
     [HttpPut("add-member")]
-    public async Task<IActionResult> AddMember(AddMemberRequest request)
+    public async Task<IActionResult> JoinRoomAsync(AddMemberRequest request)
     {
-        if (request == null || string.IsNullOrEmpty(request.GroupId) || string.IsNullOrEmpty(request.UserName))
+        if (request == null 
+        || string.IsNullOrEmpty(request.GroupId) 
+        || string.IsNullOrEmpty(request.AddedName)
+        )
         {
             return BadRequest("Invalid request.");
         }
-
-        var result = await _roomService.AddMemberAsync(request);
+        // Lấy thông tin người dùng từ Token
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (userResponse == null || !userResponse.Success)
+        {
+            return BadRequest("Invalid or missing token.");
+        }
+        var result = await _roomService.JoinRoomAsync(request,userResponse.User.UserName);
         if (result)
         {   
             return Ok("Member added successfully.");
@@ -281,11 +278,13 @@ public class RoomController : ControllerBase
     }
 
     // API to remove a member from the group
-    [HttpPost("remove-member")]
-    public async Task<IActionResult> RemoveMember(RemoveMemberRequest request)
+    [HttpPost("kick-member")]
+    public async Task<IActionResult> KickMemberAsync(RemoveMemberRequest request)
     {
         // Kiểm tra đầu vào
-        if (request == null || string.IsNullOrEmpty(request.GroupId) || string.IsNullOrEmpty(request.UserName))
+        if (request == null 
+        || string.IsNullOrEmpty(request.GroupId) 
+        || string.IsNullOrEmpty(request.KickedName))
         {
             return BadRequest("Invalid request.");
         }
@@ -299,7 +298,7 @@ public class RoomController : ControllerBase
 
         // Lấy vai trò của người thực hiện hành động (kicker) và người bị kick (kicked)
         ParticipantRole? kickerRole = await RoomChatHelper.GetRoleAsync(request.GroupId, userResponse.User.UserName);
-        ParticipantRole? kickedRole = await RoomChatHelper.GetRoleAsync(request.GroupId, request.UserName);
+        ParticipantRole? kickedRole = await RoomChatHelper.GetRoleAsync(request.GroupId, request.KickedName);
 
         // Kiểm tra quyền hạn của kicker
         if (kickerRole == null || kickedRole == null)
@@ -313,7 +312,7 @@ public class RoomController : ControllerBase
         }
 
         // Thực hiện hành động xóa thành viên
-        bool result = await _roomService.RemoveMemberAsync(request);
+        bool result = await _roomService.KickMemberAsync(request,userResponse.User.UserName);
         if (result)
         {
             return Ok("Member removed successfully.");
@@ -322,26 +321,54 @@ public class RoomController : ControllerBase
         // Xử lý khi xóa thất bại
         return StatusCode(500, "Failed to remove member.");
     }
-    [HttpPost("leave-room")]
-    public async Task<ActionResult> LeaveRoom(LeaveRoomRequest leaveRoomRequest)
+    [HttpPost("leave-group")]
+    public async Task<IActionResult> LeaveRoomAsync(LeaveRoomRequest request)
     {
-        if(string.IsNullOrEmpty(leaveRoomRequest.GroupId))
+        // Kiểm tra đầu vào
+        if (request == null 
+        || string.IsNullOrEmpty(request.GroupId))
         {
             return BadRequest("Invalid request.");
         }
+
         // Lấy thông tin người dùng từ Token
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
         if (userResponse == null || !userResponse.Success)
         {
             return BadRequest("Invalid or missing token.");
         }
-        bool leftSucceeded = await _roomService.LeaveRoomAsync(leaveRoomRequest.GroupId,userResponse.User.UserName);
-        return leftSucceeded ? Ok("Left succeeded.") : BadRequest("Error to leave.");
+
+        // Lấy vai trò của người thực hiện hành động (kicker) và người bị kick (kicked)
+        ParticipantRole? leaver = await RoomChatHelper.GetRoleAsync(request.GroupId, userResponse.User.UserName);
+        
+
+        // Kiểm tra quyền hạn của kicker
+        if (leaver == null)
+        {
+            return BadRequest("Kicker or kicked user does not exist in the group.");
+        }
+
+        if (leaver == ParticipantRole.Owner)
+        {
+            return BadRequest("Let give your role to other member and try to exist after you have given role to someone.");
+        }
+
+        // Thực hiện hành động xóa thành viên
+        bool result = await _roomService.LeaveRoomAsync(request.GroupId,userResponse.User.UserName);
+        if (result)
+        {
+            return Ok("Member removed successfully.");
+        }
+
+        // Xử lý khi xóa thất bại
+        return StatusCode(500, "Failed to remove member.");
     }
-    [HttpPut("unsend-message")]
-    public async Task<ActionResult> UnSendMessage(UnsendMessageRequest unsendMessageRequest)
+    
+    [HttpPut("update-unsend-status")]
+    public async Task<ActionResult> UpdateUnsendMessage(UpdateStatusMessageRequest unsendMessageRequest)
     {
-        if(string.IsNullOrEmpty(unsendMessageRequest.UserId) || string.IsNullOrEmpty(unsendMessageRequest.ChatRoomId) || string.IsNullOrEmpty(unsendMessageRequest.MessageId))
+        if(string.IsNullOrEmpty(unsendMessageRequest.ChatRoomId) 
+        || string.IsNullOrEmpty(unsendMessageRequest.MessageId))
         {
             return BadRequest("Invalid request.");
         }
@@ -360,8 +387,20 @@ public class RoomController : ControllerBase
         {
             return BadRequest("You are not owner of this message");
         }
-        var isUnsent = await _roomService.UnsendMessageAsync(unsendMessageRequest.ChatRoomId,unsendMessageRequest.MessageId);
-        return isUnsent ? Ok("UnSent") : BadRequest("Err to Unsend.");
+        var updated = await _roomService.UpdateUnsendStatusAsync(unsendMessageRequest.ChatRoomId,unsendMessageRequest.MessageId);
+        return updated ? Ok("Updated") : BadRequest("Err to Unsend.");
+    }
+    [HttpPut("update-pin-status")]
+    public async Task<ActionResult> UpdatePinMessage(UpdateStatusMessageRequest unsendMessageRequest)
+    {
+        if(string.IsNullOrEmpty(unsendMessageRequest.ChatRoomId) 
+        || string.IsNullOrEmpty(unsendMessageRequest.MessageId))
+        {
+            return BadRequest("Invalid request.");
+        }
+
+        var updated = await _roomService.UpdatePinStatusAsync(unsendMessageRequest.ChatRoomId,unsendMessageRequest.MessageId);
+        return updated ? Ok("Updated") : BadRequest("Err to Pin.");
     }
 
 }

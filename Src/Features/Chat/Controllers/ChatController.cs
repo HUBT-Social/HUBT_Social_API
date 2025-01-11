@@ -96,7 +96,11 @@ public class ChatController : ControllerBase
                 };
             }
     
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpDelete("delete-group")]
     public async Task<IActionResult> DeleteGroupAsync(DeleteGroupRequest request)
     {
@@ -119,49 +123,70 @@ public class ChatController : ControllerBase
         return NotFound("Group not found or could not be deleted.");
     }
     
-    
-    [HttpPost("search-group-by-keyword")]
-    public async Task<IActionResult> SearchGroupsAsync(SearchGroupsRequest request)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="keyword"></param>
+    /// <param name="page"></param>
+    /// <param name="limit"></param>
+    /// <returns></returns>
+    [HttpPost("search-group")]
+    public async Task<IActionResult> SearchGroupsAsync([FromQuery] string keyword, [FromQuery] int page=1, [FromQuery] int limit=5)
     {
-        if (string.IsNullOrWhiteSpace(request.Keyword))
+        if (string.IsNullOrWhiteSpace(keyword))
             return BadRequest("Keyword is required.");
 
-        var groups = await _chatService.SearchGroupsAsync(request.Keyword);
+        var groups = await _chatService.SearchGroupsAsync(keyword,page,limit);
         if (groups.Any())
             return Ok(groups);
 
         return NotFound("No groups found matching the keyword.");
     }
-    
-    [HttpGet("get-all-group")]
-    public async Task<IActionResult> GetAllRoomsAsync()
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="page"></param>
+    /// <param name="limit"></param>
+    /// <returns></returns>
+    [HttpGet("develop/get-all-group")]
+    public async Task<IActionResult> GetAllRoomsAsync( [FromQuery] int page=1, [FromQuery] int limit=10)
     {
-        var rooms = await _chatService.GetAllRoomsAsync();
+        var rooms = await _chatService.GetAllRoomsAsync(page,limit);
         return Ok(rooms);
     }
     
-
-    [HttpGet("user/get-rooms-by-username")]
-    public async Task<IActionResult> GetRoomsByUserNameAsync([FromQuery] GetRoomsByUserRequest request)
+    /// <summary>
+    /// DeveloperDeveloper
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet("develop/load-rooms-by-username")]
+    public async Task<IActionResult> GetRoomsByUserNameAsync([FromQuery] string userName,[FromQuery]  int page=1, [FromQuery] int limit=20)
     {
-        if (string.IsNullOrEmpty(request.UserName))
+        if (string.IsNullOrEmpty(userName))
             return BadRequest("Username is required.");
 
-        var rooms = await _chatService.GetRoomsOfUserNameAsync(request.UserName);
+        var rooms = await _chatService.GetRoomsOfUserNameAsync(userName,page,limit);
         if (rooms.Any())
             return Ok(rooms);
 
         return NotFound("No rooms found for the user.");
     }
-    [HttpGet("user/get-rooms")]
-    public async Task<IActionResult> GetRoomsByTokenTokenAsync()
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="page"></param>
+    /// <param name="limit"></param>
+    /// <returns></returns>
+    [HttpGet("load-rooms")]
+    public async Task<IActionResult> GetRoomsByTokenTokenAsync([FromQuery]  int page=1, [FromQuery] int limit=10)
     {
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
         if (userResponse.Success == false)
         {
             return BadRequest("Token is not valid");
         }
-        var rooms = await _chatService.GetRoomsOfUserNameAsync(userResponse.User.UserName);
+        var rooms = await _chatService.GetRoomsOfUserNameAsync(userResponse.User.UserName,page,limit);
         if (rooms.Any())
             return Ok(rooms);
 

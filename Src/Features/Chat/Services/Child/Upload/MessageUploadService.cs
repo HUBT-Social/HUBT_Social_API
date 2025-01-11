@@ -6,18 +6,17 @@ using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBTSOCIAL.Src.Features.Chat.Models;
+using Microsoft.AspNetCore.SignalR;
 using MongoDB.Driver;
 
 public class MessageUploadService : IMessageUploadService
 {
     private readonly IMongoCollection<ChatRoomModel> _chatRooms;
-    private readonly ChatHub _chatHub;
-    public MessageUploadService(ChatHub chatHub,IMongoCollection<ChatRoomModel> chatRooms)
+    public MessageUploadService(IMongoCollection<ChatRoomModel> chatRooms)
     {
-        _chatHub = chatHub;
         _chatRooms = chatRooms;
     }
-    public async Task<bool> UploadMessageAsync(MessageRequest chatRequest)
+    public async Task<bool> UploadMessageAsync(MessageRequest chatRequest,IHubContext<ChatHub> hubContext,string eventName)
     {
         
         // Lấy ChatRoom từ MongoDB
@@ -48,8 +47,8 @@ public class MessageUploadService : IMessageUploadService
                 }
             }
         }
-
-        await _chatHub.SendMessage(chatRequest.GroupId, newMessage); 
+        Console.WriteLine("chuan bị guigui");
+        await SendingItem.SendChatItem(chatRequest.GroupId,newMessage,eventName,hubContext); 
 
         UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,chatRoom,newMessage);
         return updateResult.ModifiedCount > 0;

@@ -8,6 +8,7 @@ using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
+using Microsoft.AspNetCore.SignalR;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
@@ -18,13 +19,18 @@ public class RoomService : IRoomService
 
     private readonly IMongoCollection<ChatRoomModel> _chatRooms;
     private readonly IUserService _userService;
-    private readonly ChatHub _chatHub;
+    public readonly IHubContext<ChatHub> _hubContext;
+    private readonly IUserConnectionManager _userConnectionManager;
 
-    public RoomService(IMongoCollection<ChatRoomModel> chatRooms,IUserService userService,ChatHub chatHub)
+    public RoomService(
+        IMongoCollection<ChatRoomModel> chatRooms,
+        IUserService userService,IHubContext<ChatHub> hubContext,
+        IUserConnectionManager userConnectionManager)
     {
         _chatRooms = chatRooms;
         _userService = userService;
-        _chatHub = chatHub;
+        _hubContext = hubContext;
+        _userConnectionManager = userConnectionManager;
     }
 // Update methods
     /// <summary>
@@ -33,25 +39,41 @@ public class RoomService : IRoomService
     /// <param name="id">ID của phòng chat cần cập nhật.</param>
     /// <param name="newName">Tên nhóm mới.</param>
     /// <returns>Trả về true nếu cập nhật thành công, ngược lại false.</returns>
-    public async Task<bool> UpdateGroupNameAsync(string id, string newName)
+    public async Task<bool> UpdateGroupNameAsync(string id, string userName, string newName)
     {
         try
         {
+            // Kiểm tra xem phòng chat có tồn tại không
+            var chatRoom = await _chatRooms.Find(c => c.Id == id).FirstOrDefaultAsync();
+            if (chatRoom == null)
+            {
+                Console.WriteLine($"Chat room with ID {id} does not exist.");
+                return false;
+            }
+
             // Tạo định nghĩa cập nhật cho trường Name
-            UpdateDefinition<ChatRoomModel> update = Builders<ChatRoomModel>.Update.Set(c => c.Name, newName); 
+            UpdateDefinition<ChatRoomModel> update = Builders<ChatRoomModel>.Update.Set(c => c.Name, newName);
 
             // Thực hiện cập nhật phòng chat dựa trên ID
             UpdateResult result = await _chatRooms.UpdateOneAsync(c => c.Id == id, update);
 
-            // Trả về true nếu số lượng bản ghi được cập nhật lớn hơn 0
-            return result.ModifiedCount > 0; 
+            if (result.ModifiedCount > 0)
+            {
+                // Gửi thông báo qua SignalR nếu cập nhật thành công
+                await _hubContext.Clients.Group(id).SendAsync("UpdateGroupName",  new {userName = userName, newName = newName});
+                return true;
+            }
+
+            return false;
         }
-        catch
+        catch (Exception ex)
         {
-            // Trả về false nếu xảy ra lỗi
+            Console.WriteLine($"Error updating group name: {ex.Message}");
             return false;
         }
     }
+
+
 
     /// <summary>
     /// Cập nhật URL avatar cho phòng chat.
@@ -59,25 +81,47 @@ public class RoomService : IRoomService
     /// <param name="id">ID của phòng chat cần cập nhật.</param>
     /// <param name="newUrl">URL mới cho avatar.</param>
     /// <returns>Trả về true nếu cập nhật thành công, ngược lại false.</returns>
-    public async Task<bool> UpdateAvatarAsync(string id, string newUrl)
+    public async Task<bool> UpdateAvatarAsync(string id, string userName, string newUrl)
     {
         try
         {
+            // Kiểm tra đầu vào
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(newUrl))
+            {
+                return false;
+            }
+
+            // Kiểm tra xem phòng chat có tồn tại không
+            var chatRoom = await _chatRooms.Find(c => c.Id == id).FirstOrDefaultAsync();
+            if (chatRoom == null)
+            {
+                return false;
+            }
+
             // Tạo định nghĩa cập nhật cho trường AvatarUrl
-            UpdateDefinition<ChatRoomModel> update = Builders<ChatRoomModel>.Update.Set(c => c.AvatarUrl, newUrl); 
+            UpdateDefinition<ChatRoomModel> update = Builders<ChatRoomModel>.Update.Set(c => c.AvatarUrl, newUrl);
 
             // Thực hiện cập nhật phòng chat dựa trên ID
             UpdateResult result = await _chatRooms.UpdateOneAsync(c => c.Id == id, update);
 
+
             // Trả về true nếu số lượng bản ghi được cập nhật lớn hơn 0
-            return result.ModifiedCount > 0;
+            if(result.ModifiedCount > 0)
+            {
+                // Gửi thông báo qua SignalR nếu cập nhật thành công
+                await _hubContext.Clients.Group(id).SendAsync("UpdateAvatar", new {userName = userName, newUrl = newUrl});
+                return true;
+            }
+            return false;
         }
-        catch
+        catch (Exception ex)
         {
-            // Trả về false nếu xảy ra lỗi
+            // Ghi log lỗi
+            Console.WriteLine($"Error in UpdateAvatarAsync: {ex.Message}");
             return false;
         }
     }
+
 
     /// <summary>
     /// Cập nhật biệt danh (nickname) của một thành viên trong phòng chat.
@@ -86,7 +130,7 @@ public class RoomService : IRoomService
     /// <param name="userName">Tên người dùng cần cập nhật biệt danh.</param>
     /// <param name="newNickName">Biệt danh mới.</param>
     /// <returns>Trả về true nếu cập nhật thành công, ngược lại false.</returns>
-    public async Task<bool> UpdateNickNameAsync(string roomId, string userName, string newNickName)
+    public async Task<bool> UpdateNickNameAsync(string roomId,string changerName ,string userName, string newNickName)
     {
         try
         {
@@ -106,7 +150,14 @@ public class RoomService : IRoomService
             var result = await _chatRooms.UpdateOneAsync(filter, update);
 
             // Kiểm tra số lượng bản ghi bị thay đổi
-            return result.ModifiedCount > 0;
+            // Trả về true nếu số lượng bản ghi được cập nhật lớn hơn 0
+            if(result.ModifiedCount > 0)
+            {
+                // Gửi thông báo qua SignalR nếu cập nhật thành công
+                await _hubContext.Clients.Group(roomId).SendAsync("UpdateNickName", new {changerName=changerName,changed = userName, nickName = newNickName});
+                return true;
+            }
+            return false;
         }
         catch
         {
@@ -121,32 +172,43 @@ public class RoomService : IRoomService
     /// <param name="userName">Tên người dùng cần cập nhật vai trò.</param>
     /// <param name="newParticipantRole">Vai trò mới cần gán.</param>
     /// <returns>Trả về true nếu cập nhật thành công, ngược lại false.</returns>
-    public async Task<bool> UpdateParticipantRole(string roomId, string userName,ParticipantRole newParticipantRole)
+    public async Task<bool> UpdateParticipantRoleAsync(string roomId, string userName, ParticipantRole newParticipantRole)
+{
+    try
     {
-        try
-        {
-            // Tìm phòng chat chứa `roomId` và kiểm tra `Participant` có `UserName` khớp
-            var filter = Builders<ChatRoomModel>.Filter.And(
-                Builders<ChatRoomModel>.Filter.Eq(r => r.Id, roomId),
-                Builders<ChatRoomModel>.Filter.ElemMatch(r => r.Participant, p => p.UserName == userName)
-            );
+        // Tìm phòng chat chứa `roomId` và `Participant` có `UserName` khớp
+        var filter = Builders<ChatRoomModel>.Filter.And(
+            Builders<ChatRoomModel>.Filter.Eq(r => r.Id, roomId),
+            Builders<ChatRoomModel>.Filter.ElemMatch(r => r.Participant, p => p.UserName == userName)
+        );
 
-            // Xác định phần tử cụ thể trong mảng `Participant` để cập nhật `NickName`
-            var update = Builders<ChatRoomModel>.Update.Set(
-                r => r.Participant[-1].Role, newParticipantRole // -1 đại diện cho phần tử được tìm qua `ElemMatch`
-            );
-
-            // Thực hiện cập nhật
-            var result = await _chatRooms.UpdateOneAsync(filter, update);
-
-            // Kiểm tra số lượng bản ghi bị thay đổi
-            return result.ModifiedCount > 0;
-        }
-        catch
+        // Kiểm tra sự tồn tại trước khi cập nhật
+        var chatRoom = await _chatRooms.Find(filter).FirstOrDefaultAsync();
+        if (chatRoom == null)
         {
             return false;
         }
+
+        // Cập nhật trường `Role` của phần tử tìm được trong mảng `Participant`
+        var update = Builders<ChatRoomModel>.Update.Set("Participant.$.Role", newParticipantRole);
+
+        // Thực hiện cập nhật
+        var result = await _chatRooms.UpdateOneAsync(filter, update);
+
+        // Trả về true nếu số lượng bản ghi được cập nhật lớn hơn 0
+            if(result.ModifiedCount > 0)
+            {
+                // Gửi thông báo qua SignalR nếu cập nhật thành công
+                await _hubContext.Clients.Group(roomId).SendAsync("UpdateParticipantRole", new {userName = userName, newRole = newParticipantRole});
+                return true;
+            }
+            return false;
     }
+    catch 
+    {
+        return false;
+    }
+}
     /// <summary>
     /// Cập nhật trạng thái `Unsend` cho một `ChatItem`
     /// </summary>
@@ -154,7 +216,7 @@ public class RoomService : IRoomService
     /// <param name="chatItemId">ID của `ChatItem` cần cập nhật</param>
     /// <param name="unsend">Giá trị mới cho `Unsend`</param>
     /// <returns>Trả về `true` nếu cập nhật thành công, ngược lại `false`</returns>
-    public async Task<bool> UpdateUnsendStatusAsync(string roomId, string chatItemId, bool unsend)
+    public async Task<bool> UpdateUnsendStatusAsync(string roomId, string chatItemId)
     {
         try
         {
@@ -165,12 +227,37 @@ public class RoomService : IRoomService
                     item => item.Id == chatItemId
                 )
             );
+            // Lấy mục chat hiện tại để kiểm tra trạng thái Unsend
+            var chatRoom = await _chatRooms.Find(filter).FirstOrDefaultAsync();
+            if (chatRoom == null)
+            {
+                return false; // Không tìm thấy phòng hoặc mục chat
+            }
 
-            var update = Builders<ChatRoomModel>.Update.Set("ChatItems.$.Unsend", unsend);
+            // Tìm mục chat tương ứng và lấy trạng thái Unsend hiện tại
+            var chatItem = chatRoom.ChatItems.FirstOrDefault(item => item.Id == chatItemId);
+            if (chatItem == null)
+            {
+                return false; // Không tìm thấy mục chat
+            }
+
+            // Phủ định trạng thái Unsend
+            bool newUnsendStatus = !chatItem.Unsend;
+
+            // Cập nhật trạng thái Unsend mới
+            var update = Builders<ChatRoomModel>.Update.Set(
+                "ChatItems.$.Unsend", newUnsendStatus
+            );
 
             var result = await _chatRooms.UpdateOneAsync(filter, update);
 
-            return result.ModifiedCount > 0;
+            if(result.ModifiedCount > 0)
+            {
+                // Gửi thông báo qua SignalR nếu cập nhật thành công
+                await _hubContext.Clients.Group(roomId).SendAsync("UpdateUnsendStatus", new {chatItemId = chatItemId, status = newUnsendStatus});
+                return true;
+            }
+            return false;
         }
         catch
         {
@@ -185,7 +272,7 @@ public class RoomService : IRoomService
     /// <param name="chatItemId">ID của `ChatItem` cần cập nhật</param>
     /// <param name="isPin">Giá trị mới cho `IsPin`</param>
     /// <returns>Trả về `true` nếu cập nhật thành công, ngược lại `false`</returns>
-    public async Task<bool> UpdatePinStatusAsync(string roomId, string chatItemId, bool isPin)
+    public async Task<bool> UpdatePinStatusAsync(string roomId, string chatItemId)
     {
         try
         {
@@ -197,11 +284,37 @@ public class RoomService : IRoomService
                 )
             );
 
-            var update = Builders<ChatRoomModel>.Update.Set("ChatItems.$.IsPin", isPin);
+            // Lấy mục chat hiện tại để kiểm tra trạng thái Unsend
+            var chatRoom = await _chatRooms.Find(filter).FirstOrDefaultAsync();
+            if (chatRoom == null)
+            {
+                return false; // Không tìm thấy phòng hoặc mục chat
+            }
+
+            // Tìm mục chat tương ứng và lấy trạng thái Unsend hiện tại
+            var chatItem = chatRoom.ChatItems.FirstOrDefault(item => item.Id == chatItemId);
+            if (chatItem == null)
+            {
+                return false; // Không tìm thấy mục chat
+            }
+
+            // Phủ định trạng thái Unsend
+            bool newPinStatus = !chatItem.IsPin;
+
+            // Cập nhật trạng thái Unsend mới
+            var update = Builders<ChatRoomModel>.Update.Set(
+                "ChatItems.$.IsPin", newPinStatus
+            );
 
             var result = await _chatRooms.UpdateOneAsync(filter, update);
 
-            return result.ModifiedCount > 0;
+            if(result.ModifiedCount > 0)
+            {
+                // Gửi thông báo qua SignalR nếu cập nhật thành công
+                await _hubContext.Clients.Group(roomId).SendAsync("UpdatePinStatus", new {chatItemId = chatItemId, status = newPinStatus});
+                return true;
+            }
+            return false;
         }
         catch
         {
@@ -214,19 +327,32 @@ public class RoomService : IRoomService
     /// </summary>
     /// <param name="request">Yêu cầu thêm thành viên.</param>
     /// <returns>Trả về true nếu thêm thành công, ngược lại false.</returns>
-    public async Task<bool> AddMemberAsync(AddMemberRequest request)
+    public async Task<bool> JoinRoomAsync(AddMemberRequest request,string AdderName)
     {
         try
         {
             var filter = Builders<ChatRoomModel>.Filter.Eq(r => r.Id, request.GroupId);
+            string Adder = await _userService.GetFullName(AdderName) ?? AdderName;
+            string Added = await _userService.GetFullName(request.AddedName) ?? request.AddedName;
             var update = Builders<ChatRoomModel>.Update.AddToSet(r => r.Participant, new Participant
             {
-                UserName = request.UserName,
-                NickName = await _userService.GetFullName(request.UserName),
+                UserName = request.AddedName,
+                NickName = Added,
             });
 
             var result = await _chatRooms.UpdateOneAsync(filter, update);
-            return result.ModifiedCount > 0;  
+            if(result.ModifiedCount > 0)
+            {
+                var connectionId = _userConnectionManager.GetConnectionId(request.AddedName);
+                if (connectionId != null)
+                {
+                    await _hubContext.Groups.AddToGroupAsync(connectionId, request.GroupId);
+                }
+                // Gửi thông báo qua SignalR nếu cập nhật thành công
+                await _hubContext.Clients.Group(request.GroupId).SendAsync("AddMember", new {Adder = Adder,Added = Added});
+                return true;
+            }
+            return false;  
         }catch
         {
             return false;
@@ -238,16 +364,31 @@ public class RoomService : IRoomService
     /// </summary>
     /// <param name="request">Yêu cầu xóa thành viên.</param>
     /// <returns>Trả về true nếu xóa thành công, ngược lại false.</returns>
-    public async Task<bool> RemoveMemberAsync(RemoveMemberRequest request)
+    public async Task<bool> KickMemberAsync(RemoveMemberRequest request,string KickerName)
     {
         try
         {
             var filter = Builders<ChatRoomModel>.Filter.Eq(r => r.Id, request.GroupId);
+
+            string Kicker = await _userService.GetFullName(KickerName) ?? KickerName;
+            string Kicked = await _userService.GetFullName(request.KickedName) ?? request.KickedName;
+
             var update = Builders<ChatRoomModel>.Update.PullFilter(r => r.Participant,
-                p => p.UserName == request.UserName);
+                p => p.UserName == request.KickedName);
 
             var result = await _chatRooms.UpdateOneAsync(filter, update);
-            return result.ModifiedCount > 0;
+             if(result.ModifiedCount > 0)
+            {
+                // Gửi thông báo qua SignalR nếu cập nhật thành công
+                var connectionId = _userConnectionManager.GetConnectionId(request.KickedName);
+                if (connectionId != null)
+                {
+                    await _hubContext.Groups.RemoveFromGroupAsync(connectionId, request.GroupId);
+                }
+                await _hubContext.Clients.Group(request.GroupId).SendAsync("KickMember", new {Kicker = Kicker,Kicked = Kicked});
+                return true;
+            }
+            return false;
         }
         catch
         {
@@ -255,70 +396,40 @@ public class RoomService : IRoomService
         }
         
     }
-    /// <summary>
-    /// Cho phép một thành viên rời khỏi phòng chat.
-    /// </summary>
-    /// <param name="GroupId">ID của phòng chat.</param>
-    /// <param name="UserName">Tên người dùng muốn rời khỏi phòng.</param>
-    /// <returns>Trả về true nếu rời phòng thành công, ngược lại false.</returns>
-    public async Task<bool> LeaveRoomAsync(string GroupId, string UserName)
+    public async Task<bool> LeaveRoomAsync(string groupId,string userName)
     {
         try
         {
-            // Tạo bộ lọc để tìm phòng chat dựa trên GroupId
-            var filter = Builders<ChatRoomModel>.Filter.Eq(r => r.Id, GroupId);
+            var filter = Builders<ChatRoomModel>.Filter.Eq(r => r.Id, groupId);
 
-            // Tạo bản cập nhật để loại bỏ UserName khỏi danh sách Members
-            var update = Builders<ChatRoomModel>.Update.PullFilter(
-                r => r.Participant,
-                p => p.UserName == UserName
-            );
+            string NickName = await _userService.GetFullName(userName) ?? userName;
 
-            // Thực hiện cập nhật
+            var update = Builders<ChatRoomModel>.Update.PullFilter(r => r.Participant,
+                p => p.UserName == userName);
+
             var result = await _chatRooms.UpdateOneAsync(filter, update);
-
-            // Kiểm tra kết quả
-            return result.ModifiedCount > 0;
+             if(result.ModifiedCount > 0)
+            {
+                // Gửi thông báo qua SignalR nếu cập nhật thành công
+                var connectionId = _userConnectionManager.GetConnectionId(userName);
+                if (connectionId != null)
+                {
+                    await _hubContext.Groups.RemoveFromGroupAsync(connectionId, groupId);
+                }
+                await _hubContext.Clients.Group(groupId).SendAsync("LeaveRoom", userName);
+                return true;
+            }
+            return false;
         }
         catch
         {
             return false;
         }
+        
     }
+ 
+
     
-    public async Task<bool> UnsendMessageAsync(string GroupId, string MessageId)
-    {
-        try
-        {
-            var filter = Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, GroupId);
-            ChatRoomModel? chatRoom = await _chatRooms.Find(filter).FirstOrDefaultAsync();
-            if(chatRoom == null)
-            {
-                return false;
-            }
-            var message = chatRoom.ChatItems.FirstOrDefault(ci => ci.Id == MessageId);
-            if (message == null)
-            {
-                return false;
-            }
-            // Cập nhật trạng thái Unsend
-            message.Unsend = true;
-
-            // Lưu thay đổi vào cơ sở dữ liệu
-            var update = Builders<ChatRoomModel>.Update.Set(cr => cr.ChatItems, chatRoom.ChatItems);
-            await _chatRooms.UpdateOneAsync(filter, update);
-
-            // Gửi sự kiện đến tất cả người dùng trong phòng
-            await _chatHub.UnSendChatItem(GroupId, MessageId);
-
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-        
-    }
     //Get methods
     public async Task<IEnumerable<ChatItemResponse>> GetChatHistoryAsync(GetItemsHistoryRequest getItemsHistoryRequest)
     {
@@ -354,25 +465,32 @@ public class RoomService : IRoomService
 
         return response;
     }
-        private async Task<List<ChatItem>> GetItemsAsync(GetItemsHistoryRequest getItemsHistoryRequest)
-        {
-            // Giả lập dữ liệu từ `ChatRoomModel` (thay thế bằng kết nối DB thực tế)
-            var chatRoom = _chatRooms.Find(room => room.Id == getItemsHistoryRequest.ChatRoomId).FirstOrDefault();
+    private async Task<List<ChatItem>> GetItemsAsync(GetItemsHistoryRequest getItemsHistoryRequest)
+    {
+        // Tìm phòng chat dựa trên ID phòng
+        var chatRoom = await _chatRooms
+            .Find(room => room.Id == getItemsHistoryRequest.ChatRoomId)
+            .FirstOrDefaultAsync();
 
-            if (chatRoom == null)
-                return new List<ChatItem>();
+        // Nếu không tìm thấy phòng chat, trả về danh sách rỗng
+        if (chatRoom == null)
+            return new List<ChatItem>();
 
-            // Lọc các item theo thời gian và loại (nếu có)
-            var filteredItems = chatRoom.ChatItems
-                .Where(item =>
-                    (getItemsHistoryRequest.Time == null || item.Timestamp < getItemsHistoryRequest.Time) &&
-                    (getItemsHistoryRequest.Types == null || getItemsHistoryRequest.Types.Contains(item.Type)))
-                .OrderByDescending(item => item.Timestamp)
-                .Take(20)
-                .ToList();
+        int limit = getItemsHistoryRequest.Limit;
+        DateTime? timeFilter = getItemsHistoryRequest.Time;
 
-            return filteredItems;
-        }
+        // Lọc các item theo thời gian và loại (nếu có)
+        var filteredItems = chatRoom.ChatItems
+            .Where(item =>
+                item.Timestamp < timeFilter && // Lọc theo thời gian
+                getItemsHistoryRequest.Types.Contains(item.Type)) // Lọc theo loại nếu có
+            .OrderByDescending(item => item.Timestamp) // Sắp xếp theo thời gian giảm dần
+            .Skip((getItemsHistoryRequest.Page - 1) * limit) // Bỏ qua số lượng bản ghi tương ứng với trang
+            .Take(limit) // Lấy đúng số lượng tin nhắn cần thiết
+            .ToList(); // Chuyển đổi thành danh sách
+
+        return filteredItems;
+    }
 
 
     
