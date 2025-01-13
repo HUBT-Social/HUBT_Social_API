@@ -140,7 +140,7 @@ public class ChatController : ControllerBase
         if (groups.Any())
             return Ok(groups);
 
-        return NotFound("No groups found matching the keyword.");
+        return Ok(new List<RoomSearchReponse>());
     }
     /// <summary>
     /// 
@@ -190,7 +190,7 @@ public class ChatController : ControllerBase
         if (rooms.Any())
             return Ok(rooms);
 
-        return NotFound("No rooms found for the user.");
+        return NotFound(new List<RoomLoadingRespone>());
     }
 
    
