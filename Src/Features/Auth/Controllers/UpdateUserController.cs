@@ -1,14 +1,19 @@
 using HUBT_Social_API.Core.Service.Upload;
+using Amazon.Runtime.Internal;
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Controllers;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
+using HUBT_Social_API.Features.Auth.Services.Child;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBT_Social_API.Src.Core.Helpers;
+using HUBT_Social_API.Src.Features.Auth.Dtos.Collections;
+using HUBT_Social_API.Src.Features.Auth.Dtos.Request;
+using HUBT_Social_API.Src.Features.Auth.Dtos.Request.UpdateUserRequest;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -118,7 +123,7 @@ public class UpdateUserController : ControllerBase
 
     
 
-    [HttpPost("update/avatar")]
+    [HttpPut("update/avatar")]
     public async Task<IActionResult> UpdateAvatar(IFormFile file)
     {
         if(file !=null){
@@ -173,7 +178,7 @@ public class UpdateUserController : ControllerBase
     public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request) =>
         await UpdateHelper.HandleUserUpdate(KeyStore.EmailUpdated, KeyStore.EmailUpdateError, _userService.UpdateEmailAsync, request,Request,_tokenService);
 
-    [HttpPost("update/password")]
+    [HttpPut("update/password")]
     public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
     {
         if(request.NewPassword == request.ConfirmNewPassword)
@@ -194,6 +199,13 @@ public class UpdateUserController : ControllerBase
     [HttpPut("two-factor-disable")]
     public async Task<IActionResult> DisableTwoFactor() =>
         await UpdateHelper.HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.DisableTwoFactor(userName), new object(),Request,_tokenService);
+    [HttpPut("update/status")]
+    public async Task<IActionResult> UpdateStatus(UpdateStatusRequest request) =>
+        await UpdateHelper.HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.UpdateStatusAsync(userName,request.Bio), new object(),Request,_tokenService);
+
+    [HttpPut("update/fcm-token")]
+    public async Task<IActionResult> StoreFcm(StoreFCMRequest request) =>
+        await UpdateHelper.HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError, (userName, _) => _userService.UpdateStatusAsync(userName,request.FcmToken), new object(),Request,_tokenService);
 
     
     [HttpPost("promote")]
@@ -225,7 +237,7 @@ public class UpdateUserController : ControllerBase
         }
     }
     
-    [HttpPost("add-info-user")]
+    [HttpPut("add-info-user")]
     public async Task<IActionResult> AddInfoUser(AddInfoUserRequest request)
     {
         
@@ -238,5 +250,22 @@ public class UpdateUserController : ControllerBase
             Request,_tokenService
         );
     }
-    
+    [HttpPost("store-UserPromotion")]
+    public async Task<IActionResult> StoreUserPromotion(PromotedStoreRequest request)
+    {
+
+        if (!ModelState.IsValid)
+            return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (userResponse.Success && userResponse.User != null)
+        {
+            AUser user = userResponse.User;
+            return await _userService.StoreUserPromotionAsync(user.Id.ToString(), user.Email, request) ? 
+                Ok(LocalValue.Get(KeyStore.StoreSuccessfull)):BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
+
+        }
+        return BadRequest(LocalValue.Get(KeyStore.InvalidInformation));
+    }
+
+
 }

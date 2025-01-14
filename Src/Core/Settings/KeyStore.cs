@@ -81,6 +81,7 @@ namespace HUBT_Social_API.Core.Settings
         public const string PasswordIncorrect = "PasswordIncorrect";
         public const string UsernameCannotBeEmpty = "UsernameCannotBeEmpty";
         public const string UnAuthorize = "UnAuthorize";
+        public const string StoreSuccessfull = "StoreSuccessfull";
 
         public const string AvatarUpdated = "AvatarUpdated";
 

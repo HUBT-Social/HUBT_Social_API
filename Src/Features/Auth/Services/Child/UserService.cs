@@ -3,9 +3,12 @@ using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.Src.Features.Auth.Dtos.Collections;
+using HUBT_Social_API.Src.Features.Auth.Dtos.Request;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
 
 namespace HUBT_Social_API.Features.Auth.Services.Child;
 
@@ -14,6 +17,7 @@ public class UserService : IUserService
     private readonly RoleManager<ARole> _roleManager;
     private readonly UserManager<AUser> _userManager;
     private readonly ILogger<UserService> _logger;
+    private readonly IMongoCollection<PromotedStore> _promotedStore;
 
     private readonly Dictionary<string, int> _roleHierarchy = new Dictionary<string, int>
     {
@@ -24,11 +28,12 @@ public class UserService : IUserService
         { "USER", 0 }
     };
 
-    public UserService(UserManager<AUser> userManager, RoleManager<ARole> roleManager, ILogger<UserService> logger)
+    public UserService(UserManager<AUser> userManager, RoleManager<ARole> roleManager, ILogger<UserService> logger, IMongoCollection<PromotedStore> prometedStore = null)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _logger = logger;
+        _promotedStore = prometedStore;
     }
 
     private async Task<AUser?> GetUserByNameAsync(string userName)
@@ -192,4 +197,62 @@ public class UserService : IUserService
         var user = await GetUserByNameAsync(userName);
         return user != null && await UpdateUserPropertyAsync(user, u => u.TwoFactorEnabled = false);
     }
+    public async Task<bool> UpdateFcmTokenAsync(string userName,string fcmToken)
+    {
+        try
+        {
+            AUser? user = await GetUserByNameAsync(userName);
+            return user != null && await UpdateUserPropertyAsync(user, u => u.FCMToken= fcmToken);
+
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+
+    }
+    public async Task<bool> UpdateStatusAsync(string userName, string bio)
+    {
+        var user = await GetUserByNameAsync(userName);
+        return user != null && await UpdateUserPropertyAsync(user, u => u.status = bio);
+    }
+
+    public async Task<bool> StoreUserPromotionAsync(string userId,string userEmail, PromotedStoreRequest request)
+    {
+        try
+        {
+            PromotedStore fcmToken = await _promotedStore.Find(
+                fcm => fcm.UserId == userId)
+                .FirstOrDefaultAsync();
+            if (fcmToken == null)
+            {
+                PromotedStore newFcmToken = new()
+                {
+                    IdentifyCode = request.IdentifyCode,
+                    UserId = userId,
+                    email = userEmail,
+                    ExpireTime = DateTime.UtcNow
+                };
+                await _promotedStore.InsertOneAsync(newFcmToken);
+            }
+            else
+            {
+                var update = Builders<PromotedStore>.Update
+                    .Set(t => t.email, userEmail)
+                    .Set(t => t.IdentifyCode, request.IdentifyCode)
+                    .Set(t => t.ExpireTime, DateTime.UtcNow);
+                await _promotedStore.UpdateOneAsync(
+                    fcm => fcm.UserId == userId
+                , update);
+            }
+            return true;
+
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+
+    }
+
 }

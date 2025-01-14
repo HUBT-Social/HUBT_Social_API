@@ -11,7 +11,7 @@ public static class JwtConfiguration
     public static IServiceCollection ConfigureJwt(this IServiceCollection services, IConfiguration configuration)
     {
         var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSetting>();
-        services.Configure<JwtSetting>(configuration.GetSection("JwtSettings"));
+        
 
         _ = services.AddAuthentication(options =>
             {

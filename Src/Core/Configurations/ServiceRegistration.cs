@@ -5,6 +5,7 @@ using HUBT_Social_API.Features.Chat.ChatHubs;
 using HUBT_Social_API.Features.Chat.Services;
 using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
+using HUBT_Social_API.Src.Features.Notifcate.Services;
 
 namespace HUBT_Social_API.Core.Configurations;
 
@@ -28,9 +29,10 @@ public static class ServiceRegistration
         services.AddScoped<IFileUploadService, FileUploadService>();
         services.AddScoped<IUploadChatServices, UploadChatServices>();
         services.AddSingleton<IUserConnectionManager, UserConnectionManager>();
+        services.AddScoped<IFireBaseNotificationService, FireBaseNotificationService>();
 
-/*            services.AddScoped<IUserManagerS, UserManagerS>();
-*/
+        /*            services.AddScoped<IUserManagerS, UserManagerS>();
+        */
 
         return services;
     }
