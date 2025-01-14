@@ -124,11 +124,11 @@ Console.WriteLine($"Đây là username lấy từ token: {userName}");
     }
 
     // Thông báo người dùng đang gõ
-    public async Task TypingText(string groupId, string userId)
+    public async Task TypingText(string groupId, string userName)
     {
         try
         {
-            await _hubContext.Clients.Group(groupId).SendAsync("ReceiveTyping", userId);
+            await _hubContext.Clients.Group(groupId).SendAsync("ReceiveTyping", userName);
         }
         catch (Exception ex)
         {

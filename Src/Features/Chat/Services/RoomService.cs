@@ -447,6 +447,9 @@ public class RoomService : IRoomService
                 UserName = item.UserName,
                 Timestamp = item.Timestamp,
                 Type = item.Type,
+                ReplyTo = item.ReplyTo,
+                Unsend = item.Unsend,
+                IsPin = item.IsPin,
                 Data = item.ToResponseData()
             };
             response.Add(chatItemResponse);

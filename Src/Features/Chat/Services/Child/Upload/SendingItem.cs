@@ -20,6 +20,9 @@ namespace HUBT_Social_API.Features.Chat.Services.Child
                     UserName = chatItem.UserName,
                     Timestamp = chatItem.Timestamp,
                     Type = chatItem.Type,
+                    ReplyTo = chatItem.ReplyTo,
+                    Unsend = chatItem.Unsend,
+                    IsPin = chatItem.IsPin,
                     Data = chatItem.ToResponseData()
                 };
                     Console.WriteLine(chatItemResponse);

@@ -17,7 +17,7 @@ public class ChatItem
     public List<string> MemberSeens { get; set; } = new();
     public bool Unsend { get; set; } = false;
     public bool IsPin { get; set; } = false;
-    public string ReplyFrom { get; set; } = string.Empty;
+    public string ReplyTo { get; set; } = string.Empty;
     public virtual object ToResponseData() => null;
 }
 
