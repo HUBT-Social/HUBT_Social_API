@@ -5,8 +5,10 @@ using B2Net.Models;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 namespace HUBT_Social_API.Core.Service.Upload;
+
 public static class UploadToStoreS3
 {
+    
     public static class CloudinaryService
     {
         private static Cloudinary _cloudinary;
@@ -18,21 +20,21 @@ public static class UploadToStoreS3
         }
 
         // Hàm upload file (sử dụng _cloudinary đã được khởi tạo)
-        public static async Task<List<string>> UploadsToStorageAsync(List<IFormFile> files)
+        public static async Task<List<FileUploadResult>> UploadsToStorageAsync(List<IFormFile> files)
         {
-            var uploadedUrls = new List<string>();
+            var uploadResult = new List<FileUploadResult>();
 
             foreach (var file in files)
             {
-                string? url = await CloudinaryService.UploadToStorageAsync(file);
-                if(url != null)
+                FileUploadResult? result = await CloudinaryService.UploadToStorageAsync(file);
+                if(result != null)
                 {
-                    uploadedUrls.Add(url);
+                    uploadResult.Add(result);
                 }
             }
-            return uploadedUrls;
+            return uploadResult;
         }
-        public static async Task<string?> UploadToStorageAsync(IFormFile file)
+        public static async Task<FileUploadResult?> UploadToStorageAsync(IFormFile file)
         {
             try
             {
@@ -53,7 +55,12 @@ public static class UploadToStoreS3
                 // Kiểm tra kết quả upload
                 if (uploadResult?.StatusCode == HttpStatusCode.OK)
                 {
-                    return uploadResult.Url?.ToString();
+                    return new FileUploadResult
+                    {
+                        Url = uploadResult.Url?.ToString(),
+                        ResourceType = uploadResult.ResourceType
+                    };
+                    
                 }
 
                 // Nếu upload không thành công, trả về null

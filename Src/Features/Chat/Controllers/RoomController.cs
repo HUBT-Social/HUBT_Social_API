@@ -5,6 +5,7 @@ using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBT_Social_API.Src.Core.Helpers;
+using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -26,163 +27,48 @@ public class RoomController : ControllerBase
         _tokenService = tokenService;
         _roomService = roomService;
     }
+    
 
 
-    [HttpGet("get-history-chat")]
-    public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest getHistoryRequest)
+   [HttpGet("get-history-chat")]
+public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest getHistoryRequest)
+{
+    if (getHistoryRequest == null)
     {
-        if (getHistoryRequest == null)
-        {
-            return BadRequest("Request body cannot be null");
-        }
-
-        if (string.IsNullOrWhiteSpace(getHistoryRequest.ChatRoomId))
-        {
-            return BadRequest("ChatRoomId cannot be null or empty");
-        }
-        
-        GetItemsHistoryRequest getItemsHistoryRequest = new GetItemsHistoryRequest
-        {
-            ChatRoomId = getHistoryRequest.ChatRoomId,
-            Types = new List<string> { "Message", "Media", "File"},
-            Page = getHistoryRequest.Page,
-            Limit = getHistoryRequest.Limit,
-            Time = getHistoryRequest.Time
-            
-        };
-        if (string.IsNullOrEmpty(getHistoryRequest.Time.ToString()))
-        {
-            getItemsHistoryRequest.Time = DateTime.Now;
-        }
-        IEnumerable<ChatItemResponse> chatItems = await _roomService.GetChatHistoryAsync(getItemsHistoryRequest);
-
-        return Ok(chatItems);
+        return BadRequest("Request body cannot be null");
     }
-    [HttpGet("get-medias")]
-    public async Task<IActionResult> GetMediasHistory([FromQuery] GetHistoryRequest getHistoryRequest)
+
+    if (string.IsNullOrWhiteSpace(getHistoryRequest.ChatRoomId))
     {
-
-        if (getHistoryRequest == null)
-        {
-            return BadRequest("Request body cannot be null");
-        }
-
-        if (string.IsNullOrWhiteSpace(getHistoryRequest.ChatRoomId))
-        {
-            return BadRequest("ChatRoomId cannot be null or empty");
-        }
-
-        GetItemsHistoryRequest getItemsHistoryRequest = new GetItemsHistoryRequest
-        {
-            ChatRoomId = getHistoryRequest.ChatRoomId,
-            Types = new List<string> {"Media"},
-            Page = getHistoryRequest.Page,
-            Limit = getHistoryRequest.Limit,
-            Time = getHistoryRequest.Time
-        };
-        if (string.IsNullOrEmpty(getHistoryRequest.Time.ToString()))
-        {
-            getItemsHistoryRequest.Time = DateTime.Now;
-        }
-
-        IEnumerable<ItemsHistoryRespone> chatItems = await _roomService.GetItemsHistoryAsync(getItemsHistoryRequest);
-
-        return Ok(chatItems);
+        return BadRequest("ChatRoomId cannot be null or empty");
     }
-    [HttpGet("get-files")]
-    public async Task<IActionResult> GetFilesHistory([FromQuery] GetHistoryRequest getHistoryRequest)
+
+    // Kiểm tra null cho Time
+    if (getHistoryRequest.Time == null)
     {
-
-        if (getHistoryRequest == null)
-        {
-            return BadRequest("Request body cannot be null");
-        }
-
-        if (string.IsNullOrWhiteSpace(getHistoryRequest.ChatRoomId))
-        {
-            return BadRequest("ChatRoomId cannot be null or empty");
-        }
-
-        GetItemsHistoryRequest getItemsHistoryRequest = new GetItemsHistoryRequest
-        {
-            ChatRoomId = getHistoryRequest.ChatRoomId, 
-            Types = new List<string> {"File"},
-            Page = getHistoryRequest.Page,
-            Limit = getHistoryRequest.Limit,
-            Time = getHistoryRequest.Time
-        };
-        if (string.IsNullOrEmpty(getHistoryRequest.Time.ToString()))
-        {
-            getItemsHistoryRequest.Time = DateTime.Now;
-        }
-
-        IEnumerable<ItemsHistoryRespone> chatItems = await _roomService.GetItemsHistoryAsync(getItemsHistoryRequest);
-
-        return Ok(chatItems);
+        getHistoryRequest.Time = DateTime.Now;
     }
-    [HttpGet("get-Links")]
-    public async Task<IActionResult> GetLinksHistory([FromQuery] GetHistoryRequest getHistoryRequest)
+
+    // Lấy danh sách tin nhắn
+    List<MessageModel> messages = await _roomService.GetMessageHistoryAsync(getHistoryRequest);
+
+    if (getHistoryRequest.Type == MessageType.All)
     {
-
-        if (getHistoryRequest == null)
-        {
-            return BadRequest("Request body cannot be null");
-        }
-
-        if (string.IsNullOrWhiteSpace(getHistoryRequest.ChatRoomId))
-        {
-            return BadRequest("ChatRoomId cannot be null or empty");
-        }
-
-        GetItemsHistoryRequest getItemsHistoryRequest = new GetItemsHistoryRequest
-        {
-            ChatRoomId = getHistoryRequest.ChatRoomId,
-            Types = new List<string> {"Link"},
-            Page = getHistoryRequest.Page,
-            Limit = getHistoryRequest.Limit,
-            Time = getHistoryRequest.Time
-        };
-        if (string.IsNullOrEmpty(getHistoryRequest.Time.ToString()))
-        {
-            getItemsHistoryRequest.Time = DateTime.Now;
-        }
-
-        IEnumerable<ItemsHistoryRespone> chatItems = await _roomService.GetItemsHistoryAsync(getItemsHistoryRequest);
-
-        return Ok(chatItems);
+        return Ok(messages);
     }
-     [HttpGet("get-voices")]
-    public async Task<IActionResult> GetVoicesHistory([FromQuery] GetHistoryRequest getHistoryRequest)
+    else if ((getHistoryRequest.Type & MessageType.Media) != 0) // Kiểm tra nếu chứa Media
     {
-
-        if (getHistoryRequest == null)
+        List<FilePaths> mediaResponse = new();
+        foreach (var message in messages)
         {
-            return BadRequest("Request body cannot be null");
+            mediaResponse.AddRange(message.FilePaths); 
         }
-
-        if (string.IsNullOrWhiteSpace(getHistoryRequest.ChatRoomId))
-        {
-            return BadRequest("ChatRoomId cannot be null or empty");
-        }
-
-        GetItemsHistoryRequest getItemsHistoryRequest = new GetItemsHistoryRequest
-        {
-            ChatRoomId = getHistoryRequest.ChatRoomId,
-            Types = new List<string> {"Voice"},
-            Page = getHistoryRequest.Page,
-            Limit = getHistoryRequest.Limit,
-            Time = getHistoryRequest.Time
-        };
-        if (string.IsNullOrEmpty(getHistoryRequest.Time.ToString()))
-        {
-            getItemsHistoryRequest.Time = DateTime.Now;
-        }
-
-        IEnumerable<ItemsHistoryRespone> chatItems = await _roomService.GetItemsHistoryAsync(getItemsHistoryRequest);
-
-        return Ok(chatItems);
+        return Ok(mediaResponse);
     }
-    // API to update group name
+
+    return Ok(new List<MessageModel>()); // Trường hợp không khớp kiểu nào
+}
+ // API to update group name
     [HttpPut("update-group-name")]
     public async Task<IActionResult> UpdateGroupName(UpdateGroupNameRequest request)
     {
@@ -219,9 +105,9 @@ public class RoomController : ControllerBase
         {
             return BadRequest("Invalid or missing token.");
         }
-        string? newUrl = await UploadToStoreS3.CloudinaryService.UploadToStorageAsync(file);
+        FileUploadResult? newUrl = await UploadToStoreS3.CloudinaryService.UploadToStorageAsync(file);
 
-        var result = await _roomService.UpdateAvatarAsync(GroupId,userResponse.User.UserName,newUrl);
+        var result = await _roomService.UpdateAvatarAsync(GroupId,userResponse.User.UserName,newUrl.Url);
         if (result)
         {
             return Ok("Avatar updated successfully.");
@@ -364,8 +250,8 @@ public class RoomController : ControllerBase
         return StatusCode(500, "Failed to remove member.");
     }
     
-    [HttpPut("update-unsend-status")]
-    public async Task<ActionResult> UpdateUnsendMessage(UpdateStatusMessageRequest unsendMessageRequest)
+    [HttpPut("update-action-status")]
+    public async Task<ActionResult> UpdateActionStatusAsync(UpdateStatusMessageRequest unsendMessageRequest)
     {
         if(string.IsNullOrEmpty(unsendMessageRequest.ChatRoomId) 
         || string.IsNullOrEmpty(unsendMessageRequest.MessageId))
@@ -378,30 +264,19 @@ public class RoomController : ControllerBase
         {
             return BadRequest("Invalid or missing token.");
         }
-        string? senderOfItem = await RoomChatHelper.GetInfoMessageAsync(unsendMessageRequest.ChatRoomId,unsendMessageRequest.MessageId);
+        MessageModel? senderOfItem = await RoomChatHelper.GetInfoMessageAsync(unsendMessageRequest.ChatRoomId,unsendMessageRequest.MessageId);
         if(senderOfItem == null)
         {
             return BadRequest("Invalid value request.");
         }
-        if(senderOfItem != userResponse.User.UserName)
+        if(senderOfItem.SentBy != userResponse.User.UserName)
         {
             return BadRequest("You are not owner of this message");
         }
-        var updated = await _roomService.UpdateUnsendStatusAsync(unsendMessageRequest.ChatRoomId,unsendMessageRequest.MessageId);
-        return updated ? Ok("Updated") : BadRequest("Err to Unsend.");
+        var updated = await _roomService.UpdateActionStatusAsync(unsendMessageRequest.ChatRoomId,unsendMessageRequest.MessageId,unsendMessageRequest.messageActionStatus);
+        return updated ? Ok("Updated") : BadRequest("Err to Update.");
     }
-    [HttpPut("update-pin-status")]
-    public async Task<ActionResult> UpdatePinMessage(UpdateStatusMessageRequest unsendMessageRequest)
-    {
-        if(string.IsNullOrEmpty(unsendMessageRequest.ChatRoomId) 
-        || string.IsNullOrEmpty(unsendMessageRequest.MessageId))
-        {
-            return BadRequest("Invalid request.");
-        }
-
-        var updated = await _roomService.UpdatePinStatusAsync(unsendMessageRequest.ChatRoomId,unsendMessageRequest.MessageId);
-        return updated ? Ok("Updated") : BadRequest("Err to Pin.");
-    }
+   
 
 }
 

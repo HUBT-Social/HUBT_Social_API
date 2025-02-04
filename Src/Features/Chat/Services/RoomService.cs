@@ -6,6 +6,7 @@ using HUBT_Social_API.Features.Chat.ChatHubs;
 using HUBT_Social_API.Features.Chat.Controllers;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
+using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.SignalR;
@@ -216,14 +217,14 @@ public class RoomService : IRoomService
     /// <param name="chatItemId">ID của `ChatItem` cần cập nhật</param>
     /// <param name="unsend">Giá trị mới cho `Unsend`</param>
     /// <returns>Trả về `true` nếu cập nhật thành công, ngược lại `false`</returns>
-    public async Task<bool> UpdateUnsendStatusAsync(string roomId, string chatItemId)
+    public async Task<bool> UpdateActionStatusAsync(string roomId, string chatItemId,MessageActionStatus newActionStatus)
     {
         try
         {
             var filter = Builders<ChatRoomModel>.Filter.And(
                 Builders<ChatRoomModel>.Filter.Eq(room => room.Id, roomId),
                 Builders<ChatRoomModel>.Filter.ElemMatch(
-                    room => room.ChatItems,
+                    room => room.Content,
                     item => item.Id == chatItemId
                 )
             );
@@ -235,26 +236,23 @@ public class RoomService : IRoomService
             }
 
             // Tìm mục chat tương ứng và lấy trạng thái Unsend hiện tại
-            var chatItem = chatRoom.ChatItems.FirstOrDefault(item => item.Id == chatItemId);
+            var chatItem = chatRoom.Content.FirstOrDefault(item => item.Id == chatItemId);
             if (chatItem == null)
             {
                 return false; // Không tìm thấy mục chat
             }
 
-            // Phủ định trạng thái Unsend
-            bool newUnsendStatus = !chatItem.Unsend;
-
             // Cập nhật trạng thái Unsend mới
             var update = Builders<ChatRoomModel>.Update.Set(
-                "ChatItems.$.Unsend", newUnsendStatus
+                "Content.$.ActionStatus"
+                , newActionStatus
             );
 
             var result = await _chatRooms.UpdateOneAsync(filter, update);
 
             if(result.ModifiedCount > 0)
             {
-                // Gửi thông báo qua SignalR nếu cập nhật thành công
-                await _hubContext.Clients.Group(roomId).SendAsync("UpdateUnsendStatus", new {chatItemId = chatItemId, status = newUnsendStatus});
+                await _hubContext.Clients.Group(roomId).SendAsync("UpdateActionStatus", new {chatItemId = chatItemId, status = newActionStatus});
                 return true;
             }
             return false;
@@ -265,62 +263,6 @@ public class RoomService : IRoomService
         }
     }
 
-    /// <summary>
-    /// Cập nhật trạng thái `IsPin` cho một `ChatItem`
-    /// </summary>
-    /// <param name="roomId">ID của phòng chat chứa `ChatItem`</param>
-    /// <param name="chatItemId">ID của `ChatItem` cần cập nhật</param>
-    /// <param name="isPin">Giá trị mới cho `IsPin`</param>
-    /// <returns>Trả về `true` nếu cập nhật thành công, ngược lại `false`</returns>
-    public async Task<bool> UpdatePinStatusAsync(string roomId, string chatItemId)
-    {
-        try
-        {
-            var filter = Builders<ChatRoomModel>.Filter.And(
-                Builders<ChatRoomModel>.Filter.Eq(room => room.Id, roomId),
-                Builders<ChatRoomModel>.Filter.ElemMatch(
-                    room => room.ChatItems,
-                    item => item.Id == chatItemId
-                )
-            );
-
-            // Lấy mục chat hiện tại để kiểm tra trạng thái Unsend
-            var chatRoom = await _chatRooms.Find(filter).FirstOrDefaultAsync();
-            if (chatRoom == null)
-            {
-                return false; // Không tìm thấy phòng hoặc mục chat
-            }
-
-            // Tìm mục chat tương ứng và lấy trạng thái Unsend hiện tại
-            var chatItem = chatRoom.ChatItems.FirstOrDefault(item => item.Id == chatItemId);
-            if (chatItem == null)
-            {
-                return false; // Không tìm thấy mục chat
-            }
-
-            // Phủ định trạng thái Unsend
-            bool newPinStatus = !chatItem.IsPin;
-
-            // Cập nhật trạng thái Unsend mới
-            var update = Builders<ChatRoomModel>.Update.Set(
-                "ChatItems.$.IsPin", newPinStatus
-            );
-
-            var result = await _chatRooms.UpdateOneAsync(filter, update);
-
-            if(result.ModifiedCount > 0)
-            {
-                // Gửi thông báo qua SignalR nếu cập nhật thành công
-                await _hubContext.Clients.Group(roomId).SendAsync("UpdatePinStatus", new {chatItemId = chatItemId, status = newPinStatus});
-                return true;
-            }
-            return false;
-        }
-        catch
-        {
-            return false;
-        }
-    }
 
     /// <summary>
     /// Thêm một thành viên mới vào phòng chat.
@@ -334,7 +276,7 @@ public class RoomService : IRoomService
             var filter = Builders<ChatRoomModel>.Filter.Eq(r => r.Id, request.GroupId);
             string Adder = await _userService.GetFullName(AdderName) ?? AdderName;
             string Added = await _userService.GetFullName(request.AddedName) ?? request.AddedName;
-            var update = Builders<ChatRoomModel>.Update.AddToSet(r => r.Participant, new Participant
+            var update = Builders<ChatRoomModel>.Update.AddToSet(r => r.Participant, new Participant()
             {
                 UserName = request.AddedName,
                 NickName = Added,
@@ -431,44 +373,34 @@ public class RoomService : IRoomService
 
     
     //Get methods
-    public async Task<IEnumerable<ChatItemResponse>> GetChatHistoryAsync(GetItemsHistoryRequest getItemsHistoryRequest)
-    {
-        // Lấy danh sách các ChatItems từ phương thức GetItemsAsync
-        var chatItems = await GetItemsAsync(getItemsHistoryRequest);
+    // public async Task<IEnumerable<ChatItemResponse>> GetChatHistoryAsync(GetItemsHistoryRequest getItemsHistoryRequest)
+    // {
+    //     // Lấy danh sách các ChatItems từ phương thức GetItemsAsync
+    //     var chatItems = await GetItemsAsync(getItemsHistoryRequest);
 
-        // Duyệt qua từng ChatItem để tạo danh sách ChatItemResponse
-        var response = new List<ChatItemResponse>();
-        foreach (var item in chatItems)
-        {
-            var chatItemResponse = new ChatItemResponse
-            {
-                Id = item.Id,
-                NickName = await RoomChatHelper.GetNickNameAsync(getItemsHistoryRequest.ChatRoomId, item.UserName) ?? item.UserName,
-                UserName = item.UserName,
-                Timestamp = item.Timestamp,
-                Type = item.Type,
-                ReplyTo = item.ReplyTo,
-                Unsend = item.Unsend,
-                IsPin = item.IsPin,
-                Data = item.ToResponseData()
-            };
-            response.Add(chatItemResponse);
-        }
+    //     // Duyệt qua từng ChatItem để tạo danh sách ChatItemResponse
+    //     var response = new List<ChatItemResponse>();
+    //     foreach (var item in chatItems)
+    //     {
+    //         var chatItemResponse = new ChatItemResponse
+    //         {
+    //             Id = item.Id,
+    //             NickName = await RoomChatHelper.GetNickNameAsync(getItemsHistoryRequest.ChatRoomId, item.UserName) ?? item.UserName,
+    //             UserName = item.UserName,
+    //             Timestamp = item.Timestamp,
+    //             Type = item.Type,
+    //             ReplyTo = item.ReplyTo,
+    //             Unsend = item.Unsend,
+    //             IsPin = item.IsPin,
+    //             Data = item.ToResponseData()
+    //         };
+    //         response.Add(chatItemResponse);
+    //     }
 
-        return response;
-    }
-    public async Task<IEnumerable<ItemsHistoryRespone>> GetItemsHistoryAsync(GetItemsHistoryRequest getItemsHistoryRequest)
-    {
-        var chatItems = await GetItemsAsync(getItemsHistoryRequest);
+    //     return response;
+    // }
 
-        var response = chatItems.Select(item => new ItemsHistoryRespone
-        {
-            Data = item.ToResponseData()
-        }).ToList();
-
-        return response;
-    }
-    private async Task<List<ChatItem>> GetItemsAsync(GetItemsHistoryRequest getItemsHistoryRequest)
+    public async Task<List<MessageModel>> GetMessageHistoryAsync(GetHistoryRequest getItemsHistoryRequest)
     {
         // Tìm phòng chat dựa trên ID phòng
         var chatRoom = await _chatRooms
@@ -477,25 +409,23 @@ public class RoomService : IRoomService
 
         // Nếu không tìm thấy phòng chat, trả về danh sách rỗng
         if (chatRoom == null)
-            return new List<ChatItem>();
+            return new List<MessageModel>();
 
         int limit = getItemsHistoryRequest.Limit;
         DateTime? timeFilter = getItemsHistoryRequest.Time;
 
         // Lọc các item theo thời gian và loại (nếu có)
-        var filteredItems = chatRoom.ChatItems
-            .Where(item =>
-                item.Timestamp < timeFilter && // Lọc theo thời gian
-                getItemsHistoryRequest.Types.Contains(item.Type)) // Lọc theo loại nếu có
-            .OrderByDescending(item => item.Timestamp) // Sắp xếp theo thời gian giảm dần
-            .Skip((getItemsHistoryRequest.Page - 1) * limit) // Bỏ qua số lượng bản ghi tương ứng với trang
-            .Take(limit) // Lấy đúng số lượng tin nhắn cần thiết
-            .ToList(); // Chuyển đổi thành danh sách
+        var filteredItems = chatRoom.Content
+        .Where(item =>
+            item.Timestamp < timeFilter && // Lọc theo thời gian
+            (getItemsHistoryRequest.Type == MessageType.All || (item.MessageType & getItemsHistoryRequest.Type) != 0)) // Lọc theo loại nếu có
+        .OrderByDescending(item => item.Timestamp) // Sắp xếp theo thời gian giảm dần
+        .Skip((getItemsHistoryRequest.Page - 1) * limit) // Bỏ qua số lượng bản ghi tương ứng với trang
+        .Take(limit) // Lấy đúng số lượng tin nhắn cần thiết
+        .ToList(); // Chuyển đổi thành danh sách
 
         return filteredItems;
     }
 
-
-    
-
+   
 }

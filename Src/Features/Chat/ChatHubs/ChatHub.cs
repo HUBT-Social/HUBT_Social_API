@@ -71,57 +71,40 @@ public class ChatHub : Hub
     }
     
 
-    // Gửi tin nhắn hoặc phương tiện đến nhóm
- 
-    // Chuyển tiếp tin nhắn
-    public async Task SendMessage(MessageInputRequest messageInputRequest)
+    public async Task SendItemChat(SendChatRequest inputRequest)
     {
-        if (messageInputRequest != null)
-    {
-        Console.WriteLine($"GroupId: {messageInputRequest.GroupId}");
-        Console.WriteLine($"Content: {messageInputRequest.Content}");
-    }
-    else
-    {
-        Console.WriteLine("Received null message.");
-    }
-        Console.WriteLine("GroupId: ", messageInputRequest.GroupId, "Content: ",messageInputRequest.Content);
+        if (inputRequest != null)
+        {
+            Console.WriteLine($"GroupId: {inputRequest.GroupId}");
+            Console.WriteLine($"Content: {inputRequest.Content}");
+        }
+        else
+        {
+            Console.WriteLine("Received null message.");
+        }
+        
         var userName = Context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-Console.WriteLine($"Đây là username lấy từ token: {userName}");
+        Console.WriteLine($"Đây là username lấy từ token: {userName}");
 
         if(userName == null)
         {
             await Clients.Caller.SendAsync("SendErr","Token no vali");
             return; 
         }
-        MessageRequest messageRequest = new MessageRequest
+        ChatRequest chatRequest = new ChatRequest
         {
             UserName = userName,
-            GroupId = messageInputRequest.GroupId,
-            Content = messageInputRequest.Content
+            GroupId = inputRequest.GroupId,
+            Content = inputRequest.Content,
+            Medias = inputRequest.Medias,
+            Files = inputRequest.Files
         };
         Console.WriteLine("Tạo thành công mesrqmesrq");
-        await _uploadChatServices.SendMessageAsync(messageRequest,"ReceiveMessage");
+        await _uploadChatServices.SendChatAsync(chatRequest);
         Console.WriteLine("Upload successsuccess");
     }
-
-    // Chuyển tiếp phương tiện
-    public async Task SendMedia(MediaInputRequest mediaInputRequest)
-    {
-        var userName = Context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-        if(userName == null)
-        {
-            await Clients.Caller.SendAsync("SendErr","Token no vali");
-            return; 
-        }
-        MediaRequest mediaRequest = new MediaRequest
-        {
-            UserName = userName,
-            GroupId = mediaInputRequest.GroupId,
-            Files = mediaInputRequest.Files
-        };
-        await _uploadChatServices.SendMediaAsync(mediaRequest,"ReceiveMedia");
-    }
+ 
+   
 
     // Thông báo người dùng đang gõ
     public async Task TypingText(string groupId, string userName)

@@ -1,20 +1,13 @@
 using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
-namespace HUBTSOCIAL.Src.Features.Chat.Models;
+using HUBTSOCIAL.Src.Features.Chat.Models;
 
-public class MessageModel 
+public class MessageCollection
 {
-    
-    
-
     /// <summary>
     /// Provides Id
     /// </summary>
     public string Id { get; set; } = Guid.NewGuid().ToString();
-    /// <summary>
-    /// Provides UserName which will be used to find detail information of sender
-    /// </summary>
-    public string SentBy { get; set; }
 
     /// <summary>
     /// Provides actual message content as text
@@ -61,14 +54,18 @@ public class MessageModel
     /// </summary>
     public TimeSpan? VoiceMessageDuration { get; set; }
 
-    public MessageModel()
+    public MessageCollection(MessageCollection messageCollection)
     {
-        
+        this.Id = messageCollection.Id;
+        this.MessageContent = messageCollection.MessageContent;
+        this.FilePaths = messageCollection.FilePaths;
+        this.ReplyMessage = messageCollection.ReplyMessage;
+        this.VoiceMessageDuration = messageCollection.VoiceMessageDuration;
 
     }
-    public MessageModel(string SentBy,MessageContent MessageContent,string? roomId = null,string? messageId = null)
+    public MessageCollection(MessageContent MessageContent,string? roomId = null,string? messageId = null)
     {
-        this.SentBy = SentBy;
+
         this.MessageContent = MessageContent;
         if(messageId != null || roomId != null)
         {
@@ -106,9 +103,9 @@ public class MessageModel
         
 
     }
-    public MessageModel(string sentBy,List<FilePaths> FilePaths,string? roomId = null,string? messageId = null)
+    public MessageCollection(List<FilePaths> FilePaths,string? roomId = null,string? messageId = null)
     {
-        this.SentBy = sentBy;
+
         this.FilePaths = FilePaths;
         if(messageId != null || roomId != null)
         {
@@ -146,5 +143,4 @@ public class MessageModel
         
 
     }
-    
 }

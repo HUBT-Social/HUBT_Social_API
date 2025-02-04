@@ -1,3 +1,4 @@
+using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using MongoDB.Driver;
 
@@ -52,7 +53,7 @@ namespace HUBTSOCIAL.Src.Features.Chat.Helpers
         }
 
         // Phương thức lấy thông tin của một message
-        public static async Task<string?> GetInfoMessageAsync(string roomId, string messageId)
+        public static async Task<MessageModel?> GetInfoMessageAsync(string roomId, string messageId)
         {
             var filter = Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, roomId);
             var chatRoom = await _chatRooms.Find(filter).FirstOrDefaultAsync();
@@ -60,9 +61,9 @@ namespace HUBTSOCIAL.Src.Features.Chat.Helpers
             if (chatRoom == null)
                 return null;
 
-            var message = chatRoom.ChatItems.FirstOrDefault(ci => ci.Id == messageId);
+            var message = chatRoom.Content.FirstOrDefault(ci => ci.Id == messageId);
 
-            return message?.UserName;
+            return message;
         }
         public static async Task<List<string>> GetUserGroupConnected(string userName)
         {

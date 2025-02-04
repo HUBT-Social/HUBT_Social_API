@@ -26,14 +26,13 @@ namespace HUBT_Social_API;
             builder.Services.ConfigureCloudinary(builder.Configuration);
             builder.Services.ConfigureBackblazeB2(builder.Configuration);
             builder.Services.ConfigureSMPT(builder.Configuration);
-            builder.Services.FirebaseService(builder.Configuration);
+            //builder.Services.FirebaseService(builder.Configuration);
             builder.Services.AddConfigureationService(builder.Configuration);
 
 
             builder.Services.AddChatMongoCollections(builder.Configuration);
             builder.Services.AddAuthMongoCollections(builder.Configuration);
-            // Cấu hình ChatItems
-            builder.Services.RegisterClassMaps();
+
         }
 
         private static void InitServices(WebApplicationBuilder builder) 

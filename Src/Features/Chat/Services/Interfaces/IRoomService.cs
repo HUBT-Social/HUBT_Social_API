@@ -1,5 +1,6 @@
 using HUBT_Social_API.Features.Chat.Controllers;
 using HUBT_Social_API.Features.Chat.DTOs;
+using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.DTOs;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using static HUBT_Social_API.Features.Chat.Services.RoomService;
@@ -42,23 +43,7 @@ public interface IRoomService
     /// <param name="newParticipantRole">Vai trò mới cần gán.</param>
     /// <returns>Trả về true nếu cập nhật thành công, ngược lại false.</returns>
     Task<bool> UpdateParticipantRoleAsync(string roomId, string userName, ParticipantRole newParticipantRole);
-    /// <summary>
-    /// Cập nhật trạng thái `Unsend` cho một `ChatItem`
-    /// </summary>
-    /// <param name="roomId">ID của phòng chat chứa `ChatItem`</param>
-    /// <param name="chatItemId">ID của `ChatItem` cần cập nhật</param>
-    /// <param name="unsend">Giá trị mới cho `Unsend`</param>
-    /// <returns>Trả về `true` nếu cập nhật thành công, ngược lại `false`</returns>
-    Task<bool> UpdateUnsendStatusAsync(string roomId, string chatItemId);
-
-    /// <summary>
-    /// Cập nhật trạng thái `IsPin` cho một `ChatItem`
-    /// </summary>
-    /// <param name="roomId">ID của phòng chat chứa `ChatItem`</param>
-    /// <param name="chatItemId">ID của `ChatItem` cần cập nhật</param>
-    /// <param name="isPin">Giá trị mới cho `IsPin`</param>
-    /// <returns>Trả về `true` nếu cập nhật thành công, ngược lại `false`</returns>
-    Task<bool> UpdatePinStatusAsync(string roomId, string chatItemId);
+    Task<bool> UpdateActionStatusAsync(string roomId, string chatItemId,MessageActionStatus newActionStatus);
     /// <summary>
     /// Thêm một thành viên mới vào phòng chat.
     /// </summary>
@@ -75,7 +60,6 @@ public interface IRoomService
 
 
 
-    //Get methods
-    Task<IEnumerable<ChatItemResponse>> GetChatHistoryAsync(GetItemsHistoryRequest getItemsHistoryRequest);
-    Task<IEnumerable<ItemsHistoryRespone>> GetItemsHistoryAsync(GetItemsHistoryRequest getItemsHistoryRequest);
+    //Get
+    Task<List<MessageModel>> GetMessageHistoryAsync(GetHistoryRequest getItemsHistoryRequest);
 }

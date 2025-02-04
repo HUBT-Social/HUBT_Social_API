@@ -5,5 +5,5 @@ using Microsoft.AspNetCore.SignalR;
 namespace HUBT_Social_API.Features.Chat.Services.Interfaces;
 public interface IMediaUploadService
 {
-    Task<bool> UploadMediaAsync(MediaRequest chatRequest,IHubContext<ChatHub> hubContext,string eventName);
+    Task<bool> UploadMediaAsync(MediaRequest chatRequest,IHubContext<ChatHub> hubContext);
 }

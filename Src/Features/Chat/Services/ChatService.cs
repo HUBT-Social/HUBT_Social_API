@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
+using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.DTOs;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
@@ -252,35 +253,35 @@ public class ChatService : IChatService
     private async Task<(string LastInteraction, string LastTime)> GetRecentChatItemAsync(ChatRoomModel chatRoom)
     {
         // Nếu không có danh sách ChatItems hoặc rỗng, trả về chuỗi rỗng
-        if (chatRoom.ChatItems == null || !chatRoom.ChatItems.Any())
+        if (chatRoom.Content == null || !chatRoom.Content.Any())
             return (string.Empty, string.Empty);
 
         // Lấy tin nhắn mới nhất dựa vào Timestamp
-        var recentMessage = chatRoom.ChatItems
+        var recentMessage = chatRoom.Content
             .OrderByDescending(m => m.Timestamp)
             .FirstOrDefault();
         
         string LastTime = FormatLastInteractionTime(recentMessage.Timestamp);
 
         // Lấy nickname bất đồng bộ
-        var nickName = await RoomChatHelper.GetNickNameAsync(recentMessage.Id, recentMessage.UserName);
+        string? nickName = await RoomChatHelper.GetNickNameAsync(recentMessage.Id, recentMessage.SentBy);
 
         // Kiểm tra nếu tin nhắn là loại "Message"
-        if (recentMessage.Type == "Message")
+        if (recentMessage.MessageType == MessageType.Text)
         {
-            var recent = (MessageChatItem)recentMessage;
+            string? recent = recentMessage.MessageContent?.Content;
             // Trả về chuỗi hiển thị
-            return (GetMessagePreview(nickName, recent.Content), LastTime);
+            return (GetMessagePreview(nickName, recent), LastTime);
         }
-        if (recentMessage.Type == "Media")
+        if (recentMessage.MessageType == MessageType.Media)
         {
             return ($"{nickName}: [Photo/Media]", LastTime);
         }
-        if (recentMessage.Type == "File")
+        if (recentMessage.MessageType == MessageType.File)
         {
             return ($"{nickName}: [File]", LastTime);
         }
-        if (recentMessage.Type == "Voice")
+        if (recentMessage.MessageType == MessageType.Voice)
         {
             return ($"{nickName}: [Voice]", LastTime);
         }
@@ -321,7 +322,7 @@ public class ChatService : IChatService
         return timestamp.ToString("MM/yyyy"); // {tháng+năm}
     }
 
-    private string GetMessagePreview(string nickName, string content)
+    private string GetMessagePreview(string? nickName, string? content)
     {
         // Kết hợp tên người gửi và nội dung tin nhắn
         string fullMessage = $"{nickName}: {content}";

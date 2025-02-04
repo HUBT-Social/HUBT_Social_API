@@ -1,10 +1,13 @@
 
 using System.Text.RegularExpressions;
+using Amazon.SecurityToken.Model;
 using HtmlAgilityPack;
 using HUBT_Social_API.Features.Chat.ChatHubs;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
+using HUBTSOCIAL.Src.Features.Chat.Collections;
+using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.SignalR;
 using MongoDB.Driver;
@@ -16,7 +19,7 @@ public class MessageUploadService : IMessageUploadService
     {
         _chatRooms = chatRooms;
     }
-    public async Task<bool> UploadMessageAsync(MessageRequest chatRequest,IHubContext<ChatHub> hubContext,string eventName)
+    public async Task<bool> UploadMessageAsync(MessageRequest chatRequest,IHubContext<ChatHub> hubContext)
     {
         
         // Lấy ChatRoom từ MongoDB
@@ -25,16 +28,10 @@ public class MessageUploadService : IMessageUploadService
 
         if(chatRoom == null){return false;}
 
-        var (text, links) = ExtractLinksIfPresent(chatRequest.Content);
+        var links = ExtractLinksIfPresent(chatRequest.Content);
         
-        // Tạo một tin nhắn mới
-        MessageChatItem newMessage = new()
-        {
-            UserName = chatRequest.UserName,
-            Type = "Message",
-            Content = text,
-            Links = new()
-        };
+        MessageContent MessageContent = new(chatRequest.Content);
+        
 
         if(links.Count > 0)
         {
@@ -43,14 +40,16 @@ public class MessageUploadService : IMessageUploadService
                 var metadata = await FetchLinkMetadataAsync(link);
                 if(metadata != null)
                 {
-                    newMessage.Links.Add(metadata);
+                    MessageContent.Links.Add(metadata);
                 }
             }
         }
-        Console.WriteLine("chuan bị guigui");
-        await SendingItem.SendChatItem(chatRequest.GroupId,newMessage,eventName,hubContext); 
+        MessageModel message = new MessageModel(chatRequest.UserName,MessageContent,chatRequest.GroupId,chatRequest.ReplyTo);
 
-        UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,chatRoom,newMessage);
+        Console.WriteLine("chuan bị guigui");
+        await SendingItem.SendChatItem(chatRequest.GroupId,message,hubContext); 
+
+        UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,chatRoom,message);
         return updateResult.ModifiedCount > 0;
     }
     private async Task<LinkMetadataModel?> FetchLinkMetadataAsync(string url)
@@ -95,17 +94,16 @@ public class MessageUploadService : IMessageUploadService
             return null;
         }
     }
-    private (string Message, List<string> Links) ExtractLinksIfPresent(string message)
+    private List<string> ExtractLinksIfPresent(string message)
     {
         if (!Regex.IsMatch(message, @"(http|https):\/\/[^\s]+|www\.[^\s]+"))
         {
-            return (message, new List<string>()); // Không có link
+            return new List<string>(); // Không có link
         }
 
         // Xử lý tách link nếu phát hiện
         var words = message.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         var links = new List<string>();
-        var messageWithLinks = new List<string>();
 
         foreach (var word in words)
         {
@@ -114,20 +112,16 @@ public class MessageUploadService : IMessageUploadService
             {
                 // Thêm link vào danh sách
                 links.Add(word);
-                // Chèn thẻ <a> vào từ chứa URL
-                messageWithLinks.Add($"<a href=\"{word}\" target=\"_blank\">{word}</a>");
+                
             }
-            else
-            {
-                // Thêm từ không phải link vào chuỗi kết quả
-                messageWithLinks.Add(word);
-            }
+            
         }
 
-        // Kết hợp các từ lại thành chuỗi sau khi thay thế link thành thẻ <a>
-        string updatedMessage = string.Join(" ", messageWithLinks);
-
-        return (updatedMessage, links);
+        return links;
     }
-    
+
+    public Task<bool> UploadMessageAsync(object chatRequest, IHubContext<ChatHub> hubContext, string eventName)
+    {
+        throw new NotImplementedException();
+    }
 }

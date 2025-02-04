@@ -35,15 +35,60 @@ public class UploadChatServices : IUploadChatServices
         _hubContext = hubContext;
         
     }
-    public async Task<bool> SendMessageAsync(MessageRequest chatRequest,string eventName) 
-        => await _messageUploadService.UploadMessageAsync(chatRequest,_hubContext,eventName);
-         
-    public async Task<bool> SendMediaAsync(MediaRequest chatRequest,string eventName)
-        => await _mediaUploadService.UploadMediaAsync(chatRequest,_hubContext,eventName);
 
-    public Task<bool> SendFileAsync(IFormFile file)
-        => _fileUploadService.UploadFileAsync(file);
 
+    public async Task<bool> SendChatAsync(ChatRequest chatRequest)
+    {
+        var tasks = new List<Task<bool>>();
+
+        // Gửi tin nhắn nếu có
+        if (chatRequest.Content != null)
+        {
+            tasks.Add(Task.Run(async () =>
+            {
+                MessageRequest messageRequest = new MessageRequest
+                {
+                    GroupId = chatRequest.GroupId,
+                    Content = chatRequest.Content,
+                    UserName = chatRequest.UserName
+                };
+                try { return await _messageUploadService.UploadMessageAsync(messageRequest, _hubContext); }
+                catch { return false; }
+            }));
+        }
+
+        // Gửi media nếu có
+        if (chatRequest.Medias != null)
+        {
+            tasks.Add(Task.Run(async () =>
+            {
+                MediaRequest mediaRequest = new MediaRequest
+                {
+                    GroupId = chatRequest.GroupId,
+                    Medias = chatRequest.Medias,
+                    UserName = chatRequest.UserName
+                };
+                try { return await _mediaUploadService.UploadMediaAsync(mediaRequest, _hubContext); }
+                catch { return false; }
+            }));
+        }
+
+        // Gửi file nếu có
+        // if (chatRequest.Medias != null)
+        // {
+        //     tasks.Add(Task.Run(async () =>
+        //     {
+        //         try { return await _fileUploadService.UploadFileAsync(file); }
+        //         catch { return false; }
+        //     }));
+        // }
+
+        // Chạy tất cả các request đồng thời và lấy kết quả
+        bool[] results = await Task.WhenAll(tasks);
+
+        // Nếu ít nhất một request thành công, trả về true
+        return results.Any(success => success);
+    }
 
 }
 

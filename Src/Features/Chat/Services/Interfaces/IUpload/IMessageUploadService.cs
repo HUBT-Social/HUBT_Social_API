@@ -5,5 +5,5 @@ using Microsoft.AspNetCore.SignalR;
 namespace HUBT_Social_API.Features.Chat.Services.Interfaces;
 public interface IMessageUploadService
 {
-    Task<bool> UploadMessageAsync(MessageRequest chatRequest,IHubContext<ChatHub> hubContext,string eventName);
+    Task<bool> UploadMessageAsync(MessageRequest chatRequest,IHubContext<ChatHub> hubContext);
 }
