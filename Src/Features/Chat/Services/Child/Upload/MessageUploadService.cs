@@ -21,7 +21,7 @@ public class MessageUploadService : IMessageUploadService
     }
     public async Task<bool> UploadMessageAsync(MessageRequest chatRequest,IHubContext<ChatHub> hubContext)
     {
-        
+        Console.WriteLine("11");
         // Lấy ChatRoom từ MongoDB
         FilterDefinition<ChatRoomModel> filterGetChatRoom = Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, chatRequest.GroupId);
         ChatRoomModel chatRoom = await _chatRooms.Find(filterGetChatRoom).FirstOrDefaultAsync();
@@ -31,7 +31,7 @@ public class MessageUploadService : IMessageUploadService
         var links = ExtractLinksIfPresent(chatRequest.Content);
         
         MessageContent MessageContent = new(chatRequest.Content);
-        
+        Console.WriteLine("22");
 
         if(links.Count > 0)
         {
@@ -44,11 +44,12 @@ public class MessageUploadService : IMessageUploadService
                 }
             }
         }
-        MessageModel message = new MessageModel(chatRequest.UserName,MessageContent,chatRequest.GroupId,chatRequest.ReplyTo);
-
+        Console.WriteLine("33333333");
+        MessageModel message = await MessageModel.CreateTextMessageAsync(chatRequest.UserName,MessageContent,chatRequest.GroupId,chatRequest.ReplyTo);
+        Console.WriteLine("33");
         Console.WriteLine("chuan bị guigui");
         await SendingItem.SendChatItem(chatRequest.GroupId,message,hubContext); 
-
+        Console.WriteLine("44");
         UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,chatRoom,message);
         return updateResult.ModifiedCount > 0;
     }

@@ -2,149 +2,80 @@ using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
 namespace HUBTSOCIAL.Src.Features.Chat.Models;
 
-public class MessageModel 
+public class MessageModel
 {
-    
-    
-
-    /// <summary>
-    /// Provides Id
-    /// </summary>
     public string Id { get; set; } = Guid.NewGuid().ToString();
-    /// <summary>
-    /// Provides UserName which will be used to find detail information of sender
-    /// </summary>
     public string SentBy { get; set; }
-
-    /// <summary>
-    /// Provides actual message content as text
-    /// </summary>
     public MessageContent? MessageContent { get; set; }
-
-    /// <summary>
-    /// Provides file paths for images or audio files
-    /// </summary>
     public List<FilePaths>? FilePaths { get; set; }
-
-    /// <summary>
-    /// Provides message created date and time
-    /// </summary>
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    /// Provides UserName of sender of the message
-    /// </summary>
-
-    /// <summary>
-    /// Provides reply message if the user replies to any message
-    /// </summary>
     public ReplyMessage? ReplyMessage { get; set; }
-
-    /// <summary>
-    /// Represents reaction on the message
-    /// </summary>
     public List<Reaction> Reactions { get; set; } = new();
-
-    /// <summary>
-    /// Provides message type
-    /// </summary>
     public MessageType MessageType { get; set; }
-
-    /// <summary>
-    /// Status of the message
-    /// </summary>
     public MessageStatus Status { get; set; } = MessageStatus.Pending;
     public MessageActionStatus ActionStatus { get; set; } = MessageActionStatus.Normal;
-
-    /// <summary>
-    /// Provides max duration for recorded voice message
-    /// </summary>
     public TimeSpan? VoiceMessageDuration { get; set; }
 
-    public MessageModel()
+    // Constructor private để ép buộc dùng factory method
+    private MessageModel(string sentBy,MessageType messageType, MessageContent? content = null, List<FilePaths>? filePaths = null)
     {
-        
-
+        SentBy = sentBy;
+        MessageContent = content;
+        FilePaths = filePaths;
+        MessageType = messageType;
     }
-    public MessageModel(string SentBy,MessageContent MessageContent,string? roomId = null,string? messageId = null)
+
+    // Factory method cho tin nhắn văn bản
+    public static async Task<MessageModel> CreateTextMessageAsync(string sentBy, MessageContent content, string? roomId = null, string? messageId = null)
     {
-        this.SentBy = SentBy;
-        this.MessageContent = MessageContent;
-        if(messageId != null || roomId != null)
+        var message = new MessageModel(sentBy,MessageType.Text, content,null);
+        if (!string.IsNullOrEmpty(roomId) && !string.IsNullOrEmpty(messageId))
         {
-            Task<MessageModel?> message = RoomChatHelper.GetInfoMessageAsync(roomId, messageId);
-            if(message != null)
-            {
-                string replyTo = RoomChatHelper.GetNickNameAsync(roomId,message.Result.SentBy).ToString();
-                ReplyMessage replyMessage = new ReplyMessage
-                {
-                    messageId = message.Result.Id,
-                    ReplyTo = replyTo,
-                };
-                if(message.Result.MessageType == MessageType.Text)
-                {
-                    replyMessage.Message = message.Result.MessageContent.Content;
-                }
-                else if((message.Result.MessageType & MessageType.Media) != 0)
-                {
-                    replyMessage.FirstMediaUrl = message.Result.FilePaths.FirstOrDefault().Url;
-                }
-                else if(message.Result.MessageType == MessageType.Voice)
-                {
-                    replyMessage.voiceMessageDuration = message.Result.VoiceMessageDuration;
-                }
-                else
-                {
-                    
-                }
-
-                this.ReplyMessage = replyMessage;     
-            }
-
-            
+            message.ReplyMessage = await GetReplyMessageAsync(roomId, messageId);
         }
-        
-
+        return message;
     }
-    public MessageModel(string sentBy,List<FilePaths> FilePaths,string? roomId = null,string? messageId = null)
+
+    // Factory method cho tin nhắn có file
+    public static async Task<MessageModel> CreateMediaMessageAsync(string sentBy, List<FilePaths> filePaths, string? roomId = null, string? messageId = null)
     {
-        this.SentBy = sentBy;
-        this.FilePaths = FilePaths;
-        if(messageId != null || roomId != null)
+        var message = new MessageModel(sentBy,MessageType.Media, null, filePaths);
+        if (!string.IsNullOrEmpty(roomId) && !string.IsNullOrEmpty(messageId))
         {
-            Task<MessageModel?> message = RoomChatHelper.GetInfoMessageAsync(roomId, messageId);
-            if(message != null)
-            {
-                string replyTo = RoomChatHelper.GetNickNameAsync(roomId,message.Result.SentBy).ToString();
-                ReplyMessage replyMessage = new ReplyMessage
-                {
-                    messageId = message.Result.Id,
-                    ReplyTo = replyTo,
-                };
-                if(message.Result.MessageType == MessageType.Text)
-                {
-                    replyMessage.Message = message.Result.MessageContent.Content;
-                }
-                else if((message.Result.MessageType & MessageType.Media) != 0)
-                {
-                    replyMessage.FirstMediaUrl = message.Result.FilePaths.FirstOrDefault().Url;
-                }
-                else if(message.Result.MessageType == MessageType.Voice)
-                {
-                    replyMessage.voiceMessageDuration = message.Result.VoiceMessageDuration;
-                }
-                else
-                {
-                    
-                }
-
-                this.ReplyMessage = replyMessage;     
-            }
-
-            
+            message.ReplyMessage = await GetReplyMessageAsync(roomId, messageId);
         }
-        
-
+        return message;
     }
-    
+
+    // Hàm lấy thông tin trả lời tin nhắn
+    private static async Task<ReplyMessage?> GetReplyMessageAsync(string? roomId, string? messageId)
+    {
+        if (string.IsNullOrEmpty(roomId) || string.IsNullOrEmpty(messageId)) return null;
+
+        var originalMessage = await RoomChatHelper.GetInfoMessageAsync(roomId, messageId);
+        if (originalMessage == null) return null;
+
+        var replyTo = await RoomChatHelper.GetNickNameAsync(roomId, originalMessage.SentBy);
+        var replyMessage = new ReplyMessage
+        {
+            messageId = originalMessage.Id,
+            ReplyTo = replyTo
+        };
+
+        if (originalMessage.MessageType == MessageType.Text)
+        {
+            replyMessage.Message = originalMessage.MessageContent?.Content;
+        }
+        else if ((originalMessage.MessageType & MessageType.Media) != 0)
+        {
+            replyMessage.FirstMediaUrl = originalMessage.FilePaths?.FirstOrDefault()?.Url;
+        }
+        else if (originalMessage.MessageType == MessageType.Voice)
+        {
+            replyMessage.voiceMessageDuration = originalMessage.VoiceMessageDuration;
+        }
+
+        return replyMessage;
+    }
 }
+

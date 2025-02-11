@@ -14,6 +14,7 @@ namespace HUBT_Social_API.Features.Chat.Services.Child
         {
             try
             {
+                Console.WriteLine("Gửi tin.");
                 await _hubContext.Clients.Group(groupId).SendAsync("ReceiveChat", chatItem);
                 Console.WriteLine("chatItemResponse");
             }

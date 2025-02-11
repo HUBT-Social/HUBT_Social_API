@@ -53,7 +53,10 @@ public class UploadChatServices : IUploadChatServices
                     UserName = chatRequest.UserName
                 };
                 try { return await _messageUploadService.UploadMessageAsync(messageRequest, _hubContext); }
-                catch { return false; }
+                catch { 
+                    Console.WriteLine("Gửi mess lỗi.");
+                    
+                    return false; }
             }));
         }
 
@@ -69,7 +72,9 @@ public class UploadChatServices : IUploadChatServices
                     UserName = chatRequest.UserName
                 };
                 try { return await _mediaUploadService.UploadMediaAsync(mediaRequest, _hubContext); }
-                catch { return false; }
+                catch { 
+                    Console.WriteLine("Gửi Media lỗi.");
+                    return false; }
             }));
         }
 
