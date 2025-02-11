@@ -11,7 +11,7 @@ public interface IEmailService
     Task<Postcode?> CreatePostcodeSignInAsync(string userAgent, string receiver, string ipAddress);
     Task<Postcode?> CreatePostcodeForgetPasswordAsync(string userAgent, string receiver, string ipAddress);
     Task<AUser?> ValidatePostcodeAsync(ValidatePostcodeRequest postcode);
-    Task<Postcode?> GetCurrentPostCode(string userAgent , string ipAddress);
+    Task<Postcode?> GetCurrentPostCode(string userAgent, string ipAddress);
     Task<bool> UpdatePostcode(Postcode postcode);
 
     bool MaskEmail(string email, out string maskEmail);

@@ -31,7 +31,7 @@ public static class MongoDbConfiguration
         var chatDatabase = chatClient.GetDatabase("HUBT_Management");
 
         services.AddScoped<IMongoCollection<ChatRoomModel>>(s => chatDatabase.GetCollection<ChatRoomModel>("ChatRoom"));
-        
+
         RoomChatHelper.Initialize(chatDatabase.GetCollection<ChatRoomModel>("ChatRoom"));
         return services;
     }

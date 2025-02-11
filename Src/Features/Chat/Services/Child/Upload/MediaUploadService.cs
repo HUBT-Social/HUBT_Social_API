@@ -1,4 +1,3 @@
-
 using HUBT_Social_API.Core.Service.Upload;
 using HUBT_Social_API.Features.Chat.ChatHubs;
 using HUBT_Social_API.Features.Chat.DTOs;
@@ -12,50 +11,47 @@ using MongoDB.Driver;
 public class MediaUploadService : IMediaUploadService
 {
     private readonly IMongoCollection<ChatRoomModel> _chatRooms;
+
     public MediaUploadService(IMongoCollection<ChatRoomModel> chatRooms)
     {
         _chatRooms = chatRooms;
     }
-    public async Task<bool> UploadMediaAsync(MediaRequest mediaRequest,IHubContext<ChatHub> hubContext)
+
+    public async Task<bool> UploadMediaAsync(MediaRequest mediaRequest, IHubContext<ChatHub> hubContext)
     {
-        
         // Lấy ChatRoom từ MongoDB
-        FilterDefinition<ChatRoomModel> filterGetChatRoom = Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, mediaRequest.GroupId);
-        ChatRoomModel chatRoom = await _chatRooms.Find(filterGetChatRoom).FirstOrDefaultAsync();
+        FilterDefinition<ChatRoomModel> filterGetChatRoom =
+            Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, mediaRequest.GroupId);
+        var chatRoom = await _chatRooms.Find(filterGetChatRoom).FirstOrDefaultAsync();
 
-        if(chatRoom == null){return false;}
+        if (chatRoom == null) return false;
 
-        
+
         List<FilePaths> FilePaths = new List<FilePaths>();
-        
+
 
         // Xử lý danh sách file tải lên
         if (mediaRequest.Medias != null)
         {
-
-                List<FileUploadResult> fileUrls = await UploadToStoreS3.CloudinaryService.UploadsToStorageAsync(mediaRequest.Medias);
-                //var fileUrls = await UploadToStoreS3.BackblazeB2Service.UploadFilesAsync(mediaRequest.Files);
-                if (fileUrls != null)
+            var fileUrls = await UploadToStoreS3.CloudinaryService.UploadsToStorageAsync(mediaRequest.Medias);
+            //var fileUrls = await UploadToStoreS3.BackblazeB2Service.UploadFilesAsync(mediaRequest.Files);
+            if (fileUrls != null)
+                foreach (var item in fileUrls)
                 {
-                    foreach (var item in fileUrls)
+                    var newFilePath = new FilePaths
                     {
-                        FilePaths newFilePath = new FilePaths
-                            {
-                                Url = item.Url,
-                                Type = item.ResourceType
-                            };
-                        FilePaths.Add(newFilePath);
-                    }   
-       
-                    
+                        Url = item.Url,
+                        Type = item.ResourceType
+                    };
+                    FilePaths.Add(newFilePath);
                 }
-            }
+        }
 
-        MessageModel message = new MessageModel(mediaRequest.UserName,FilePaths,mediaRequest.GroupId,mediaRequest.ReplyTo);
-        
-        await SendingItem.SendChatItem(mediaRequest.GroupId,message,hubContext);
+        var message = new MessageModel(mediaRequest.UserName, FilePaths, mediaRequest.GroupId, mediaRequest.ReplyTo);
 
-        UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,chatRoom,message);
+        await SendingItem.SendChatItem(mediaRequest.GroupId, message, hubContext);
+
+        var updateResult = await SaveChatItem.Save(_chatRooms, chatRoom, message);
 
         return updateResult.ModifiedCount > 0;
     }

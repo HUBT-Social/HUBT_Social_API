@@ -1,13 +1,10 @@
-
 using System.Text.RegularExpressions;
-using Amazon.SecurityToken.Model;
 using HtmlAgilityPack;
 using HUBT_Social_API.Features.Chat.ChatHubs;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBTSOCIAL.Src.Features.Chat.Collections;
-using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.SignalR;
 using MongoDB.Driver;
@@ -15,43 +12,42 @@ using MongoDB.Driver;
 public class MessageUploadService : IMessageUploadService
 {
     private readonly IMongoCollection<ChatRoomModel> _chatRooms;
+
     public MessageUploadService(IMongoCollection<ChatRoomModel> chatRooms)
     {
         _chatRooms = chatRooms;
     }
-    public async Task<bool> UploadMessageAsync(MessageRequest chatRequest,IHubContext<ChatHub> hubContext)
-    {
-        
-        // Lấy ChatRoom từ MongoDB
-        FilterDefinition<ChatRoomModel> filterGetChatRoom = Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, chatRequest.GroupId);
-        ChatRoomModel chatRoom = await _chatRooms.Find(filterGetChatRoom).FirstOrDefaultAsync();
 
-        if(chatRoom == null){return false;}
+    public async Task<bool> UploadMessageAsync(MessageRequest chatRequest, IHubContext<ChatHub> hubContext)
+    {
+        // Lấy ChatRoom từ MongoDB
+        FilterDefinition<ChatRoomModel> filterGetChatRoom =
+            Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, chatRequest.GroupId);
+        var chatRoom = await _chatRooms.Find(filterGetChatRoom).FirstOrDefaultAsync();
+
+        if (chatRoom == null) return false;
 
         var links = ExtractLinksIfPresent(chatRequest.Content);
-        
-        MessageContent MessageContent = new(chatRequest.Content);
-        
 
-        if(links.Count > 0)
-        {
+        MessageContent MessageContent = new(chatRequest.Content);
+
+
+        if (links.Count > 0)
             foreach (var link in links)
             {
                 var metadata = await FetchLinkMetadataAsync(link);
-                if(metadata != null)
-                {
-                    MessageContent.Links.Add(metadata);
-                }
+                if (metadata != null) MessageContent.Links.Add(metadata);
             }
-        }
-        MessageModel message = new MessageModel(chatRequest.UserName,MessageContent,chatRequest.GroupId,chatRequest.ReplyTo);
+
+        var message = new MessageModel(chatRequest.UserName, MessageContent, chatRequest.GroupId, chatRequest.ReplyTo);
 
         Console.WriteLine("chuan bị guigui");
-        await SendingItem.SendChatItem(chatRequest.GroupId,message,hubContext); 
+        await SendingItem.SendChatItem(chatRequest.GroupId, message, hubContext);
 
-        UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,chatRoom,message);
+        var updateResult = await SaveChatItem.Save(_chatRooms, chatRoom, message);
         return updateResult.ModifiedCount > 0;
     }
+
     private async Task<LinkMetadataModel?> FetchLinkMetadataAsync(string url)
     {
         try
@@ -75,10 +71,10 @@ public class MessageUploadService : IMessageUploadService
                 .SelectSingleNode("//meta[@property='og:image']")?
                 .GetAttributeValue("content", "");
             var description = doc.DocumentNode
-                .SelectSingleNode("//meta[@name='description']")?
-                .GetAttributeValue("content", "") ??
-                doc.DocumentNode.SelectSingleNode("//meta[@property='og:description']")?
-                .GetAttributeValue("content", "");
+                                  .SelectSingleNode("//meta[@name='description']")?
+                                  .GetAttributeValue("content", "") ??
+                              doc.DocumentNode.SelectSingleNode("//meta[@property='og:description']")?
+                                  .GetAttributeValue("content", "");
 
             return new LinkMetadataModel
             {
@@ -94,28 +90,20 @@ public class MessageUploadService : IMessageUploadService
             return null;
         }
     }
+
     private List<string> ExtractLinksIfPresent(string message)
     {
-        if (!Regex.IsMatch(message, @"(http|https):\/\/[^\s]+|www\.[^\s]+"))
-        {
-            return new List<string>(); // Không có link
-        }
+        if (!Regex.IsMatch(message, @"(http|https):\/\/[^\s]+|www\.[^\s]+")) return new List<string>(); // Không có link
 
         // Xử lý tách link nếu phát hiện
         var words = message.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         var links = new List<string>();
 
         foreach (var word in words)
-        {
-            if (Uri.TryCreate(word, UriKind.Absolute, out Uri? uri) &&
+            if (Uri.TryCreate(word, UriKind.Absolute, out var uri) &&
                 (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
-            {
                 // Thêm link vào danh sách
                 links.Add(word);
-                
-            }
-            
-        }
 
         return links;
     }

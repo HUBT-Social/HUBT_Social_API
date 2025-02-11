@@ -1,26 +1,17 @@
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
-using HUBT_Social_API.Features.Chat.Services.Interfaces;
-using HUBTSOCIAL.Src.Features.Chat.Models;
-using MongoDB.Driver;
-using HUBT_Social_API.Features.Chat.DTOs;
-using System.Text.RegularExpressions;
-using HtmlAgilityPack;
 using HUBT_Social_API.Features.Chat.ChatHubs;
+using HUBT_Social_API.Features.Chat.DTOs;
+using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
-
-using HUBT_Social_API.Features.Auth.Dtos.Reponse;
-using HUBT_Social_API.Src.Core.Helpers;
-using HUBT_Social_API.Core.Service.Upload;
 
 namespace HUBT_Social_API.Features.Chat.Services.Child;
 
 public class UploadChatServices : IUploadChatServices
 {
-    private readonly IMessageUploadService _messageUploadService;
-    private readonly IMediaUploadService _mediaUploadService;
     private readonly IFileUploadService _fileUploadService;
     private readonly IHubContext<ChatHub> _hubContext;
+    private readonly IMediaUploadService _mediaUploadService;
+    private readonly IMessageUploadService _messageUploadService;
+
     public UploadChatServices
     (
         IMessageUploadService messageUploadService,
@@ -33,7 +24,6 @@ public class UploadChatServices : IUploadChatServices
         _mediaUploadService = mediaUploadService;
         _fileUploadService = fileUploadService;
         _hubContext = hubContext;
-        
     }
 
 
@@ -43,35 +33,43 @@ public class UploadChatServices : IUploadChatServices
 
         // Gửi tin nhắn nếu có
         if (chatRequest.Content != null)
-        {
             tasks.Add(Task.Run(async () =>
             {
-                MessageRequest messageRequest = new MessageRequest
+                var messageRequest = new MessageRequest
                 {
                     GroupId = chatRequest.GroupId,
                     Content = chatRequest.Content,
                     UserName = chatRequest.UserName
                 };
-                try { return await _messageUploadService.UploadMessageAsync(messageRequest, _hubContext); }
-                catch { return false; }
+                try
+                {
+                    return await _messageUploadService.UploadMessageAsync(messageRequest, _hubContext);
+                }
+                catch
+                {
+                    return false;
+                }
             }));
-        }
 
         // Gửi media nếu có
         if (chatRequest.Medias != null)
-        {
             tasks.Add(Task.Run(async () =>
             {
-                MediaRequest mediaRequest = new MediaRequest
+                var mediaRequest = new MediaRequest
                 {
                     GroupId = chatRequest.GroupId,
                     Medias = chatRequest.Medias,
                     UserName = chatRequest.UserName
                 };
-                try { return await _mediaUploadService.UploadMediaAsync(mediaRequest, _hubContext); }
-                catch { return false; }
+                try
+                {
+                    return await _mediaUploadService.UploadMediaAsync(mediaRequest, _hubContext);
+                }
+                catch
+                {
+                    return false;
+                }
             }));
-        }
 
         // Gửi file nếu có
         // if (chatRequest.Medias != null)
@@ -84,48 +82,9 @@ public class UploadChatServices : IUploadChatServices
         // }
 
         // Chạy tất cả các request đồng thời và lấy kết quả
-        bool[] results = await Task.WhenAll(tasks);
+        var results = await Task.WhenAll(tasks);
 
         // Nếu ít nhất một request thành công, trả về true
         return results.Any(success => success);
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,14 +1,13 @@
-
 using System.Net;
 using B2Net;
 using B2Net.Models;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+
 namespace HUBT_Social_API.Core.Service.Upload;
 
 public static class UploadToStoreS3
 {
-    
     public static class CloudinaryService
     {
         private static Cloudinary _cloudinary;
@@ -26,22 +25,18 @@ public static class UploadToStoreS3
 
             foreach (var file in files)
             {
-                FileUploadResult? result = await CloudinaryService.UploadToStorageAsync(file);
-                if(result != null)
-                {
-                    uploadResult.Add(result);
-                }
+                var result = await UploadToStorageAsync(file);
+                if (result != null) uploadResult.Add(result);
             }
+
             return uploadResult;
         }
+
         public static async Task<FileUploadResult?> UploadToStorageAsync(IFormFile file)
         {
             try
             {
-                if (file.Length <= 0)
-                {
-                    return null;
-                }
+                if (file.Length <= 0) return null;
 
                 using var stream = file.OpenReadStream();
                 var uploadParams = new RawUploadParams
@@ -54,14 +49,11 @@ public static class UploadToStoreS3
 
                 // Kiểm tra kết quả upload
                 if (uploadResult?.StatusCode == HttpStatusCode.OK)
-                {
                     return new FileUploadResult
                     {
                         Url = uploadResult.Url?.ToString(),
                         ResourceType = uploadResult.ResourceType
                     };
-                    
-                }
 
                 // Nếu upload không thành công, trả về null
                 return null;
@@ -71,6 +63,7 @@ public static class UploadToStoreS3
                 return null;
             }
         }
+
         public static async Task<string?> UpdateAvatarAsync(string filePath, IFormFile file)
         {
             if (file.Length <= 0) return null;
@@ -87,7 +80,6 @@ public static class UploadToStoreS3
 
             return uploadResult?.SecureUrl.ToString(); // Trả về URL đầy đủ của ảnh gốc
         }
-
     }
 
 
@@ -99,14 +91,14 @@ public static class UploadToStoreS3
         private static string _bucketId;
         private static string _bucketName;
 
-        public static void InitBackblazeB2Service(B2Client client,string keyId,string applicationKey, string bucketId, string bucketName)
+        public static void InitBackblazeB2Service(B2Client client, string keyId, string applicationKey, string bucketId,
+            string bucketName)
         {
             _client = client;
             _keyId = keyId;
             _applicationKey = applicationKey;
             _bucketId = bucketId;
             _bucketName = bucketName;
-
         }
 
         public static async Task<List<string>> UploadFilesAsync(List<IFormFile> files)
@@ -119,7 +111,6 @@ public static class UploadToStoreS3
                 await B2Client.AuthorizeAsync(_keyId, _applicationKey);
 
                 foreach (var file in files)
-                {
                     if (file.Length > 0)
                     {
                         using var memoryStream = new MemoryStream();
@@ -136,7 +127,6 @@ public static class UploadToStoreS3
 
                         uploadedUrls.Add(fileUrl);
                     }
-                }
 
                 return uploadedUrls;
             }
@@ -152,6 +142,4 @@ public static class UploadToStoreS3
             }
         }
     }
-
-
 }

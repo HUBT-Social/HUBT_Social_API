@@ -16,10 +16,10 @@ public static class LocalizationConfig
         services.Configure<RequestLocalizationOptions>(options =>
         {
             // Các ngôn ngữ được hỗ trợ
-            var supportedCultures = new[] 
+            var supportedCultures = new[]
             {
                 new CultureInfo("vi"), // Tiếng Việt
-                new CultureInfo("en")  // Tiếng Anh
+                new CultureInfo("en") // Tiếng Anh
                 // Có thể thêm các ngôn ngữ khác ở đây nếu cần
             };
 

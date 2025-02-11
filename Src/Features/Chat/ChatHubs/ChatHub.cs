@@ -1,10 +1,8 @@
-
 using System.Security.Claims;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
-using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.SignalR;
 
 namespace HUBT_Social_API.Features.Chat.ChatHubs;
@@ -12,17 +10,17 @@ namespace HUBT_Social_API.Features.Chat.ChatHubs;
 public class ChatHub : Hub
 {
     private readonly IHubContext<ChatHub> _hubContext;
-    private readonly IUploadChatServices _uploadChatServices;
     protected readonly ITokenService _tokenService;
+    private readonly IUploadChatServices _uploadChatServices;
     private readonly IUserConnectionManager _userConnectionManager;
-    
+
 
     public ChatHub
     (
         IHubContext<ChatHub> hubContext,
         IUploadChatServices uploadChatServices,
         ITokenService tokenService,
-        IUserConnectionManager userConnectionManager      
+        IUserConnectionManager userConnectionManager
     )
     {
         _hubContext = hubContext;
@@ -36,15 +34,16 @@ public class ChatHub : Hub
         try
         {
             var connectionId = Context.ConnectionId;
-            
+
             // Lấy UserName từ Claims
             var userName = Context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
 
             if (userName != null)
             {
                 // Sử dụng userName thay vì userId
-                var groupIds = await RoomChatHelper.GetUserGroupConnected(userName);  // Giả sử bạn lưu nhóm theo userName
-                _userConnectionManager.AddConnection(userName,connectionId);
+                var groupIds =
+                    await RoomChatHelper.GetUserGroupConnected(userName); // Giả sử bạn lưu nhóm theo userName
+                _userConnectionManager.AddConnection(userName, connectionId);
                 foreach (var groupId in groupIds)
                 {
                     await Groups.AddToGroupAsync(connectionId, groupId);
@@ -59,6 +58,7 @@ public class ChatHub : Hub
             Console.WriteLine($"Error reconnecting user: {ex.Message}");
         }
     }
+
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var userName = Context.User.Identity?.Name;
@@ -67,9 +67,10 @@ public class ChatHub : Hub
             await Clients.Others.SendAsync("UserDisconnected", userName);
             _userConnectionManager.RemoveConnection(userName);
         }
+
         await base.OnDisconnectedAsync(exception);
     }
-    
+
 
     public async Task SendItemChat(SendChatRequest inputRequest)
     {
@@ -82,16 +83,17 @@ public class ChatHub : Hub
         {
             Console.WriteLine("Received null message.");
         }
-        
+
         var userName = Context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
         Console.WriteLine($"Đây là username lấy từ token: {userName}");
 
-        if(userName == null)
+        if (userName == null)
         {
-            await Clients.Caller.SendAsync("SendErr","Token no vali");
-            return; 
+            await Clients.Caller.SendAsync("SendErr", "Token no vali");
+            return;
         }
-        ChatRequest chatRequest = new ChatRequest
+
+        var chatRequest = new ChatRequest
         {
             UserName = userName,
             GroupId = inputRequest.GroupId,
@@ -103,8 +105,7 @@ public class ChatHub : Hub
         await _uploadChatServices.SendChatAsync(chatRequest);
         Console.WriteLine("Upload successsuccess");
     }
- 
-   
+
 
     // Thông báo người dùng đang gõ
     public async Task TypingText(string groupId, string userName)
@@ -119,8 +120,4 @@ public class ChatHub : Hub
             Console.WriteLine($"Error notifying typing: {ex.Message}");
         }
     }
-
-
-
 }
-

@@ -1,9 +1,8 @@
-
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 
 public class UserConnectionManager : IUserConnectionManager
 {
-    private readonly Dictionary<string, string> _userConnections = new Dictionary<string, string>();
+    private readonly Dictionary<string, string> _userConnections = new();
 
     public void AddConnection(string userName, string connectionId)
     {
@@ -17,10 +16,7 @@ public class UserConnectionManager : IUserConnectionManager
     {
         lock (_userConnections)
         {
-            if (_userConnections.ContainsKey(userName))
-            {
-                _userConnections.Remove(userName);
-            }
+            if (_userConnections.ContainsKey(userName)) _userConnections.Remove(userName);
         }
     }
 

@@ -1,9 +1,8 @@
 ﻿using HUBT_Social_API.Src.Features.Notifcate.Models.Requests;
 
-namespace HUBT_Social_API.Src.Features.Notifcate.Services
+namespace HUBT_Social_API.Src.Features.Notifcate.Services;
+
+public interface IFireBaseNotificationService
 {
-    public interface IFireBaseNotificationService
-    {
-        Task SendPushNotificationAsync(SendMessageRequest request);
-    }
+    Task SendPushNotificationAsync(SendMessageRequest request);
 }

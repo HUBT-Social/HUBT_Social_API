@@ -1,9 +1,7 @@
 using HUBT_Social_API.Core.Settings;
-using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.LoginRequest;
-using HUBT_Social_API.Features.Auth.Services;
 using HUBT_Social_API.Src.Core.Helpers;
 using HUBT_Social_API.Src.Core.Settings;
 using Microsoft.AspNetCore.Mvc;
@@ -15,31 +13,30 @@ public partial class AuthController
     [HttpPost("sign-in")]
     public async Task<IActionResult> LoginAsync([FromBody] LoginByUserNameRequest model)
     {
-        
         try
         {
             // Kiểm tra dữ liệu đầu vào
             if (string.IsNullOrWhiteSpace(model.UserName) || string.IsNullOrWhiteSpace(model.Password))
-            {
                 return BadRequest(
                     new LoginResponse
                     {
                         RequiresTwoFactor = false,
-                        Message = $"{LocalValue.Get(KeyStore.EmailCannotBeEmpty)} or {LocalValue.Get(KeyStore.PasswordCannotBeEmpty)}"
+                        Message =
+                            $"{LocalValue.Get(KeyStore.EmailCannotBeEmpty)} or {LocalValue.Get(KeyStore.PasswordCannotBeEmpty)}"
                     });
-            }
 
             // Lấy User-Agent từ Header
-            string? userAgent = Request.Headers.UserAgent.ToString();
+            var userAgent = Request.Headers.UserAgent.ToString();
             //Lấy Ip
-            string? ipAddress = ServerHelper.GetIPAddress(HttpContext);
-            if (ipAddress == null) return BadRequest(
-                new LoginResponse
-                {
-                    RequiresTwoFactor = false,
-                    Message = LocalValue.Get(KeyStore.LoginNotAllowed),
-                }
-            );
+            var ipAddress = ServerHelper.GetIPAddress(HttpContext);
+            if (ipAddress == null)
+                return BadRequest(
+                    new LoginResponse
+                    {
+                        RequiresTwoFactor = false,
+                        Message = LocalValue.Get(KeyStore.LoginNotAllowed)
+                    }
+                );
 
             // Thực hiện đăng nhập
             var (result, user) = await _authService.LoginAsync(model);
@@ -47,8 +44,8 @@ public partial class AuthController
             // Kiểm tra yêu cầu xác thực hai yếu tố
             if (result.RequiresTwoFactor && user?.Email is not null)
             {
-                Postcode? code = await _emailService.CreatePostcodeSignInAsync(userAgent, user.Email,ipAddress.ToString());
-                if (code != null && _emailService.MaskEmail(user.Email, out string maskEmail))
+                var code = await _emailService.CreatePostcodeSignInAsync(userAgent, user.Email, ipAddress);
+                if (code != null && _emailService.MaskEmail(user.Email, out var maskEmail))
                 {
                     await _emailService.SendEmailAsync(new EmailRequest
                     {
@@ -58,7 +55,7 @@ public partial class AuthController
                         FullName = user.FirstName + " " + user.LastName,
                         Device = userAgent,
                         Location = await ServerHelper.GetLocationFromIpAsync(ipAddress),
-                        DateTime = ServerHelper.ConvertToCustomString(DateTime.UtcNow) 
+                        DateTime = ServerHelper.ConvertToCustomString(DateTime.UtcNow)
                     });
 
                     return Ok(new LoginResponse
@@ -68,6 +65,7 @@ public partial class AuthController
                         Message = LocalValue.Get(KeyStore.StepOneVerificationSuccess)
                     });
                 }
+
                 return BadRequest(new LoginResponse
                 {
                     RequiresTwoFactor = true,
@@ -77,27 +75,23 @@ public partial class AuthController
 
             // Xử lý các trường hợp đăng nhập thất bại
             if (result.IsLockedOut)
-            {
                 return BadRequest(new LoginResponse
                 {
                     RequiresTwoFactor = false,
                     Message = LocalValue.Get(KeyStore.AccountLocked)
                 });
-            }
 
             if (result.IsNotAllowed)
-            {
                 return BadRequest(new LoginResponse
                 {
                     RequiresTwoFactor = false,
                     Message = LocalValue.Get(KeyStore.LoginNotAllowed)
                 });
-            }
 
             // Xử lý đăng nhập thành công
             if (result.Succeeded && user is not null)
             {
-                TokenResponse? token = await _tokenService.GenerateTokenAsync(user);
+                var token = await _tokenService.GenerateTokenAsync(user);
 
                 return Ok(new LoginResponse
                 {
@@ -132,22 +126,24 @@ public partial class AuthController
     [HttpPost("sign-in/verify-two-factor")]
     public async Task<IActionResult> ConfirmCodeSignIn([FromBody] OTPRequest code)
     {
-        string userAgent = Request.Headers.UserAgent.ToString();
-        string? ipAddress = ServerHelper.GetIPAddress(HttpContext);
-        if (ipAddress == null) return BadRequest(
-            new LoginResponse
-            {
-                RequiresTwoFactor = false,
-                Message = LocalValue.Get(KeyStore.InvalidInformation)
-            }
+        var userAgent = Request.Headers.UserAgent.ToString();
+        var ipAddress = ServerHelper.GetIPAddress(HttpContext);
+        if (ipAddress == null)
+            return BadRequest(
+                new LoginResponse
+                {
+                    RequiresTwoFactor = false,
+                    Message = LocalValue.Get(KeyStore.InvalidInformation)
+                }
             );
-        Postcode? currentEmail = await _emailService.GetCurrentPostCode(userAgent, ipAddress);
-        if (currentEmail == null) return BadRequest(
-            new LoginResponse
-            {
-                RequiresTwoFactor = false,
-                Message = LocalValue.Get(KeyStore.InvalidInformation)
-            }
+        var currentEmail = await _emailService.GetCurrentPostCode(userAgent, ipAddress);
+        if (currentEmail == null)
+            return BadRequest(
+                new LoginResponse
+                {
+                    RequiresTwoFactor = false,
+                    Message = LocalValue.Get(KeyStore.InvalidInformation)
+                }
             );
 
         ValidatePostcodeRequest request = new()
@@ -164,23 +160,19 @@ public partial class AuthController
                     RequiresTwoFactor = false,
                     Message = LocalValue.Get(KeyStore.InvalidInformation)
                 }
-
             );
 
         var user = await _authService.VerifyCodeAsync(request);
         if (user == null)
-        {
             return Unauthorized(
                 new LoginResponse
                 {
                     RequiresTwoFactor = false,
                     Message = LocalValue.Get(KeyStore.OTPVerificationFailed)
                 }
-
             );
-        }
 
-        TokenResponse? token = await _tokenService.GenerateTokenAsync(user);
+        var token = await _tokenService.GenerateTokenAsync(user);
 
         return Ok(
             new LoginResponse
@@ -191,9 +183,11 @@ public partial class AuthController
             }
         );
     }
+
     [HttpPut("sign-in/verify-two-factor/resend")]
     public async Task<IActionResult> ResendSignInPostcode()
     {
-        return await PostcodeHelper.ResendPostcode(HttpContext, Request, _emailService.CreatePostcodeSignInAsync, _emailService, PostcodeType.SignIn); 
+        return await PostcodeHelper.ResendPostcode(HttpContext, Request, _emailService.CreatePostcodeSignInAsync,
+            _emailService, PostcodeType.SignIn);
     }
 }

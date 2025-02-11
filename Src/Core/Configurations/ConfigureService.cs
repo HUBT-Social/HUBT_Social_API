@@ -9,10 +9,7 @@ public static class ConfigureService
     {
         services.Configure<JwtSetting>(config.GetSection("JwtSettings"));
         services.Configure<SMPTSetting>(config.GetSection("SMPTSetting"));
-        services.Configure<ApiBehaviorOptions>(option =>
-        {
-            option.SuppressModelStateInvalidFilter = true;
-        });
+        services.Configure<ApiBehaviorOptions>(option => { option.SuppressModelStateInvalidFilter = true; });
         return services;
     }
 }

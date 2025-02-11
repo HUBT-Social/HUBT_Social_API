@@ -3,11 +3,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Request.LoginRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.src.Features.Auth.Dtos.Collections;
-using HUBT_Social_API.Src.Features.Auth.Dtos.Collections;
-using HUBT_Social_API.Src.Features.Auth.Dtos.Request;
 using Microsoft.AspNetCore.Identity;
-using MongoDB.Driver;
-using System.Security.Cryptography.X509Certificates;
 
 namespace HUBT_Social_API.Features.Auth.Services;
 
@@ -17,7 +13,7 @@ public class AuthService : IAuthService
     private readonly ILoginService _loginService;
     private readonly IRegisterService _registerService;
     private readonly IUserService _userService;
-    
+
 
     public AuthService(IRegisterService registerService, ILoginService loginService, IUserService userService,
         IEmailService emailService)
@@ -48,5 +44,4 @@ public class AuthService : IAuthService
     {
         return await _registerService.GetTempUser(email);
     }
-
 }

@@ -6,20 +6,16 @@ using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Src.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Src.Features.Auth.Dtos.Request;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 
 namespace HUBT_Social_API.Features.Auth.Services.Child;
 
 public class UserService : IUserService
 {
-    private readonly RoleManager<ARole> _roleManager;
-    private readonly UserManager<AUser> _userManager;
     private readonly ILogger<UserService> _logger;
     private readonly IMongoCollection<PromotedStore> _promotedStore;
 
-    private readonly Dictionary<string, int> _roleHierarchy = new Dictionary<string, int>
+    private readonly Dictionary<string, int> _roleHierarchy = new()
     {
         { "ADMIN", 4 },
         { "HEAD", 3 },
@@ -28,7 +24,11 @@ public class UserService : IUserService
         { "USER", 0 }
     };
 
-    public UserService(UserManager<AUser> userManager, RoleManager<ARole> roleManager, ILogger<UserService> logger, IMongoCollection<PromotedStore> prometedStore = null)
+    private readonly RoleManager<ARole> _roleManager;
+    private readonly UserManager<AUser> _userManager;
+
+    public UserService(UserManager<AUser> userManager, RoleManager<ARole> roleManager, ILogger<UserService> logger,
+        IMongoCollection<PromotedStore> prometedStore = null)
     {
         _userManager = userManager;
         _roleManager = roleManager;
@@ -36,18 +36,18 @@ public class UserService : IUserService
         _promotedStore = prometedStore;
     }
 
-    private async Task<AUser?> GetUserByNameAsync(string userName)
-    {
-        if (string.IsNullOrWhiteSpace(userName)) return null;
-        return await _userManager.FindByNameAsync(userName);
-    }
     public async Task<string> GetFullName(string userName)
     {
-        AUser user = await GetUserByNameAsync(userName);
+        var user = await GetUserByNameAsync(userName);
         if (user == null) return LocalValue.Get(KeyStore.DefaultUserImage);
         return user.FirstName + " " + user.LastName;
     }
-    public async Task<AUser?> FindUserByUserNameAsync(string userName) => await GetUserByNameAsync(userName);
+
+    public async Task<AUser?> FindUserByUserNameAsync(string userName)
+    {
+        return await GetUserByNameAsync(userName);
+    }
+
     public async Task<AUser?> FindUserByEmailAsync(string email)
     {
         if (string.IsNullOrWhiteSpace(email)) return null;
@@ -80,38 +80,8 @@ public class UserService : IUserService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error promoting user account for {TargetUserName} by {CurrentUserName}", targetUserName, currentUserName);
-            return false;
-        }
-    }
-
-    private string GetHighestRole(IList<string> roles)
-    {
-        return roles.OrderByDescending(role => _roleHierarchy.GetValueOrDefault(role, 0)).FirstOrDefault();
-    }
-
-    private bool IsValidRole(string roleName) => _roleHierarchy.ContainsKey(roleName);
-
-    private async Task EnsureRoleExistsAsync(string roleName)
-    {
-        if (!await _roleManager.RoleExistsAsync(roleName))
-        {
-            var role = new ARole { Name = roleName };
-            await _roleManager.CreateAsync(role);
-        }
-    }
-
-    private async Task<bool> UpdateUserPropertyAsync(AUser user, Action<AUser> updateAction)
-    {
-        try
-        {
-            updateAction(user);
-            var result = await _userManager.UpdateAsync(user);
-            return result.Succeeded;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating user {UserName}", user.UserName);
+            _logger.LogError(ex, "Error promoting user account for {TargetUserName} by {CurrentUserName}",
+                targetUserName, currentUserName);
             return false;
         }
     }
@@ -121,6 +91,7 @@ public class UserService : IUserService
         var user = await GetUserByNameAsync(userName);
         return user != null && await UpdateUserPropertyAsync(user, u => u.Email = request.Email);
     }
+
     public async Task<bool> UpdateAvatarUrlAsync(string userName, UpdateAvatarUrlRequest request)
     {
         var user = await GetUserByNameAsync(userName);
@@ -163,9 +134,11 @@ public class UserService : IUserService
             if (!string.IsNullOrEmpty(request.LastName)) u.LastName = request.LastName;
             if (!string.IsNullOrEmpty(request.PhoneNumber)) u.PhoneNumber = request.PhoneNumber;
             if (!string.IsNullOrEmpty(request.Gender.ToString())) u.Gender = request.Gender;
-            if (request.DateOfBirth != null) u.DateOfBirth = request.DateOfBirth??DateTime.MinValue;;
+            if (request.DateOfBirth != null) u.DateOfBirth = request.DateOfBirth ?? DateTime.MinValue;
+            ;
         });
     }
+
     public async Task<bool> AddInfoUser(string userName, AddInfoUserRequest request)
     {
         var user = await GetUserByNameAsync(userName);
@@ -181,10 +154,10 @@ public class UserService : IUserService
 
     public async Task<bool> DeleteUserAsync(AUser user)
     {
-        IdentityResult deleted = await _userManager.DeleteAsync(user);
-        return deleted.Succeeded == true; 
+        var deleted = await _userManager.DeleteAsync(user);
+        return deleted.Succeeded;
     }
-    
+
 
     public async Task<bool> EnableTwoFactor(string userName)
     {
@@ -197,32 +170,32 @@ public class UserService : IUserService
         var user = await GetUserByNameAsync(userName);
         return user != null && await UpdateUserPropertyAsync(user, u => u.TwoFactorEnabled = false);
     }
-    public async Task<bool> UpdateFcmTokenAsync(string userName,string fcmToken)
+
+    public async Task<bool> UpdateFcmTokenAsync(string userName, string fcmToken)
     {
         try
         {
-            AUser? user = await GetUserByNameAsync(userName);
-            return user != null && await UpdateUserPropertyAsync(user, u => u.FCMToken= fcmToken);
-
+            var user = await GetUserByNameAsync(userName);
+            return user != null && await UpdateUserPropertyAsync(user, u => u.FCMToken = fcmToken);
         }
         catch (Exception)
         {
             return false;
         }
-
     }
+
     public async Task<bool> UpdateStatusAsync(string userName, string bio)
     {
         var user = await GetUserByNameAsync(userName);
         return user != null && await UpdateUserPropertyAsync(user, u => u.status = bio);
     }
 
-    public async Task<bool> StoreUserPromotionAsync(string userId,string userEmail, PromotedStoreRequest request)
+    public async Task<bool> StoreUserPromotionAsync(string userId, string userEmail, PromotedStoreRequest request)
     {
         try
         {
-            PromotedStore fcmToken = await _promotedStore.Find(
-                fcm => fcm.UserId == userId)
+            var fcmToken = await _promotedStore.Find(
+                    fcm => fcm.UserId == userId)
                 .FirstOrDefaultAsync();
             if (fcmToken == null)
             {
@@ -243,16 +216,54 @@ public class UserService : IUserService
                     .Set(t => t.ExpireTime, DateTime.UtcNow);
                 await _promotedStore.UpdateOneAsync(
                     fcm => fcm.UserId == userId
-                , update);
+                    , update);
             }
-            return true;
 
+            return true;
         }
         catch (Exception)
         {
             return false;
         }
-
     }
 
+    private async Task<AUser?> GetUserByNameAsync(string userName)
+    {
+        if (string.IsNullOrWhiteSpace(userName)) return null;
+        return await _userManager.FindByNameAsync(userName);
+    }
+
+    private string GetHighestRole(IList<string> roles)
+    {
+        return roles.OrderByDescending(role => _roleHierarchy.GetValueOrDefault(role, 0)).FirstOrDefault();
+    }
+
+    private bool IsValidRole(string roleName)
+    {
+        return _roleHierarchy.ContainsKey(roleName);
+    }
+
+    private async Task EnsureRoleExistsAsync(string roleName)
+    {
+        if (!await _roleManager.RoleExistsAsync(roleName))
+        {
+            var role = new ARole { Name = roleName };
+            await _roleManager.CreateAsync(role);
+        }
+    }
+
+    private async Task<bool> UpdateUserPropertyAsync(AUser user, Action<AUser> updateAction)
+    {
+        try
+        {
+            updateAction(user);
+            var result = await _userManager.UpdateAsync(user);
+            return result.Succeeded;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating user {UserName}", user.UserName);
+            return false;
+        }
+    }
 }

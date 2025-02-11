@@ -7,19 +7,18 @@ public static class CloudinaryConfiguration
 {
     public static IServiceCollection ConfigureCloudinary(this IServiceCollection services, IConfiguration configuration)
     {
-      
-            IConfigurationSection config = configuration.GetSection("Cloudinary");
-            Account account = new Account
-            (
-                config["CloudName"],
-                config["ApiKey"],
-                config["ApiSecret"]
-            );
-            Cloudinary cloudinary = new Cloudinary(account);
+        var config = configuration.GetSection("Cloudinary");
+        var account = new Account
+        (
+            config["CloudName"],
+            config["ApiKey"],
+            config["ApiSecret"]
+        );
+        var cloudinary = new Cloudinary(account);
 
-            UploadToStoreS3.CloudinaryService.ConfigureCloudinary(cloudinary); // Cấu hình CloudinaryService
-            
-        
+        UploadToStoreS3.CloudinaryService.ConfigureCloudinary(cloudinary); // Cấu hình CloudinaryService
+
+
         return services;
     }
 }

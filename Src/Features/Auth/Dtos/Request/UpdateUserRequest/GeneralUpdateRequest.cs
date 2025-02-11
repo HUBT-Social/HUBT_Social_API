@@ -1,5 +1,4 @@
 using HUBT_Social_API.Core.Settings;
-using Microsoft.AspNetCore.Mvc;
 
 namespace HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 
@@ -13,5 +12,5 @@ public class GeneralUpdateRequest
 
     public Gender Gender { get; set; }
 
-    public DateTime? DateOfBirth { get; set; } 
+    public DateTime? DateOfBirth { get; set; }
 }

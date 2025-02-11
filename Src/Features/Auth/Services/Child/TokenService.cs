@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using AspNetCore.Identity.MongoDbCore.Models;
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
@@ -10,9 +9,7 @@ using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using MongoDB.Bson;
 using MongoDB.Driver;
-using Newtonsoft.Json.Linq;
 
 namespace HUBT_Social_API.Features.Auth.Services.Child;
 
@@ -87,6 +84,37 @@ public class TokenService : ITokenService
             : new UserResponse { Success = true, User = user };
     }
 
+    public async Task<TokenResponse?> ValidateTokens(string accessToken, string refreshToken)
+    {
+        var accessTokenResponse = ValidateToken(accessToken, _jwtSetting.SecretKey);
+        var accessUserId = accessTokenResponse.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        var refreshTokenResponse = ValidateToken(refreshToken, _jwtSetting.RefreshSecretKey);
+        var refreshUserId = refreshTokenResponse.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (refreshUserId != null && accessUserId == refreshUserId)
+            if (refreshTokenResponse.Success)
+            {
+                var user = await _userManager.FindByIdAsync(refreshUserId);
+                if (user != null) return await GenerateTokenAsync(user);
+            }
+
+        return null;
+    }
+
+    public async Task<bool> DeleteTokenAsync(AUser user)
+    {
+        FilterDefinition<UserToken> filter = Builders<UserToken>.Filter.Eq("_id", user.Id.ToString());
+        var result = await _refreshToken.DeleteOneAsync(filter);
+
+        if (result.DeletedCount > 0)
+        {
+            Console.WriteLine("Xóa thành công.");
+            return true;
+        }
+
+        return false;
+    }
+
     private DecodeTokenResponse ValidateToken(string accessToken, string secretKey)
     {
         JwtSecurityTokenHandler tokenHandler = new();
@@ -107,7 +135,8 @@ public class TokenService : ITokenService
             if (securityToken is JwtSecurityToken token && token.Header.Alg.Equals(SecurityAlgorithms.HmacSha256))
             {
                 if (token.ValidTo < DateTime.UtcNow)
-                    return new DecodeTokenResponse { Success = false,ClaimsPrincipal = principal, Message = "Token is expired" };
+                    return new DecodeTokenResponse
+                        { Success = false, ClaimsPrincipal = principal, Message = "Token is expired" };
                 return new DecodeTokenResponse
                     { Success = true, ClaimsPrincipal = principal, Message = LocalValue.Get(KeyStore.TokenValid) };
             }
@@ -118,25 +147,6 @@ public class TokenService : ITokenService
         {
             return new DecodeTokenResponse { Success = false, Message = ex.Message };
         }
-    }
-
-    public async Task<TokenResponse?> ValidateTokens(string accessToken ,string refreshToken)
-    {
-        var accessTokenResponse = ValidateToken(accessToken, _jwtSetting.SecretKey);
-        var accessUserId = accessTokenResponse.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        var refreshTokenResponse = ValidateToken(refreshToken, _jwtSetting.RefreshSecretKey);
-        var refreshUserId = refreshTokenResponse.ClaimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (refreshUserId != null && accessUserId == refreshUserId)
-        {
-            if (refreshTokenResponse.Success)
-            {
-                var user = await _userManager.FindByIdAsync(refreshUserId);
-                if (user != null) return await GenerateTokenAsync(user);
-            }
-        }
-
-        return null;
     }
 
     private async Task HandleRefreshTokenAsync(AUser user, string accessToken, string refreshToken)
@@ -201,18 +211,5 @@ public class TokenService : ITokenService
             _jwtSetting.RefreshSecretKey,
             () => DateTime.UtcNow.AddDays(_jwtSetting.RefreshTokenExpirationInDays)
         );
-    }
-
-    public async Task<bool> DeleteTokenAsync(AUser user)
-    {
-        FilterDefinition<UserToken> filter = Builders<UserToken>.Filter.Eq("_id",user.Id.ToString());
-        DeleteResult result = await _refreshToken.DeleteOneAsync(filter);
-
-        if (result.DeletedCount > 0)
-        {
-            Console.WriteLine("Xóa thành công.");
-            return true;
-        }
-        return false;
     }
 }

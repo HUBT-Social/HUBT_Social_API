@@ -1,5 +1,5 @@
-
 namespace HUBTSOCIAL.Src.Features.Chat.Models;
+
 public class LinkMetadataModel
 {
     public string Url { get; set; } = string.Empty; // URL của liên kết

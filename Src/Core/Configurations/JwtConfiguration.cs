@@ -11,7 +11,7 @@ public static class JwtConfiguration
     public static IServiceCollection ConfigureJwt(this IServiceCollection services, IConfiguration configuration)
     {
         var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSetting>();
-        
+
 
         _ = services.AddAuthentication(options =>
             {
@@ -32,7 +32,7 @@ public static class JwtConfiguration
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
                 };
 #pragma warning restore CS8602
-               // Cấu hình cho SignalR
+                // Cấu hình cho SignalR
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
@@ -43,16 +43,14 @@ public static class JwtConfiguration
                         // Xác định token từ query string cho các request đến SignalR
                         if (!string.IsNullOrEmpty(accessToken) &&
                             path.StartsWithSegments("/chathub"))
-                        {
                             context.Token = accessToken;
-                        }
 
                         return Task.CompletedTask;
                     }
                 };
             })
             .AddCookie(IdentityConstants.ApplicationScheme);
-            
+
 
         return services;
     }

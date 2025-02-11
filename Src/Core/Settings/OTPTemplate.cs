@@ -1,9 +1,8 @@
-namespace HUBT_Social_API.Core.Settings
+namespace HUBT_Social_API.Core.Settings;
+
+public static class EmailSendingTemplate
 {
-    public static class EmailSendingTemplate
-    {
-        public const string OTPVerify = @"
+    public const string OTPVerify = @"
        
         ";
-    }
 }

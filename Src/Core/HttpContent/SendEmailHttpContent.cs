@@ -1,9 +1,9 @@
-﻿namespace HUBT_Social_API.Src.Core.HttpContent
+﻿namespace HUBT_Social_API.Src.Core.HttpContent;
+
+public static class SendEmailHttpContent
 {
-    public static class SendEmailHttpContent
-    {
-        private const string Style = 
-            @"<style>
+    private const string Style =
+        @"<style>
                 body {
                     font-family: Arial, sans-serif;
                     background-color: #f4f4f4;
@@ -50,9 +50,9 @@
                 }
             </style>";
 
-        public static string GetSendPostcodeContent(string postcode)
-        {
-            return $@"<!DOCTYPE html>
+    public static string GetSendPostcodeContent(string postcode)
+    {
+        return $@"<!DOCTYPE html>
 <html>
 <head>
     {Style}
@@ -68,7 +68,5 @@
     </div>
 </body>
 </html>";
-        }
-
     }
 }

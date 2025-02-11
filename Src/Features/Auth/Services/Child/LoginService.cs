@@ -36,14 +36,10 @@ public class LoginService : ILoginService
 
 
         if (new EmailAddressAttribute().IsValid(identifier.Identifier))
-        {
             user = await _userManager.FindByEmailAsync(identifier.Identifier);
-        }
 
         else
-        {
             user = await _userManager.FindByNameAsync(identifier.Identifier);
-        }
 
         return user;
     }

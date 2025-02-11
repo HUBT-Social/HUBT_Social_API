@@ -1,7 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using HUBT_Social_API.Core.Settings;
-using HUBT_Social_API.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
@@ -28,9 +26,9 @@ public class RegisterService : IRegisterService
     public async Task<bool> AddToTempUser(RegisterRequest model)
     {
         if (model == null) return false;
-        
 
-        TempUserRegister? tempUserRegister = await GetTempUser(model.Email);
+
+        var tempUserRegister = await GetTempUser(model.Email);
         if (tempUserRegister == null)
         {
             TempUserRegister tempUser = new()
@@ -42,8 +40,10 @@ public class RegisterService : IRegisterService
             };
             await _tempUserRegister.InsertOneAsync(tempUser);
             return true;
-        };
-        
+        }
+
+        ;
+
         try
         {
             var update = Builders<TempUserRegister>.Update
@@ -58,7 +58,6 @@ public class RegisterService : IRegisterService
             Console.WriteLine(ex);
             return false;
         }
-        
     }
 
     public async Task<bool> CheckUserAccountExit(RegisterRequest model)

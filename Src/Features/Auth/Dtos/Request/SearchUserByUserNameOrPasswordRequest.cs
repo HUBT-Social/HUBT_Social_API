@@ -4,8 +4,5 @@ namespace HUBT_Social_API.Features.Auth.Dtos.Request;
 
 public class SearchUserByUserNameOrPasswordRequest
 {
-    [Required] 
-     public string UserNameOrEmail { get; set;} = string.Empty;
-
-
+    [Required] public string UserNameOrEmail { get; set; } = string.Empty;
 }
