@@ -258,30 +258,30 @@ public class ChatService : IChatService
 
         // Lấy tin nhắn mới nhất dựa vào Timestamp
         var recentMessage = chatRoom.Content
-            .OrderByDescending(m => m.Timestamp)
+            .OrderByDescending(m => m.createdAt)
             .FirstOrDefault();
         
-        string LastTime = FormatLastInteractionTime(recentMessage.Timestamp);
+        string LastTime = FormatLastInteractionTime(recentMessage.createdAt);
 
         // Lấy nickname bất đồng bộ
-        string? nickName = await RoomChatHelper.GetNickNameAsync(recentMessage.Id, recentMessage.SentBy);
+        string? nickName = await RoomChatHelper.GetNickNameAsync(recentMessage.id, recentMessage.sentBy);
 
         // Kiểm tra nếu tin nhắn là loại "Message"
-        if (recentMessage.MessageType == MessageType.Text)
+        if (recentMessage.messageType == MessageType.Text)
         {
-            string? recent = recentMessage.MessageContent?.Content;
+            string? recent = recentMessage.message??"";
             // Trả về chuỗi hiển thị
             return (GetMessagePreview(nickName, recent), LastTime);
         }
-        if (recentMessage.MessageType == MessageType.Media)
+        if (recentMessage.messageType == MessageType.Media)
         {
             return ($"{nickName}: [Photo/Media]", LastTime);
         }
-        if (recentMessage.MessageType == MessageType.File)
+        if (recentMessage.messageType == MessageType.File)
         {
             return ($"{nickName}: [File]", LastTime);
         }
-        if (recentMessage.MessageType == MessageType.Voice)
+        if (recentMessage.messageType == MessageType.Voice)
         {
             return ($"{nickName}: [Voice]", LastTime);
         }
