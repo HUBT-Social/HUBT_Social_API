@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.SignalR;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Src.Core.Helpers;
 using HUBT_Social_API.Core.Service.Upload;
+using HUBTSOCIAL.Src.Features.Chat.Helpers;
 
 namespace HUBT_Social_API.Features.Chat.Services.Child;
 
@@ -40,7 +41,24 @@ public class UploadChatServices : IUploadChatServices
     public async Task<bool> SendChatAsync(ChatRequest chatRequest)
     {
         var tasks = new List<Task<bool>>();
+        ReplyMessage replyMessage = null;
 
+        if(chatRequest.ReplyToMessageId is not null)
+        {
+            MessageModel? messageResult = await RoomChatHelper.GetInfoMessageAsync(chatRequest.GroupId,chatRequest.ReplyToMessageId);
+            if(messageResult is not null)
+            {
+                replyMessage = new ReplyMessage
+                {
+                    message = messageResult.message ?? null,
+                    replyBy = chatRequest.UserName,
+                    replyTo =messageResult.sentBy,
+                    messageType = messageResult.messageType,
+                    voiceMessageDuration = messageResult.voiceMessageDuration ?? null,
+                    messageId = messageResult.id,
+                };
+            }
+        }  
         // Gửi tin nhắn nếu có
         if (chatRequest.Content != null)
         {
@@ -50,7 +68,8 @@ public class UploadChatServices : IUploadChatServices
                 {
                     GroupId = chatRequest.GroupId,
                     Content = chatRequest.Content,
-                    UserName = chatRequest.UserName
+                    UserName = chatRequest.UserName,
+                    ReplyToMessage = replyMessage
                 };
                 try { return await _messageUploadService.UploadMessageAsync(messageRequest, _hubContext); }
                 catch { 
@@ -69,7 +88,8 @@ public class UploadChatServices : IUploadChatServices
                 {
                     GroupId = chatRequest.GroupId,
                     Medias = chatRequest.Medias,
-                    UserName = chatRequest.UserName
+                    UserName = chatRequest.UserName,
+                    ReplyToMessage = replyMessage
                 };
                 try { return await _mediaUploadService.UploadMediaAsync(mediaRequest, _hubContext); }
                 catch { 

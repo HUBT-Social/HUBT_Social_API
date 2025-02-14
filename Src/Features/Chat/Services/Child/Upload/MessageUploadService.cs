@@ -31,7 +31,7 @@ public class MessageUploadService : IMessageUploadService
         var links = ExtractLinksIfPresent(chatRequest.Content);
         
         MessageContent MessageContent = new(chatRequest.Content);
-        Console.WriteLine("22");
+
 
         if(links.Count > 0)
         {
@@ -44,12 +44,11 @@ public class MessageUploadService : IMessageUploadService
                 }
             }
         }
-        Console.WriteLine("33333333");
-        MessageModel message = await MessageModel.CreateTextMessageAsync(chatRequest.UserName,MessageContent,chatRequest.GroupId,chatRequest.ReplyTo);
-        Console.WriteLine("33");
-        Console.WriteLine("chuan bị guigui");
+
+        MessageModel message = await MessageModel.CreateTextMessageAsync(chatRequest.UserName,MessageContent.Content,chatRequest.ReplyToMessage);
+
         await SendingItem.SendChatItem(chatRequest.GroupId,message,hubContext); 
-        Console.WriteLine("44");
+
         UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,chatRoom,message);
         return updateResult.ModifiedCount > 0;
     }

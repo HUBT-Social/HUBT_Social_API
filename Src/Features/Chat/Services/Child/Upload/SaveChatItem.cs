@@ -11,7 +11,7 @@ namespace HUBT_Social_API.Features.Chat.Services.Child
             // Tạo filter cho GroupId và UserName
             FilterDefinition<ChatRoomModel> filter = Builders<ChatRoomModel>.Filter.And(
                 Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, Room.Id),
-                Builders<ChatRoomModel>.Filter.ElemMatch(cr => cr.Participant, p => p.UserName == Message.SentBy)
+                Builders<ChatRoomModel>.Filter.ElemMatch(cr => cr.Participant, p => p.UserName == Message.sentBy)
             );
 
             // Tạo update để cập nhật LastInteractionTime

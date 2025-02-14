@@ -5,6 +5,7 @@ using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBTSOCIAL.Src.Features.Chat.Collections;
+using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.SignalR;
 using MongoDB.Driver;
@@ -51,7 +52,7 @@ public class MediaUploadService : IMediaUploadService
                 }
             }
 
-        MessageModel message = await MessageModel.CreateMediaMessageAsync(mediaRequest.UserName,FilePaths,mediaRequest.GroupId,mediaRequest.ReplyTo);
+        MessageModel message = await MessageModel.CreateMediaMessageAsync(mediaRequest.UserName,FilePaths,mediaRequest.ReplyToMessage);
         
         await SendingItem.SendChatItem(mediaRequest.GroupId,message,hubContext);
 

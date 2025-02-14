@@ -14,15 +14,12 @@ namespace HUBT_Social_API.Features.Chat.Services.Child
         {
             try
             {
-                Console.WriteLine("Gửi tin.");
                 await _hubContext.Clients.Group(groupId).SendAsync("ReceiveChat", chatItem);
-                Console.WriteLine("chatItemResponse");
             }
             catch (Exception ex)
             {
                 // Log lỗi và xử lý tùy theo nhu cầu
                 Console.WriteLine($"Error sending ReceiveChat: {ex.Message}");
-                Console.WriteLine("LoiLoi");
             }
         }
     }

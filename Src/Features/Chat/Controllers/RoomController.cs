@@ -61,7 +61,7 @@ public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest ge
         List<FilePaths> mediaResponse = new();
         foreach (var message in messages)
         {
-            mediaResponse.AddRange(message.FilePaths); 
+            mediaResponse.AddRange(message.filePaths); 
         }
         return Ok(mediaResponse);
     }
@@ -269,7 +269,7 @@ public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest ge
         {
             return BadRequest("Invalid value request.");
         }
-        if(senderOfItem.SentBy != userResponse.User.UserName)
+        if(senderOfItem.sentBy != userResponse.User.UserName)
         {
             return BadRequest("You are not owner of this message");
         }
