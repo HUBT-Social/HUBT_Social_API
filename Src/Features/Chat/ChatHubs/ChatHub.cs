@@ -3,6 +3,7 @@ using System.Security.Claims;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
+using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.SignalR;
@@ -73,24 +74,16 @@ public class ChatHub : Hub
 
     public async Task SendItemChat(SendChatRequest inputRequest)
     {
-        if (inputRequest != null)
-        {
-            Console.WriteLine($"GroupId: {inputRequest.GroupId}");
-            Console.WriteLine($"Content: {inputRequest.Content}");
-        }
-        else
-        {
-            Console.WriteLine("Received null message.");
-        }
-        
+
         var userName = Context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-        Console.WriteLine($"Đây là username lấy từ token: {userName}");
+
 
         if(userName == null)
         {
             await Clients.Caller.SendAsync("SendErr","Token no vali");
             return; 
         }
+        await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Pending);
         ChatRequest chatRequest = new ChatRequest
         {
             UserName = userName,
@@ -99,9 +92,14 @@ public class ChatHub : Hub
             Medias = inputRequest.Medias,
             Files = inputRequest.Files
         };
-        Console.WriteLine("Tạo thành công mesrqmesrq");
-        await _uploadChatServices.SendChatAsync(chatRequest);
-        Console.WriteLine("Upload successsuccess");
+        
+        if(await _uploadChatServices.SendChatAsync(chatRequest))
+        {
+            await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Sent);  
+        }
+            await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Failed);
+        
+        
     }
  
    
