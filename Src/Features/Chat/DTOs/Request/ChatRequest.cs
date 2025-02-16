@@ -9,7 +9,7 @@ public class MessageInputRequest {
 public class MediaInputRequest
 {
     public string GroupId { get; set; } = string.Empty;
-    public List<IFormFile> Medias { get; set; } = [];
+    public List<IFormFile> Medias { get; set; }
     public ReplyMessage? ReplyToMessage { get; set; } 
 }
 public class SendChatRequest
@@ -17,8 +17,8 @@ public class SendChatRequest
     public string RequestId { get; set; } = string.Empty;
     public string GroupId { get; set; } = string.Empty;
     public string? Content { get; set; } =string.Empty;
-    public List<IFormFile>? Medias { get; set; } = [];
-    public List<IFormFile>? Files { get; set; } = [];
+    public List<IFormFile>? Medias { get; set; }
+    public List<IFormFile>? Files { get; set; } 
     public string? ReplyToMessageId { get; set; }
 }
 

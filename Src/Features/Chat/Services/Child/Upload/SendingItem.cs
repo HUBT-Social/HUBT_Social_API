@@ -1,3 +1,4 @@
+using FireSharp.Extensions;
 using HUBT_Social_API.Features.Chat.ChatHubs;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBTSOCIAL.Src.Features.Chat.Collections;
@@ -14,7 +15,9 @@ namespace HUBT_Social_API.Features.Chat.Services.Child
         {
             try
             {
+                Console.WriteLine(chatItem.ToJson());
                 await _hubContext.Clients.Group(groupId).SendAsync("ReceiveChat", chatItem);
+                Console.WriteLine("14");
             }
             catch (Exception ex)
             {

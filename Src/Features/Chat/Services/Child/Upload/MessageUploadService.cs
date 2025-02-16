@@ -44,15 +44,15 @@ public class MessageUploadService : IMessageUploadService
                 }
             }
         }
-
+        Console.WriteLine("12");
         MessageModel message = await MessageModel.CreateTextMessageAsync(chatRequest.UserName,MessageContent.Content,chatRequest.ReplyToMessage);
-
+        Console.WriteLine("13");
         await SendingItem.SendChatItem(chatRequest.GroupId,message,hubContext); 
 
         UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,chatRoom,message);
         return updateResult.ModifiedCount > 0;
     }
-    private async Task<LinkMetadataModel?> FetchLinkMetadataAsync(string url)
+        private async Task<LinkMetadataModel?> FetchLinkMetadataAsync(string url)
     {
         try
         {
@@ -120,8 +120,5 @@ public class MessageUploadService : IMessageUploadService
         return links;
     }
 
-    public Task<bool> UploadMessageAsync(object chatRequest, IHubContext<ChatHub> hubContext, string eventName)
-    {
-        throw new NotImplementedException();
-    }
+
 }
