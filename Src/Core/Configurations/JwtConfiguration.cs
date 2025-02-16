@@ -1,5 +1,7 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using HUBT_Social_API.Core.Settings;
+using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -46,7 +48,17 @@ public static class JwtConfiguration
                             context.Token = accessToken;
 
                         return Task.CompletedTask;
-                    }
+                    },
+                    OnTokenValidated = async context =>
+                    {
+                        var tokenService = context.HttpContext.RequestServices.GetRequiredService<ITokenService>();
+                        var accessToken = context.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+                        if (accessToken == null || !await tokenService.IsTokenValidAsync(accessToken))
+                        {
+                            context.Fail("Unauthorized");
+                        }
+                    },
+                    
                 };
             })
             .AddCookie(IdentityConstants.ApplicationScheme);

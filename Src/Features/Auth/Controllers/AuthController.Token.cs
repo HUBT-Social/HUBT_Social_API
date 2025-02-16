@@ -14,7 +14,7 @@ public partial class AuthController
         var accessToken = TokenHelper.ExtractTokenFromHeader(Request);
 
 
-        if (accessToken != null)
+        if (accessToken != null && await _tokenService.IsTokenValidAsync(accessToken))
         {
             var result = await _tokenService.ValidateTokens(accessToken, refreshToken.RefreshToken);
             if (result != null) return Ok(result);
