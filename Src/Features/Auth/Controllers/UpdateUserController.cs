@@ -56,7 +56,8 @@ public class UpdateUserController : ControllerBase
                     Gender = userResponse.User.Gender,
                     Email = userResponse.User.Email,
                     BirthDay = userResponse.User.DateOfBirth,
-                    PhoneNumber = userResponse.User.PhoneNumber
+                    PhoneNumber = userResponse.User.PhoneNumber,
+                    Roles = await _userService.ConvertIdRoleToNameAsync(userResponse.User.Roles)
                 }
             );
         }
@@ -84,7 +85,8 @@ public class UpdateUserController : ControllerBase
                     Gender = user.Gender,
                     Email = user.Email,
                     BirthDay = user.DateOfBirth,
-                    PhoneNumber = user.PhoneNumber
+                    PhoneNumber = user.PhoneNumber,
+                    Roles = await _userService.ConvertIdRoleToNameAsync(user.Roles)
                 }
             );
         }

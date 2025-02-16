@@ -3,6 +3,7 @@ using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
 using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
+using HUBT_Social_API.Src.Core.Helpers;
 using HUBT_Social_API.Src.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Src.Features.Auth.Dtos.Request;
 using Microsoft.AspNetCore.Identity;
@@ -35,6 +36,10 @@ public class UserService : IUserService
         _roleManager = roleManager;
         _logger = logger;
         _promotedStore = prometedStore;
+    }
+    public async Task<List<string>> ConvertIdRoleToNameAsync(List<Guid> guids)
+    {
+        return await TokenHelper.ConvertRolesIdtoRolesName(guids,_roleManager);
     }
 
     private async Task<AUser?> GetUserByNameAsync(string userName)
