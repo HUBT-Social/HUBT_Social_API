@@ -51,7 +51,7 @@ public class UploadChatServices : IUploadChatServices
                 replyMessage = new ReplyMessage
                 {
                     message = messageResult.message ?? null,
-                    replyBy = chatRequest.UserName,
+                    replyBy = chatRequest.UserId,
                     replyTo =messageResult.sentBy,
                     messageType = messageResult.messageType,
                     voiceMessageDuration = messageResult.voiceMessageDuration ?? null,
@@ -68,7 +68,7 @@ public class UploadChatServices : IUploadChatServices
                 {
                     GroupId = chatRequest.GroupId,
                     Content = chatRequest.Content,
-                    UserName = chatRequest.UserName,
+                    UserId = chatRequest.UserId,
                     ReplyToMessage = replyMessage
                 };
                 try { return await _messageUploadService.UploadMessageAsync(messageRequest, _hubContext); }
@@ -80,7 +80,7 @@ public class UploadChatServices : IUploadChatServices
         }
 
         // Gửi media nếu có
-        if (chatRequest.Medias != null)
+        if (chatRequest.Medias is not null && chatRequest.Medias.Count >0 ) 
         {
             tasks.Add(Task.Run(async () =>
             {
@@ -88,7 +88,7 @@ public class UploadChatServices : IUploadChatServices
                 {
                     GroupId = chatRequest.GroupId,
                     Medias = chatRequest.Medias,
-                    UserName = chatRequest.UserName,
+                    UserId = chatRequest.UserId,
                     ReplyToMessage = replyMessage
                 };
                 try { return await _mediaUploadService.UploadMediaAsync(mediaRequest, _hubContext); }

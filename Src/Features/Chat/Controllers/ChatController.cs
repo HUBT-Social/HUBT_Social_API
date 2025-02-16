@@ -183,15 +183,13 @@ public class ChatController : ControllerBase
     public async Task<IActionResult> GetRoomsByTokenTokenAsync([FromQuery]  int page=1, [FromQuery] int limit=10)
     {
         UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        Console.WriteLine("read access token success");
         if (userResponse.Success == false)
         {
             return BadRequest("Token is not valid");
         }
         var rooms = await _chatService.GetRoomsOfUserNameAsync(userResponse.User.UserName,page,limit);
-        if (rooms.Any())
-            return Ok(rooms);
-
-        return NotFound(new List<RoomLoadingRespone>());
+        return Ok(rooms);
     }
 
    

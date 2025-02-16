@@ -146,33 +146,9 @@ public class UpdateUserController : ControllerBase
         }
         return BadRequest(KeyStore.AvatarUpdateError);
     }
-    [HttpPut("update")]
-    public async Task<IActionResult> UpdateUserInfo(
-        [FromQuery] string? email,
-        [FromQuery] string? firstname,
-        [FromQuery] string? lastname,
-        [FromQuery] string? phoneNumber,
-        [FromQuery] string? gender,
-        [FromQuery] DateTime? dateOfBirth)
-    {
-        // Tạo đối tượng yêu cầu cập nhật chung
-        GeneralUpdateRequest generalUpdateRequest = new GeneralUpdateRequest();
-        
-        if (!string.IsNullOrEmpty(email)) generalUpdateRequest.Email = email;
-        if (!string.IsNullOrEmpty(firstname)) generalUpdateRequest.FirstName = firstname;
-        if (!string.IsNullOrEmpty(lastname)) generalUpdateRequest.LastName = lastname;
-        if (!string.IsNullOrEmpty(phoneNumber)) generalUpdateRequest.PhoneNumber = phoneNumber;
-        if (!string.IsNullOrEmpty(gender))
-        {
-            if(gender !="male" || gender !="female") generalUpdateRequest.Gender = Gender.Other;
-            if(gender=="male") generalUpdateRequest.Gender = Gender.Male;
-            if(gender=="female") generalUpdateRequest.Gender = Gender.Female;
-
-        }  // Sửa lỗi gán giá trị
-        if (dateOfBirth != null) generalUpdateRequest.DateOfBirth = dateOfBirth;
-        
-        return await UpdateHelper.HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, generalUpdateRequest,Request,_tokenService);
-    }
+    [HttpPut("update-general")]
+    public async Task<IActionResult> UpdateUserInfo([FromBody] GeneralUpdateRequest request) =>
+        await UpdateHelper.HandleUserUpdate(KeyStore.GeneralUpdateSuccess, KeyStore.GeneralUpdateError, _userService.GeneralUpdateAsync, request,Request,_tokenService);
     
     [HttpPost("update/email")]
     public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request) =>
@@ -187,9 +163,9 @@ public class UpdateUserController : ControllerBase
         }
         return BadRequest(LocalValue.Get(KeyStore.ConfirmPasswordError));
     }
-        
-    
-    
+    [HttpPut("update/phone-number")]
+    public async Task<IActionResult> UpdatePhoneNumber([FromBody] UpdatePhoneNumberRequest request) =>  
+        await UpdateHelper.HandleUserUpdate(KeyStore.PhoneNumberUpdated, KeyStore.PhoneNumberUpdateError, _userService.UpdatePhoneNumberAsync, request,Request,_tokenService);
     
 
     [HttpPut("two-factor-enable")]

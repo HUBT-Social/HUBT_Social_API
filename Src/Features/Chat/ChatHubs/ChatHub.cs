@@ -75,10 +75,10 @@ public class ChatHub : Hub
     public async Task SendItemChat(SendChatRequest inputRequest)
     {
 
-        var userName = Context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+        var userId = Context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        Console.WriteLine("Id user: ");
 
-
-        if(userName == null)
+        if(userId == null)
         {
             await Clients.Caller.SendAsync("SendErr","Token no vali");
             return; 
@@ -86,7 +86,7 @@ public class ChatHub : Hub
         await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Pending);
         ChatRequest chatRequest = new ChatRequest
         {
-            UserName = userName,
+            UserId = userId,
             GroupId = inputRequest.GroupId,
             Content = inputRequest.Content,
             Medias = inputRequest.Medias,

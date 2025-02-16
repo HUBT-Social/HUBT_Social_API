@@ -45,7 +45,7 @@ public class MessageUploadService : IMessageUploadService
             }
         }
         Console.WriteLine("12");
-        MessageModel message = await MessageModel.CreateTextMessageAsync(chatRequest.UserName,MessageContent.Content,chatRequest.ReplyToMessage);
+        MessageModel message = await MessageModel.CreateTextMessageAsync(chatRequest.UserId,MessageContent.Content,chatRequest.ReplyToMessage);
         Console.WriteLine("13");
         await SendingItem.SendChatItem(chatRequest.GroupId,message,hubContext); 
 

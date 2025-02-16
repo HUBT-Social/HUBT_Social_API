@@ -224,7 +224,10 @@ public class ChatService : IChatService
         var listRespone = await Task.WhenAll(tasks);
 
         // Lọc các kết quả không phải là null
-        return listRespone.Where(r => r != null).ToList();
+        var filteredList = listRespone.Where(r => r != null).ToList();
+
+        // Nếu danh sách rỗng, trả về danh sách mới
+        return filteredList.Any() ? filteredList : new List<RoomLoadingRespone>();
     }
 
     private async Task<RoomLoadingRespone?> GetGroupByIdAsync(string id)

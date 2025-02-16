@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
 namespace HUBT_Social_API.Features.Auth.Services.Child;
 
@@ -119,7 +120,7 @@ public class UserService : IUserService
     public async Task<bool> UpdateEmailAsync(string userName, UpdateEmailRequest request)
     {
         var user = await GetUserByNameAsync(userName);
-        return user != null && await UpdateUserPropertyAsync(user, u => u.Email = request.Email);
+        return user != null && await UpdateUserPropertyAsync(user, u => u.Email = request.Email);   
     }
     public async Task<bool> UpdateAvatarUrlAsync(string userName, UpdateAvatarUrlRequest request)
     {
@@ -151,6 +152,12 @@ public class UserService : IUserService
             return false;
         }
     }
+    public async Task<bool> UpdatePhoneNumberAsync(string userName, UpdatePhoneNumberRequest request)
+    {
+
+        var user = await GetUserByNameAsync(userName);
+        return user != null && await UpdateUserPropertyAsync(user, u => u.Email = request.PhoneNumber);
+    }
 
 
     public async Task<bool> GeneralUpdateAsync(string userName, GeneralUpdateRequest request)
@@ -158,12 +165,10 @@ public class UserService : IUserService
         var user = await GetUserByNameAsync(userName);
         return user != null && await UpdateUserPropertyAsync(user, u =>
         {
-            if (!string.IsNullOrEmpty(request.Email)) u.Email = request.Email;
             if (!string.IsNullOrEmpty(request.FirstName)) u.FirstName = request.FirstName;
             if (!string.IsNullOrEmpty(request.LastName)) u.LastName = request.LastName;
-            if (!string.IsNullOrEmpty(request.PhoneNumber)) u.PhoneNumber = request.PhoneNumber;
             if (!string.IsNullOrEmpty(request.Gender.ToString())) u.Gender = request.Gender;
-            if (request.DateOfBirth != null) u.DateOfBirth = request.DateOfBirth??DateTime.MinValue;;
+            u.DateOfBirth = request.DateOfBirth.ToString() != null ? request.DateOfBirth : DateTime.MinValue;
         });
     }
     public async Task<bool> AddInfoUser(string userName, AddInfoUserRequest request)
@@ -255,4 +260,5 @@ public class UserService : IUserService
 
     }
 
+    
 }

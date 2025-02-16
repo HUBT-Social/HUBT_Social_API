@@ -17,6 +17,7 @@ public interface IUserService
     Task<bool> UpdateEmailAsync(string userName, UpdateEmailRequest request);
     Task<bool> VerifyCurrentPasswordAsync(string userName, CheckPasswordRequest request);
     Task<bool> UpdatePasswordAsync(string userName, UpdatePasswordRequest request);
+    Task<bool> UpdatePhoneNumberAsync(string userName, UpdatePhoneNumberRequest request);
     Task<bool> UpdateStatusAsync(string userName, string bio);
     Task<bool> AddInfoUser(string userName, AddInfoUserRequest request);
 
