@@ -105,11 +105,20 @@ public class ChatHub : Hub
 
 
     // Thông báo người dùng đang gõ
-    public async Task TypingText(string groupId, string userName)
+    public async Task TypingText(string groupId)
     {
+        var userId = Context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        Console.WriteLine("Id user: ");
+
+        if(userId == null)
+        {
+            await Clients.Caller.SendAsync("TypingErr","Token no vali");
+            return; 
+        }
         try
         {
-            await _hubContext.Clients.Group(groupId).SendAsync("ReceiveTyping", userName);
+            
+            await _hubContext.Clients.Group(groupId).SendAsync("ReceiveTyping", userId);
         }
         catch (Exception ex)
         {
