@@ -44,7 +44,8 @@ public class UpdateUserController : ControllerBase
                     userResponse.User.Gender,
                     userResponse.User.Email,
                     BirthDay = userResponse.User.DateOfBirth,
-                    userResponse.User.PhoneNumber
+                    PhoneNumber = userResponse.User.PhoneNumber,
+                    Roles = await _userService.ConvertIdRoleToNameAsync(userResponse.User.Roles)
                 }
             );
 
@@ -68,7 +69,8 @@ public class UpdateUserController : ControllerBase
                     user.Gender,
                     user.Email,
                     BirthDay = user.DateOfBirth,
-                    user.PhoneNumber
+                    PhoneNumber = user.PhoneNumber,
+                    Roles = await _userService.ConvertIdRoleToNameAsync(user.Roles)
                 }
             );
         return BadRequest(LocalValue.Get(KeyStore.UserNotFound));

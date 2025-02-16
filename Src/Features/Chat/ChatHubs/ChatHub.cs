@@ -94,12 +94,11 @@ public class ChatHub : Hub
             Files = inputRequest.Files
         };
         
-        if(await _uploadChatServices.SendChatAsync(chatRequest))
+        if(!await _uploadChatServices.SendChatAsync(chatRequest))
         {
-            await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Sent);  
+             await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Failed); 
         }
-            await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Failed);
-        
+            await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Sent);
         
     }
 
