@@ -75,17 +75,17 @@ public class ChatHub : Hub
 
     public async Task SendItemChat(SendChatRequest inputRequest)
     {
-
         var userId = Context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        Console.WriteLine("Id user: ");
 
-        if(userId == null)
+        if (string.IsNullOrEmpty(userId))
         {
-            await Clients.Caller.SendAsync("SendErr", "Token no vali");
+            await Clients.Caller.SendAsync("SendErr", "Token không hợp lệ");
             return;
         }
-        await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Pending);
-        ChatRequest chatRequest = new ChatRequest
+
+        await Clients.Caller.SendAsync("ReceiveProcess", inputRequest.RequestId, MessageStatus.Pending);
+
+        var chatRequest = new ChatRequest
         {
             UserId = userId,
             GroupId = inputRequest.GroupId,
@@ -93,14 +93,13 @@ public class ChatHub : Hub
             Medias = inputRequest.Medias,
             Files = inputRequest.Files
         };
-        
-        if(!await _uploadChatServices.SendChatAsync(chatRequest))
-        {
-             await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Failed); 
-        }
-            await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Sent);
-        
+
+        bool isSuccess = await _uploadChatServices.SendChatAsync(chatRequest);
+        var status = isSuccess ? MessageStatus.Sent : MessageStatus.Failed;
+
+        await Clients.Caller.SendAsync("ReceiveProcess", inputRequest.RequestId, status);
     }
+
 
 
     // Thông báo người dùng đang gõ
