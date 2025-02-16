@@ -33,21 +33,21 @@ public class MessageUploadService : IMessageUploadService
 
 
         if (links.Count > 0)
+        {
             foreach (var link in links)
             {
                 var metadata = await FetchLinkMetadataAsync(link);
                 if (metadata != null) MessageContent.Links.Add(metadata);
             }
-
-        var message = new MessageModel(chatRequest.UserName, MessageContent, chatRequest.GroupId, chatRequest.ReplyTo);
-
-        Console.WriteLine("chuan bị guigui");
-        await SendingItem.SendChatItem(chatRequest.GroupId, message, hubContext);
+        }
+        Console.WriteLine("12");
+        MessageModel message = await MessageModel.CreateTextMessageAsync(chatRequest.UserId,MessageContent.Content,chatRequest.ReplyToMessage);
+        Console.WriteLine("13");
+        await SendingItem.SendChatItem(chatRequest.GroupId,message,hubContext); 
 
         var updateResult = await SaveChatItem.Save(_chatRooms, chatRoom, message);
         return updateResult.ModifiedCount > 0;
     }
-
     private async Task<LinkMetadataModel?> FetchLinkMetadataAsync(string url)
     {
         try
@@ -108,8 +108,5 @@ public class MessageUploadService : IMessageUploadService
         return links;
     }
 
-    public Task<bool> UploadMessageAsync(object chatRequest, IHubContext<ChatHub> hubContext, string eventName)
-    {
-        throw new NotImplementedException();
-    }
+
 }

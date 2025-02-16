@@ -218,7 +218,7 @@ public async Task<bool> UpdateGroupNameAsync(string id, string userName, string 
                 Builders<ChatRoomModel>.Filter.Eq(room => room.Id, roomId),
                 Builders<ChatRoomModel>.Filter.ElemMatch(
                     room => room.Content,
-                    item => item.Id == chatItemId
+                    item => item.id == chatItemId
                 )
             );
             // Lấy mục chat hiện tại để kiểm tra trạng thái Unsend
@@ -226,8 +226,11 @@ public async Task<bool> UpdateGroupNameAsync(string id, string userName, string 
             if (chatRoom == null) return false; // Không tìm thấy phòng hoặc mục chat
 
             // Tìm mục chat tương ứng và lấy trạng thái Unsend hiện tại
-            var chatItem = chatRoom.Content.FirstOrDefault(item => item.Id == chatItemId);
-            if (chatItem == null) return false; // Không tìm thấy mục chat
+            var chatItem = chatRoom.Content.FirstOrDefault(item => item.id == chatItemId);
+            if (chatItem == null)
+            {
+                return false; // Không tìm thấy mục chat
+            }
 
             // Cập nhật trạng thái Unsend mới
             var update = Builders<ChatRoomModel>.Update.Set(
@@ -398,14 +401,13 @@ public async Task<bool> UpdateGroupNameAsync(string id, string userName, string 
 
         // Lọc các item theo thời gian và loại (nếu có)
         var filteredItems = chatRoom.Content
-            .Where(item =>
-                item.Timestamp < timeFilter && // Lọc theo thời gian
-                (getItemsHistoryRequest.Type == MessageType.All ||
-                 (item.MessageType & getItemsHistoryRequest.Type) != 0)) // Lọc theo loại nếu có
-            .OrderByDescending(item => item.Timestamp) // Sắp xếp theo thời gian giảm dần
-            .Skip((getItemsHistoryRequest.Page - 1) * limit) // Bỏ qua số lượng bản ghi tương ứng với trang
-            .Take(limit) // Lấy đúng số lượng tin nhắn cần thiết
-            .ToList(); // Chuyển đổi thành danh sách
+        .Where(item =>
+            item.createdAt < timeFilter && // Lọc theo thời gian
+            (getItemsHistoryRequest.Type == MessageType.All || (item.messageType & getItemsHistoryRequest.Type) != 0)) // Lọc theo loại nếu có
+        .OrderByDescending(item => item.createdAt) // Sắp xếp theo thời gian giảm dần
+        .Skip((getItemsHistoryRequest.Page - 1) * limit) // Bỏ qua số lượng bản ghi tương ứng với trang
+        .Take(limit) // Lấy đúng số lượng tin nhắn cần thiết
+        .ToList(); // Chuyển đổi thành danh sách
 
         return filteredItems;
     }

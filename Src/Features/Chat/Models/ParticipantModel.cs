@@ -18,6 +18,7 @@ public class Participant
     ///     Ảnh đại diện mặc định nếu ProfilePhoto không có.
     /// </summary>
     public string DefaultAvatarImage { get; set; } = LocalValue.Get(KeyStore.DefaultUserImage);
+   
 
     public void setProfilePhoto(string ProfilePhoto)
     {

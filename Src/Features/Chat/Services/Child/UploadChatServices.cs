@@ -1,8 +1,9 @@
 using HUBT_Social_API.Features.Chat.ChatHubs;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
+using HUBTSOCIAL.Src.Features.Chat.Helpers;
+using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.SignalR;
-
 namespace HUBT_Social_API.Features.Chat.Services.Child;
 
 public class UploadChatServices : IUploadChatServices
@@ -30,47 +31,63 @@ public class UploadChatServices : IUploadChatServices
     public async Task<bool> SendChatAsync(ChatRequest chatRequest)
     {
         var tasks = new List<Task<bool>>();
+        ReplyMessage replyMessage = null;
 
+        if(chatRequest.ReplyToMessageId is not null)
+        {
+            MessageModel? messageResult = await RoomChatHelper.GetInfoMessageAsync(chatRequest.GroupId,chatRequest.ReplyToMessageId);
+            if(messageResult is not null)
+            {
+                replyMessage = new ReplyMessage
+                {
+                    message = messageResult.message ?? null,
+                    replyBy = chatRequest.UserId,
+                    replyTo =messageResult.sentBy,
+                    messageType = messageResult.messageType,
+                    voiceMessageDuration = messageResult.voiceMessageDuration ?? null,
+                    messageId = messageResult.id,
+                };
+            }
+        }  
         // Gửi tin nhắn nếu có
         if (chatRequest.Content != null)
+        {
             tasks.Add(Task.Run(async () =>
             {
                 var messageRequest = new MessageRequest
                 {
                     GroupId = chatRequest.GroupId,
                     Content = chatRequest.Content,
-                    UserName = chatRequest.UserName
+                    UserId = chatRequest.UserId,
+                    ReplyToMessage = replyMessage
                 };
-                try
-                {
-                    return await _messageUploadService.UploadMessageAsync(messageRequest, _hubContext);
-                }
-                catch
-                {
-                    return false;
-                }
+                try { return await _messageUploadService.UploadMessageAsync(messageRequest, _hubContext); }
+                catch { 
+                    Console.WriteLine("Gửi mess lỗi.");
+                    
+                    return false; }
             }));
+        }
+            
 
         // Gửi media nếu có
-        if (chatRequest.Medias != null)
+        if (chatRequest.Medias is not null && chatRequest.Medias.Count >0 ) 
+        {
             tasks.Add(Task.Run(async () =>
             {
                 var mediaRequest = new MediaRequest
                 {
                     GroupId = chatRequest.GroupId,
                     Medias = chatRequest.Medias,
-                    UserName = chatRequest.UserName
+                    UserId = chatRequest.UserId,
+                    ReplyToMessage = replyMessage
                 };
-                try
-                {
-                    return await _mediaUploadService.UploadMediaAsync(mediaRequest, _hubContext);
-                }
-                catch
-                {
-                    return false;
-                }
+                try { return await _mediaUploadService.UploadMediaAsync(mediaRequest, _hubContext); }
+                catch { 
+                    Console.WriteLine("Gửi Media lỗi.");
+                    return false; }
             }));
-
+        }
         // Gửi file nếu có
         // if (chatRequest.Medias != null)
         // {

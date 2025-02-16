@@ -5,14 +5,13 @@ namespace HUBT_Social_API.Features.Chat.Services.Child;
 
 public static class SaveChatItem
 {
-    public static async Task<UpdateResult> Save(IMongoCollection<ChatRoomModel> chatRooms, ChatRoomModel Room,
-        MessageModel Message)
+    public static async Task<UpdateResult> Save(IMongoCollection<ChatRoomModel> chatRooms, ChatRoomModel Room, MessageModel Message)
     {
-        // Tạo filter cho GroupId và UserName
-        FilterDefinition<ChatRoomModel> filter = Builders<ChatRoomModel>.Filter.And(
-            Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, Room.Id),
-            Builders<ChatRoomModel>.Filter.ElemMatch(cr => cr.Participant, p => p.UserName == Message.SentBy)
-        );
+            // Tạo filter cho GroupId và UserName
+            FilterDefinition<ChatRoomModel> filter = Builders<ChatRoomModel>.Filter.And(
+                Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, Room.Id),
+                Builders<ChatRoomModel>.Filter.ElemMatch(cr => cr.Participant, p => p.UserName == Message.sentBy)
+            );
 
         // Tạo update để cập nhật LastInteractionTime
         UpdateDefinition<ChatRoomModel> updateLastInteractionTime = Builders<ChatRoomModel>.Update

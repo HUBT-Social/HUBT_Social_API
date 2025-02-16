@@ -1,4 +1,5 @@
 using HUBT_Social_API.Core.Settings;
+using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
@@ -181,12 +182,13 @@ public class ChatController : ControllerBase
     [HttpGet("load-rooms")]
     public async Task<IActionResult> GetRoomsByTokenTokenAsync([FromQuery] int page = 1, [FromQuery] int limit = 10)
     {
-        var userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-        if (userResponse.Success == false) return BadRequest("Token is not valid");
-        var rooms = await _chatService.GetRoomsOfUserNameAsync(userResponse.User.UserName, page, limit);
-        if (rooms.Any())
-            return Ok(rooms);
-
-        return NotFound(new List<RoomLoadingRespone>());
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        Console.WriteLine("read access token success");
+        if (userResponse.Success == false)
+        {
+            return BadRequest("Token is not valid");
+        }
+        var rooms = await _chatService.GetRoomsOfUserNameAsync(userResponse.User.UserName,page,limit);
+        return Ok(rooms);
     }
 }

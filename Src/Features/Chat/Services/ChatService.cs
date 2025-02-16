@@ -199,7 +199,10 @@ public class ChatService : IChatService
         var listRespone = await Task.WhenAll(tasks);
 
         // Lọc các kết quả không phải là null
-        return listRespone.Where(r => r != null).ToList();
+        var filteredList = listRespone.Where(r => r != null).ToList();
+
+        // Nếu danh sách rỗng, trả về danh sách mới
+        return filteredList.Any() ? filteredList : new List<RoomLoadingRespone>();
     }
 
     private async Task<string> GenerateGroupId(string groupName)
@@ -257,25 +260,33 @@ public class ChatService : IChatService
 
         // Lấy tin nhắn mới nhất dựa vào Timestamp
         var recentMessage = chatRoom.Content
-            .OrderByDescending(m => m.Timestamp)
+            .OrderByDescending(m => m.createdAt)
             .FirstOrDefault();
-
-        var LastTime = FormatLastInteractionTime(recentMessage.Timestamp);
+        
+        string LastTime = FormatLastInteractionTime(recentMessage.createdAt);
 
         // Lấy nickname bất đồng bộ
-        var nickName = await RoomChatHelper.GetNickNameAsync(recentMessage.Id, recentMessage.SentBy);
+        string? nickName = await RoomChatHelper.GetNickNameAsync(recentMessage.id, recentMessage.sentBy);
 
         // Kiểm tra nếu tin nhắn là loại "Message"
-        if (recentMessage.MessageType == MessageType.Text)
+        if (recentMessage.messageType == MessageType.Text)
         {
-            var recent = recentMessage.MessageContent?.Content;
+            string? recent = recentMessage.message??"";
             // Trả về chuỗi hiển thị
             return (GetMessagePreview(nickName, recent), LastTime);
         }
-
-        if (recentMessage.MessageType == MessageType.Media) return ($"{nickName}: [Photo/Media]", LastTime);
-        if (recentMessage.MessageType == MessageType.File) return ($"{nickName}: [File]", LastTime);
-        if (recentMessage.MessageType == MessageType.Voice) return ($"{nickName}: [Voice]", LastTime);
+        if (recentMessage.messageType == MessageType.Media)
+        {
+            return ($"{nickName}: [Photo/Media]", LastTime);
+        }
+        if (recentMessage.messageType == MessageType.File)
+        {
+            return ($"{nickName}: [File]", LastTime);
+        }
+        if (recentMessage.messageType == MessageType.Voice)
+        {
+            return ($"{nickName}: [Voice]", LastTime);
+        }
 
         // Nếu không phải loại "Message", trả về chuỗi rỗng hoặc thông báo khác
         return (string.Empty, string.Empty);
