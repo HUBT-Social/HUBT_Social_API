@@ -1,11 +1,9 @@
-
 using System.Security.Claims;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
-using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.SignalR;
 
 namespace HUBT_Social_API.Features.Chat.ChatHubs;
@@ -13,17 +11,17 @@ namespace HUBT_Social_API.Features.Chat.ChatHubs;
 public class ChatHub : Hub
 {
     private readonly IHubContext<ChatHub> _hubContext;
-    private readonly IUploadChatServices _uploadChatServices;
     protected readonly ITokenService _tokenService;
+    private readonly IUploadChatServices _uploadChatServices;
     private readonly IUserConnectionManager _userConnectionManager;
-    
+
 
     public ChatHub
     (
         IHubContext<ChatHub> hubContext,
         IUploadChatServices uploadChatServices,
         ITokenService tokenService,
-        IUserConnectionManager userConnectionManager      
+        IUserConnectionManager userConnectionManager
     )
     {
         _hubContext = hubContext;
@@ -37,15 +35,16 @@ public class ChatHub : Hub
         try
         {
             var connectionId = Context.ConnectionId;
-            
+
             // Lấy UserName từ Claims
             var userName = Context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
 
             if (userName != null)
             {
                 // Sử dụng userName thay vì userId
-                var groupIds = await RoomChatHelper.GetUserGroupConnected(userName);  // Giả sử bạn lưu nhóm theo userName
-                _userConnectionManager.AddConnection(userName,connectionId);
+                var groupIds =
+                    await RoomChatHelper.GetUserGroupConnected(userName); // Giả sử bạn lưu nhóm theo userName
+                _userConnectionManager.AddConnection(userName, connectionId);
                 foreach (var groupId in groupIds)
                 {
                     await Groups.AddToGroupAsync(connectionId, groupId);
@@ -60,6 +59,7 @@ public class ChatHub : Hub
             Console.WriteLine($"Error reconnecting user: {ex.Message}");
         }
     }
+
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var userName = Context.User.Identity?.Name;
@@ -68,9 +68,10 @@ public class ChatHub : Hub
             await Clients.Others.SendAsync("UserDisconnected", userName);
             _userConnectionManager.RemoveConnection(userName);
         }
+
         await base.OnDisconnectedAsync(exception);
     }
-    
+
 
     public async Task SendItemChat(SendChatRequest inputRequest)
     {
@@ -80,8 +81,8 @@ public class ChatHub : Hub
 
         if(userId == null)
         {
-            await Clients.Caller.SendAsync("SendErr","Token no vali");
-            return; 
+            await Clients.Caller.SendAsync("SendErr", "Token no vali");
+            return;
         }
         await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Pending);
         ChatRequest chatRequest = new ChatRequest
@@ -93,16 +94,14 @@ public class ChatHub : Hub
             Files = inputRequest.Files
         };
         
-        if(await _uploadChatServices.SendChatAsync(chatRequest))
+        if(!await _uploadChatServices.SendChatAsync(chatRequest))
         {
-            await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Sent);  
+             await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Failed); 
         }
-            await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Failed);
-        
+            await Clients.Caller.SendAsync("ReceiveProcess",inputRequest.RequestId,MessageStatus.Sent);
         
     }
- 
-   
+
 
     // Thông báo người dùng đang gõ
     public async Task TypingText(string groupId)
@@ -126,8 +125,4 @@ public class ChatHub : Hub
             Console.WriteLine($"Error notifying typing: {ex.Message}");
         }
     }
-
-
-
 }
-
