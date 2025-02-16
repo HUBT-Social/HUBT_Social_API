@@ -61,7 +61,7 @@ public static class RoomChatHelper
         if (chatRoom == null)
             return null;
 
-        var message = chatRoom.Content.FirstOrDefault(ci => ci.Id == messageId);
+        var message = chatRoom.Content.FirstOrDefault(ci => ci.id == messageId);
 
         return message;
     }

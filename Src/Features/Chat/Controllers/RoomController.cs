@@ -44,7 +44,7 @@ public class RoomController : ControllerBase
         if ((getHistoryRequest.Type & MessageType.Media) != 0) // Kiểm tra nếu chứa Media
         {
             List<FilePaths> mediaResponse = new();
-            foreach (var message in messages) mediaResponse.AddRange(message.FilePaths);
+            foreach (var message in messages) mediaResponse.AddRange(message.filePaths);
             return Ok(mediaResponse);
         }
 
@@ -194,7 +194,7 @@ public class RoomController : ControllerBase
         var senderOfItem =
             await RoomChatHelper.GetInfoMessageAsync(unsendMessageRequest.ChatRoomId, unsendMessageRequest.MessageId);
         if (senderOfItem == null) return BadRequest("Invalid value request.");
-        if (senderOfItem.SentBy != userResponse.User.UserName) return BadRequest("You are not owner of this message");
+        if (senderOfItem.sentBy != userResponse.User.UserName) return BadRequest("You are not owner of this message");
         var updated = await _roomService.UpdateActionStatusAsync(unsendMessageRequest.ChatRoomId,
             unsendMessageRequest.MessageId, unsendMessageRequest.messageActionStatus);
         return updated ? Ok("Updated") : BadRequest("Err to Update.");

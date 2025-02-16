@@ -10,19 +10,18 @@ public static class SendingItem
     // Gửi tin nhắn hoặc phương tiện đến nhóm
     public static async Task SendChatItem(string groupId, MessageModel chatItem, IHubContext<ChatHub> _hubContext)
     {
+
         try
         {
-            try
-            {
-                Console.WriteLine("giui tin: ",chatItem.messageType);
-                await _hubContext.Clients.Group(groupId).SendAsync("ReceiveChat", chatItem);
-                Console.WriteLine("14");
-            }
-            catch (Exception ex)
-            {
-                // Log lỗi và xử lý tùy theo nhu cầu
-                Console.WriteLine($"Error sending ReceiveChat: {ex.Message}");
-            }
+            Console.WriteLine("giui tin: ",chatItem.messageType);
+            await _hubContext.Clients.Group(groupId).SendAsync("ReceiveChat", chatItem);
+            Console.WriteLine("14");
         }
+        catch (Exception ex)
+        {
+                // Log lỗi và xử lý tùy theo nhu cầu
+            Console.WriteLine($"Error sending ReceiveChat: {ex.Message}");
+        }
+        
     }
 }
