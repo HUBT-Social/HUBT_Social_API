@@ -20,7 +20,7 @@ namespace HUBT_Social_API;
 
             // Cấu hình localization, JWT, Identity, MongoDB, SignalR, Cloudinary và SMTP
             builder.Services.ConfigureLocalization();
-            builder.Services.ConfigureJwt(builder.Configuration);
+            
             builder.Services.ConfigureIdentity(builder.Configuration);
             builder.Services.ConfigureSignalR();
             builder.Services.ConfigureCloudinary(builder.Configuration);
@@ -32,7 +32,7 @@ namespace HUBT_Social_API;
 
             builder.Services.AddChatMongoCollections(builder.Configuration);
             builder.Services.AddAuthMongoCollections(builder.Configuration);
-
+            builder.Services.ConfigureJwt(builder.Configuration);
         }
 
         private static void InitServices(WebApplicationBuilder builder) 

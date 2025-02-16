@@ -148,7 +148,12 @@ public class TokenService : ITokenService
             return new DecodeTokenResponse { Success = false, Message = ex.Message };
         }
     }
-
+    public async Task<bool> IsTokenValidAsync(string token)
+    {
+        var filter = Builders<UserToken>.Filter.Eq(t => t.AccessToken, token);
+        var tokenExists = await _refreshToken.Find(filter).AnyAsync();
+        return tokenExists;
+    }
     private async Task HandleRefreshTokenAsync(AUser user, string accessToken, string refreshToken)
     {
         var existingRefreshToken = await _refreshToken.Find(t => t.UserId == user.Id.ToString()).FirstOrDefaultAsync();
