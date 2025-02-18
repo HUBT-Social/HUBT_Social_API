@@ -56,7 +56,7 @@ public class MediaUploadService : IMediaUploadService
         
         await SendingItem.SendChatItem(mediaRequest.GroupId,message,hubContext);
 
-        UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,chatRoom,message);
+        UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,chatRoom.Id,message);
 
         return updateResult.ModifiedCount > 0;
     }

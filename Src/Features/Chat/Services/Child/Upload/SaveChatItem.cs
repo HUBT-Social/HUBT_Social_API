@@ -1,32 +1,58 @@
 
+using System.Text.Json;
+using FireSharp.Extensions;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using MongoDB.Driver;
 
 namespace HUBT_Social_API.Features.Chat.Services.Child
 {
     public static class SaveChatItem
+{
+    public static async Task<UpdateResult> Save(IMongoCollection<ChatRoomModel> chatRooms, string RoomId, MessageModel Message)
     {
-        public static async Task<UpdateResult> Save(IMongoCollection<ChatRoomModel> chatRooms, ChatRoomModel Room, MessageModel Message)
+        try
         {
-            // Tạo filter cho GroupId và UserName
-            FilterDefinition<ChatRoomModel> filter = Builders<ChatRoomModel>.Filter.And(
-                Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, Room.Id),
-                Builders<ChatRoomModel>.Filter.ElemMatch(cr => cr.Participant, p => p.UserName == Message.sentBy)
+            // 📌 Tạo bộ lọc tìm phòng chat theo `Room.Id` và đảm bảo `UserName` có trong `Participant`
+            var filter = Builders<ChatRoomModel>.Filter.And(
+                Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, RoomId)
+                //Builders<ChatRoomModel>.Filter.ElemMatch(cr => cr.Participant, p => p.UserName == Message.sentBy)
             );
 
-            // Tạo update để cập nhật LastInteractionTime
-            UpdateDefinition<ChatRoomModel> updateLastInteractionTime = Builders<ChatRoomModel>.Update
-                .Set(cr => cr.LastInteractionTime, DateTime.Now); // Cập nhật thời gian tương tác gần nhất
+   
+            // ✅ Cập nhật `LastInteractionTime`
+            var updateLastInteractionTime = Builders<ChatRoomModel>.Update
+                .Set(cr => cr.LastInteractionTime, DateTime.UtcNow);
 
-            // Tạo update để thêm tin nhắn mới vào ChatItems
-            UpdateDefinition<ChatRoomModel> updateChatItems = Builders<ChatRoomModel>.Update
-                .Push(cr => cr.Content, Message); // Thêm tin nhắn mới vào danh sách ChatItems
+            // ✅ Thêm tin nhắn mới vào `Content`
+            var updateChatItems = Builders<ChatRoomModel>.Update
+                .Push(cr => cr.Content, Message);
 
-                
-            UpdateResult updateResult = await chatRooms.UpdateOneAsync(filter, Builders<ChatRoomModel>.Update.Combine(updateLastInteractionTime, updateChatItems));
-            
 
-            return updateResult; // Trả về kết quả cập nhật
+
+            // 🛠 Chạy update thứ hai để `Push` tin nhắn mới
+            var updateResult = await chatRooms.UpdateOneAsync(filter, Builders<ChatRoomModel>.Update.Combine(updateLastInteractionTime, updateChatItems));
+
+            // ✅ In kết quả để kiểm tra
+            Console.WriteLine($"🔹 MatchedCount: {updateResult.MatchedCount}, ModifiedCount: {updateResult.ModifiedCount}");
+
+            if (updateResult.ModifiedCount > 0)
+            {
+                Console.WriteLine("✅ Dữ liệu đã đượcđược cập nhật: ");
+            }
+            else
+            {
+                Console.WriteLine("⚠️ Không có dữ liệu nào được cập nhật. Kiểm tra lại `filter` hoặc `update`.");
+            }
+
+            return updateResult;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Lỗi khi lưu tin nhắn: {ex.Message}");
+            throw;
         }
     }
+}
+
+
 }
