@@ -21,11 +21,13 @@ public class RoomController : ControllerBase
 
     private readonly ITokenService _tokenService;
     private readonly IRoomService _roomService;
+    private readonly UserHelper _userHelper;
 
-    public RoomController(ITokenService tokenService,IRoomService roomService)
+    public RoomController(ITokenService tokenService,IRoomService roomService,UserHelper userHelper)
     {
         _tokenService = tokenService;
         _roomService = roomService;
+        _userHelper = userHelper;
     }
     
 
@@ -83,7 +85,7 @@ public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest ge
             return BadRequest("Invalid or missing token.");
         }
 
-        var result = await _roomService.UpdateGroupNameAsync(request.Id,userResponse.User.UserName,request.NewName);
+        var result = await _roomService.UpdateGroupNameAsync(request.Id,userResponse.User.Id.ToString(),request.NewName);
         if (result)
         {
             return Ok("Group name updated successfully.");
@@ -107,7 +109,7 @@ public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest ge
         }
         FileUploadResult? newUrl = await UploadToStoreS3.CloudinaryService.UploadToStorageAsync(file);
 
-        var result = await _roomService.UpdateAvatarAsync(GroupId,userResponse.User.UserName,newUrl.Url);
+        var result = await _roomService.UpdateAvatarAsync(GroupId,userResponse.User.Id.ToString(),newUrl.Url);
         if (result)
         {
             return Ok("Avatar updated successfully.");
@@ -120,7 +122,7 @@ public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest ge
     {
         if (request == null 
             || string.IsNullOrEmpty(request.GroupId) 
-            || string.IsNullOrEmpty(request.UserName)
+            || string.IsNullOrEmpty(request.UserId)
             || string.IsNullOrEmpty(request.NewNickName)
             )
         {
@@ -133,18 +135,18 @@ public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest ge
             return BadRequest("Invalid or missing token.");
         }
 
-        var result = await _roomService.UpdateNickNameAsync(request.GroupId,userResponse.User.UserName, request.UserName, request.NewNickName);
+        var result = await _roomService.UpdateNickNameAsync(request.GroupId,userResponse.User.Id.ToString(), request.UserId, request.NewNickName);
         if (result)
             return Ok("Nickname updated successfully.");
         return BadRequest("Failed to update nickname.");
     }
     // API to add a member to the group
     [HttpPut("add-member")]
-    public async Task<IActionResult> JoinRoomAsync(AddMemberRequest request)
+    public async Task<IActionResult> JoinRoomAsync(AddMemberInputRequest request)
     {
         if (request == null 
         || string.IsNullOrEmpty(request.GroupId) 
-        || string.IsNullOrEmpty(request.AddedName)
+        || string.IsNullOrEmpty(request.AddedId)
         )
         {
             return BadRequest("Invalid request.");
@@ -155,7 +157,8 @@ public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest ge
         {
             return BadRequest("Invalid or missing token.");
         }
-        var result = await _roomService.JoinRoomAsync(request,userResponse.User.UserName);
+        Participant participant = new Participant(_userHelper,request.AddedId,null);
+        var result = await _roomService.JoinRoomAsync(new AddMemberRequest{GroupId = request.GroupId,Added=participant},userResponse.User.Id.ToString());
         if (result)
         {   
             return Ok("Member added successfully.");
@@ -170,7 +173,7 @@ public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest ge
         // Kiểm tra đầu vào
         if (request == null 
         || string.IsNullOrEmpty(request.GroupId) 
-        || string.IsNullOrEmpty(request.KickedName))
+        || string.IsNullOrEmpty(request.KickedId))
         {
             return BadRequest("Invalid request.");
         }
@@ -183,8 +186,8 @@ public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest ge
         }
 
         // Lấy vai trò của người thực hiện hành động (kicker) và người bị kick (kicked)
-        ParticipantRole? kickerRole = await RoomChatHelper.GetRoleAsync(request.GroupId, userResponse.User.UserName);
-        ParticipantRole? kickedRole = await RoomChatHelper.GetRoleAsync(request.GroupId, request.KickedName);
+        ParticipantRole? kickerRole = await RoomChatHelper.GetRoleAsync(request.GroupId, userResponse.User.Id.ToString());
+        ParticipantRole? kickedRole = await RoomChatHelper.GetRoleAsync(request.GroupId, request.KickedId);
 
         // Kiểm tra quyền hạn của kicker
         if (kickerRole == null || kickedRole == null)

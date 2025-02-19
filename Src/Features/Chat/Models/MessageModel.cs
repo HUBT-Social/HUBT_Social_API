@@ -13,7 +13,7 @@ public class MessageModel
     public Reaction? reactions { get; set; } = new();
     public MessageType messageType { get; set; }
     public MessageStatus status { get; set; } = MessageStatus.Pending;
-    //public MessageActionStatus actionStatus { get; set; } = MessageActionStatus.Normal;
+    public MessageActionStatus actionStatus { get; set; } = MessageActionStatus.Normal;
     public TimeSpan? voiceMessageDuration { get; set; }
 
     // Constructor private để ép buộc dùng factory method

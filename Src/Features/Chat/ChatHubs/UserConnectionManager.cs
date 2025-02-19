@@ -5,30 +5,30 @@ public class UserConnectionManager : IUserConnectionManager
 {
     private readonly Dictionary<string, string> _userConnections = new Dictionary<string, string>();
 
-    public void AddConnection(string userName, string connectionId)
+    public void AddConnection(string userId, string connectionId)
     {
         lock (_userConnections)
         {
-            _userConnections[userName] = connectionId;
+            _userConnections[userId] = connectionId;
         }
     }
 
-    public void RemoveConnection(string userName)
+    public void RemoveConnection(string userId)
     {
         lock (_userConnections)
         {
-            if (_userConnections.ContainsKey(userName))
+            if (_userConnections.ContainsKey(userId))
             {
-                _userConnections.Remove(userName);
+                _userConnections.Remove(userId);
             }
         }
     }
 
-    public string? GetConnectionId(string userName)
+    public string? GetConnectionId(string userId)
     {
         lock (_userConnections)
         {
-            _userConnections.TryGetValue(userName, out var connectionId);
+            _userConnections.TryGetValue(userId, out var connectionId);
             return connectionId;
         }
     }

@@ -15,15 +15,15 @@ namespace HUBTSOCIAL.Src.Features.Chat.Helpers
         }
 
         // Phương thức lấy role của participant
-        public static async Task<ParticipantRole?> GetRoleAsync(string roomId, string userName)
+        public static async Task<ParticipantRole?> GetRoleAsync(string roomId, string userId)
         {
             var filter = Builders<ChatRoomModel>.Filter.And(
                 Builders<ChatRoomModel>.Filter.Eq(r => r.Id, roomId),
-                Builders<ChatRoomModel>.Filter.ElemMatch(r => r.Participant, p => p.UserName == userName)
+                Builders<ChatRoomModel>.Filter.ElemMatch(r => r.Participant, p => p.UserId == userId)
             );
 
             var projection = Builders<ChatRoomModel>.Projection.Expression(r =>
-                r.Participant.FirstOrDefault(p => p.UserName == userName));
+                r.Participant.FirstOrDefault(p => p.UserId == userId));
 
             var participant = await _chatRooms
                 .Find(filter)
@@ -34,15 +34,15 @@ namespace HUBTSOCIAL.Src.Features.Chat.Helpers
         }
 
         // Phương thức lấy nickname của participant
-        public static async Task<string?> GetNickNameAsync(string roomId, string userName)
+        public static async Task<string?> GetNickNameAsync(string roomId, string UserId)
         {
             var filter = Builders<ChatRoomModel>.Filter.And(
                 Builders<ChatRoomModel>.Filter.Eq(r => r.Id, roomId),
-                Builders<ChatRoomModel>.Filter.ElemMatch(r => r.Participant, p => p.UserName == userName)
+                Builders<ChatRoomModel>.Filter.ElemMatch(r => r.Participant, p => p.UserId == UserId)
             );
 
             var projection = Builders<ChatRoomModel>.Projection.Expression(r =>
-                r.Participant.FirstOrDefault(p => p.UserName == userName));
+                r.Participant.FirstOrDefault(p => p.UserId == UserId));
 
             var participant = await _chatRooms
                 .Find(filter)
@@ -65,18 +65,18 @@ namespace HUBTSOCIAL.Src.Features.Chat.Helpers
 
             return message;
         }
-        public static async Task<List<string>> GetUserGroupConnected(string userName)
+        public static async Task<List<string>> GetUserGroupConnected(string UserId)
         {
             // Tạo bộ lọc để tìm các phòng chat có chứa userName trong danh sách Participant
             var filter = Builders<ChatRoomModel>.Filter.ElemMatch(
                 cr => cr.Participant,
-                p => p.UserName == userName
+                p => p.UserId == UserId
             );
 
             // Lấy tất cả các phòng chat phù hợp với bộ lọc, sắp xếp theo LastInteractionTime
             var chatRooms = await _chatRooms
                 .Find(filter)
-                .SortByDescending(cr => cr.LastInteractionTime)
+                //.SortByDescending(cr => cr.LastInteractionTime)
                 .ToListAsync();
 
             // Lấy danh sách các Id của phòng chat
@@ -84,5 +84,6 @@ namespace HUBTSOCIAL.Src.Features.Chat.Helpers
 
             return response;
         }
+        
     }
 }

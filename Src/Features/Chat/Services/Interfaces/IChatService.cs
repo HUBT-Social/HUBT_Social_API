@@ -11,6 +11,6 @@ public interface IChatService
     Task<bool> DeleteGroupAsync(string idGroup);
     Task<List<RoomSearchReponse>> SearchGroupsAsync(string keyword, int page, int limit);
     Task<List<RoomSearchReponse>> GetAllRoomsAsync(int page, int limit);
-    Task<List<RoomLoadingRespone>> GetRoomsOfUserNameAsync(string userName, int page, int limit);
+    Task<List<RoomLoadingRespone>> GetRoomsOfUserIdAsync(string userId, int page, int limit);
 
 }

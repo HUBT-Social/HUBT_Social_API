@@ -7,7 +7,6 @@ namespace HUBT_Social_API.Features.Auth.Services.Interfaces;
 
 public interface IUserService
 {
-    Task<string> GetFullName(string userName);
     Task<List<string>> ConvertIdRoleToNameAsync(List<Guid> guids);
     Task<AUser?> FindUserByUserNameAsync(string userName);
     Task<AUser?> FindUserByEmailAsync(string email);

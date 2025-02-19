@@ -37,18 +37,18 @@ public class ChatHub : Hub
             var connectionId = Context.ConnectionId;
 
             // Lấy UserName từ Claims
-            var userName = Context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+            var userId = Context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            if (userName != null)
+            if (userId != null)
             {
                 // Sử dụng userName thay vì userId
                 var groupIds =
-                    await RoomChatHelper.GetUserGroupConnected(userName); // Giả sử bạn lưu nhóm theo userName
-                _userConnectionManager.AddConnection(userName, connectionId);
+                    await RoomChatHelper.GetUserGroupConnected(userId); // Giả sử bạn lưu nhóm theo userName
+                _userConnectionManager.AddConnection(userId, connectionId);
                 foreach (var groupId in groupIds)
                 {
                     await Groups.AddToGroupAsync(connectionId, groupId);
-                    await Clients.Group(groupId).SendAsync("UserRejoined", connectionId);
+                    //await Clients.Group(groupId).SendAsync("UserRejoined", new { userName= userId, groupId = groupId });
                 }
             }
 

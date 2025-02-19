@@ -16,7 +16,7 @@ namespace HUBT_Social_API.Features.Chat.Services.Child
             try
             {
                 Console.WriteLine("giui tin: ",chatItem.messageType);
-                await _hubContext.Clients.Group(groupId).SendAsync("ReceiveChat", chatItem);
+                await _hubContext.Clients.Group(groupId).SendAsync("ReceiveChat", groupId,chatItem);
                 Console.WriteLine("14");
             }
             catch (Exception ex)

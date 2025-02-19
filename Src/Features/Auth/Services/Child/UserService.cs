@@ -47,12 +47,8 @@ public class UserService : IUserService
         if (string.IsNullOrWhiteSpace(userName)) return null;
         return await _userManager.FindByNameAsync(userName);
     }
-    public async Task<string> GetFullName(string userName)
-    {
-        AUser user = await GetUserByNameAsync(userName);
-        if (user == null) return LocalValue.Get(KeyStore.DefaultUserImage);
-        return user.FirstName + " " + user.LastName;
-    }
+
+    
     public async Task<AUser?> FindUserByUserNameAsync(string userName) => await GetUserByNameAsync(userName);
     public async Task<AUser?> FindUserByEmailAsync(string email)
     {
