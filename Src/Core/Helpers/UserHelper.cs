@@ -1,37 +1,27 @@
 using HUBT_Social_API.Features.Auth.Models;
 using Microsoft.AspNetCore.Identity;
+using System.Threading.Tasks;
 
 namespace HUBTSOCIAL.Src.Features.Chat.Helpers
 {
-    public class UserHelper
+    public static class UserHelper
     {
-        private readonly UserManager<AUser> _userManager;
-
-        public UserHelper(UserManager<AUser> userManager)
+        public static async Task<string> GetFullNameById(UserManager<AUser> userManager, string userId)
         {
-            Console.WriteLine("Init UserHelper");
-            _userManager = userManager;
+            AUser? user = await userManager.FindByIdAsync(userId);
+            return user == null ? "Member" : $"{user.FirstName} {user.LastName}";
         }
 
-        public async Task<string> GetFullNameById(string userId)
+        public static async Task<string?> GetAvatarUserById(UserManager<AUser> userManager, string userId)
         {
-            AUser? user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return "Member"; // Kiểm tra null trước
-
-            Console.WriteLine($"Full name is: {user.FirstName} {user.LastName}");
-            return $"{user.FirstName} {user.LastName}";
+            AUser? user = await userManager.FindByIdAsync(userId);
+            return user?.AvataUrl;
         }
 
-        public async Task<string?> GetAvatarUserById(string userId) // Sửa Avater -> Avatar
+        public static async Task<string?> GetUserIdByUserName(UserManager<AUser> userManager, string userName)
         {
-            AUser? user = await _userManager.FindByIdAsync(userId);
-            return user?.AvataUrl; // Dùng toán tử `?.` gọn hơn
-        }
-
-        public async Task<string?> GetUserIdByUserName(string userName)
-        {
-            AUser? user = await _userManager.FindByNameAsync(userName);
-            return user?.Id.ToString(); // Dùng toán tử `?.` tránh lỗi NullReferenceException
+            AUser? user = await userManager.FindByNameAsync(userName);
+            return user?.Id.ToString();
         }
     }
 }

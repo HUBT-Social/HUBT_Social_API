@@ -1,6 +1,7 @@
 using HUBT_Social_API.Core.Service.Upload;
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
+using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
@@ -8,9 +9,11 @@ using HUBT_Social_API.Src.Core.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Localization;
+
 
 namespace HUBT_Social_API.Features.Chat.Controllers;
 
@@ -21,13 +24,13 @@ public class RoomController : ControllerBase
 
     private readonly ITokenService _tokenService;
     private readonly IRoomService _roomService;
-    private readonly UserHelper _userHelper;
+    private readonly UserManager<AUser> _userManager;
 
-    public RoomController(ITokenService tokenService,IRoomService roomService,UserHelper userHelper)
+    public RoomController(ITokenService tokenService,IRoomService roomService,UserManager<AUser> userManager)
     {
         _tokenService = tokenService;
         _roomService = roomService;
-        _userHelper = userHelper;
+        _userManager = userManager;
     }
     
 
@@ -144,7 +147,7 @@ public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest ge
         {
             return BadRequest("Invalid or missing token.");
         }
-        Participant participant = new InitParticipant(_userHelper,request.AddedId,null);
+        Participant participant = await Participant.CreateAsync(_userManager, request.AddedId, null);
         var result = await _roomService.JoinRoomAsync(new AddMemberRequest{GroupId = request.GroupId,Added=participant},userResponse.User.Id.ToString());
         if (result)
         {   

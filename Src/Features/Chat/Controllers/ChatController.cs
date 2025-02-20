@@ -1,6 +1,7 @@
 using CloudinaryDotNet.Actions;
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
+using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
@@ -9,6 +10,7 @@ using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.DTOs;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
@@ -22,13 +24,14 @@ public class ChatController : ControllerBase
     private readonly IChatService _chatService;
     private readonly ITokenService _tokenService;
     private readonly IRoomService _roomService;
-    private readonly UserHelper _userHelper;
-    public ChatController(IChatService chatService,ITokenService tokenService,IRoomService roomService,UserHelper userHelper)
+    private readonly UserManager<AUser> _userManager;
+
+    public ChatController(IChatService chatService,ITokenService tokenService,IRoomService roomService,UserManager<AUser> userManager)
     {
         _chatService = chatService;
         _tokenService = tokenService;
         _roomService = roomService;
-        _userHelper = userHelper;
+        _userManager = userManager;
     }
 
     /// <summary>
@@ -51,7 +54,7 @@ public class ChatController : ControllerBase
         var participants = CreateParticipants(createGroupRequest.UserIds, userResponse.User.Id.ToString());
 
         // Tạo ChatRoomModel
-        var newChatRoom = CreateChatRoom(createGroupRequest.GroupName, participants);
+        var newChatRoom = CreateChatRoom(createGroupRequest.GroupName, participants.Result);
 
         // Lưu ChatRoom vào database
         var groupId = await _chatService.CreateGroupAsync(newChatRoom);
@@ -69,18 +72,16 @@ public class ChatController : ControllerBase
                 return null;
             }
             // Phương thức tạo danh sách Participant
-            private async List<Participant> CreateParticipants(IEnumerable<string> userIds, string ownerUserId)
+            private async Task<List<Participant>> CreateParticipants(IEnumerable<string> userIds, string ownerUserId)
             {
-                var participants = userIds
-                    .Select(async userId => await Participant.InitParticipant(_userHelper,userId,null))
-                    .ToList();
-                Participant owner =await Participant.InitParticipant(_userHelper,ownerUserId,ParticipantRole.Owner);
-                participants.Add(owner); 
-                
-                foreach(var participant in participants){
-                    Console.WriteLine(participant.UserId);
-                }
-                return participants;
+                var participants = await Task.WhenAll(userIds.Select(userId => Participant.CreateAsync(_userManager, userId, null)));
+
+                List<Participant> participantList = participants.ToList();
+
+                Participant owner = await Participant.CreateAsync(_userManager, ownerUserId, ParticipantRole.Owner);
+                participantList.Add(owner);
+
+                return participantList;
             }
             // Phương thức tạo ChatRoomModel
             private ChatRoomModel CreateChatRoom(string groupName, List<Participant> participants)
@@ -163,7 +164,7 @@ public class ChatController : ControllerBase
     {
         if (string.IsNullOrEmpty(userName))
             return BadRequest("Username is required.");
-        string? userId = _userHelper.GetUserIdByUserName(userName).ToString();
+        string? userId = await UserHelper.GetUserIdByUserName(_userManager,userName);
         if(string.IsNullOrEmpty(userId))
             return BadRequest("UserName is not exits");
         
