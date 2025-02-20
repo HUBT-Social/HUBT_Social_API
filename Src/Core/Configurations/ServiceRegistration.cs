@@ -31,7 +31,7 @@ public static class ServiceRegistration
         services.AddScoped<IUploadChatServices, UploadChatServices>();
         services.AddSingleton<IUserConnectionManager, UserConnectionManager>();
         services.AddScoped<IFireBaseNotificationService, FireBaseNotificationService>();
-        services.AddScoped<UserHelper>();
+
 
         /*            services.AddScoped<IUserManagerS, UserManagerS>();
         */

@@ -37,7 +37,7 @@ public static class IdentityConfiguration
             .AddSignInManager<SignInManager<AUser>>()
             .AddRoleManager<RoleManager<ARole>>()
             .AddDefaultTokenProviders();
-
+       
 
         return services;
     }

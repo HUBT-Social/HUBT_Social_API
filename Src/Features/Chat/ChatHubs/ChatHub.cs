@@ -116,7 +116,7 @@ public class ChatHub : Hub
         try
         {
             
-            await _hubContext.Clients.Group(groupId).SendAsync("ReceiveTyping", userId);
+            await _hubContext.Clients.Group(groupId).SendAsync("ReceiveTyping", groupId, userId);
         }
         catch (Exception ex)
         {

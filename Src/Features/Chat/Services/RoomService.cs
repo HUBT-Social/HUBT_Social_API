@@ -65,7 +65,7 @@ public class RoomService : IRoomService
                 .SendAsync("UpdateGroupName",  
                     new {
                         groupId = groupId, 
-                        changer = userId, 
+                        changerId = userId, 
                         newGroupName = newName
                         });
                 return true;
@@ -117,10 +117,10 @@ public class RoomService : IRoomService
             {
                 // Gửi thông báo qua SignalR nếu cập nhật thành công
                 await _hubContext.Clients.Group(groupId)
-                .SendAsync("UpdateAvatar", 
+                .SendAsync("UpdateGroupAvatar", 
                     new {
                         groupId = groupId, 
-                        changer = userId, 
+                        changerId = userId, 
                         newUrl = newUrl
                         });
                 return true;
@@ -191,14 +191,14 @@ public class RoomService : IRoomService
     /// <param name="userName">Tên người dùng cần cập nhật vai trò.</param>
     /// <param name="newParticipantRole">Vai trò mới cần gán.</param>
     /// <returns>Trả về true nếu cập nhật thành công, ngược lại false.</returns>
-    public async Task<bool> UpdateParticipantRoleAsync(string groupId, string userId, ParticipantRole newParticipantRole)
+    public async Task<bool> UpdateParticipantRoleAsync(string groupId, string changerId ,string changedId, ParticipantRole newParticipantRole)
 {
     try
     {
         // Tìm phòng chat chứa `roomId` và `Participant` có `UserName` khớp
         var filter = Builders<ChatRoomModel>.Filter.And(
             Builders<ChatRoomModel>.Filter.Eq(r => r.Id, groupId),
-            Builders<ChatRoomModel>.Filter.ElemMatch(r => r.Participant, p => p.UserId == userId)
+            Builders<ChatRoomModel>.Filter.ElemMatch(r => r.Participant, p => p.UserId == changedId)
         );
 
         // Kiểm tra sự tồn tại trước khi cập nhật
@@ -222,7 +222,8 @@ public class RoomService : IRoomService
                 .SendAsync("UpdateParticipantRole", 
                     new {
                         groupId = groupId,
-                        userId = userId, 
+                        changerId = changerId,
+                        changedId = changedId, 
                         newRole = newParticipantRole
                         });
                 return true;
@@ -316,7 +317,7 @@ public class RoomService : IRoomService
                 }
                 // Gửi thông báo qua SignalR nếu cập nhật thành công
                 await _hubContext.Clients.Group(request.GroupId)
-                .SendAsync("AddMember", 
+                .SendAsync("UserJoinedGroup",
                     new {
                         groupId = request.GroupId,
                         AdderId = AdderId,
@@ -390,7 +391,13 @@ public class RoomService : IRoomService
                 {
                     await _hubContext.Groups.RemoveFromGroupAsync(connectionId, groupId);
                 }
-                await _hubContext.Clients.Group(groupId).SendAsync("LeaveRoom", userId);
+                await _hubContext.Clients.Group(groupId)
+                    .SendAsync("LeaveRoom",
+                        new { 
+                            groupId = groupId,
+                            userId = userId
+                        }
+                    );
                 return true;
             }
             return false;

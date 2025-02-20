@@ -4,7 +4,7 @@ using HUBTSOCIAL.Src.Features.Chat.Models;
 
 public class ReplyMessage
 {
-    public string? message { get; set;} = string.Empty;
+    public string message { get; set;} = string.Empty;
     //public string? FirstMediaUrl { get; set;} = string.Empty;
     
     public string replyBy { get; set;} = string.Empty;

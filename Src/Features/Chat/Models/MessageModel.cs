@@ -7,7 +7,7 @@ public class MessageModel
 {
     public string id { get; set; } = Guid.NewGuid().ToString();
     public string key { get; set; } = Guid.NewGuid().ToString();
-    public string? message { get; set; }
+    public string message { get; set; }
     public DateTime createdAt { get; set; } = DateTime.UtcNow;
     public string sentBy { get; set; }
     public ReplyMessage? replyMessage { get; set; }
@@ -18,7 +18,7 @@ public class MessageModel
     public TimeSpan? voiceMessageDuration { get; set; }
 
     // Constructor private để ép buộc dùng factory method
-    private MessageModel(string sentBy,MessageType messageType, string? message = null,ReplyMessage? replyMessage = null)
+    private MessageModel(string sentBy,MessageType messageType, string message = null,ReplyMessage? replyMessage = null)
     {
         this.sentBy = sentBy;
         this.message = message;

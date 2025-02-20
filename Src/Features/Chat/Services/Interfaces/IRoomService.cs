@@ -42,7 +42,7 @@ public interface IRoomService
     /// <param name="userName">Tên người dùng cần cập nhật vai trò.</param>
     /// <param name="newParticipantRole">Vai trò mới cần gán.</param>
     /// <returns>Trả về true nếu cập nhật thành công, ngược lại false.</returns>
-    Task<bool> UpdateParticipantRoleAsync(string roomId, string userName, ParticipantRole newParticipantRole);
+    Task<bool> UpdateParticipantRoleAsync(string roomId, string changerId ,string changedId, ParticipantRole newParticipantRole);
     Task<bool> UpdateActionStatusAsync(string roomId, string chatItemId,MessageActionStatus newActionStatus);
     /// <summary>
     /// Thêm một thành viên mới vào phòng chat.

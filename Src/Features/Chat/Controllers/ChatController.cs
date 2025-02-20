@@ -129,7 +129,7 @@ public class ChatController : ControllerBase
     /// <param name="page"></param>
     /// <param name="limit"></param>
     /// <returns></returns>
-    [HttpPost("search-group")]
+    [HttpGet("search-group")]
     public async Task<IActionResult> SearchGroupsAsync([FromQuery] string keyword, [FromQuery] int page=1, [FromQuery] int limit=5)
     {
         if (string.IsNullOrWhiteSpace(keyword))
@@ -189,7 +189,7 @@ public class ChatController : ControllerBase
         {
             return BadRequest("Token is not valid");
         }
-        var rooms = await _chatService.GetRoomsOfUserIdAsync(userResponse.User.Id.ToString(),page,limit);
+        List<RoomLoadingRespone> rooms = await _chatService.GetRoomsOfUserIdAsync(userResponse.User.Id.ToString(),page,limit);
         return Ok(rooms);
     }
 
