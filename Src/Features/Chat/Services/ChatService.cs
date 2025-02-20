@@ -173,15 +173,15 @@ public class ChatService : IChatService
     ///     Ví dụ:
     ///     var rooms = await GetRoomsByIdUserAsync("user123");
     /// </example>
-    public async Task<List<RoomLoadingRespone>> GetRoomsOfUserNameAsync(string userName, int page, int limit)
+    public async Task<List<RoomLoadingRespone>> GetRoomsOfUserIdAsync(string userId, int page, int limit)
     {
         if (page <= 0 || limit <= 0)
-            throw new ArgumentException("Page and limit must be greater than 0.");
+            return new List<RoomLoadingRespone>();
 
         // Tạo bộ lọc để tìm các phòng chat có chứa userName trong danh sách Participant
         var filter = Builders<ChatRoomModel>.Filter.ElemMatch(
             cr => cr.Participant,
-            p => p.UserName == userName
+            p => p.UserId == userId
         );
 
         // Lấy các phòng chat phù hợp với bộ lọc, áp dụng phân trang

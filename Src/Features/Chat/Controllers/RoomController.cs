@@ -1,4 +1,7 @@
 using HUBT_Social_API.Core.Service.Upload;
+using HUBT_Social_API.Core.Settings;
+using HUBT_Social_API.Features.Auth.Dtos.Reponse;
+using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
@@ -6,7 +9,9 @@ using HUBT_Social_API.Src.Core.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+
 
 namespace HUBT_Social_API.Features.Chat.Controllers;
 
@@ -15,13 +20,15 @@ namespace HUBT_Social_API.Features.Chat.Controllers;
 public class RoomController : ControllerBase
 {
     private readonly IRoomService _roomService;
+    private readonly UserManager<AUser> _userManager;
 
     private readonly ITokenService _tokenService;
 
-    public RoomController(ITokenService tokenService, IRoomService roomService)
+    public RoomController(ITokenService tokenService,IRoomService roomService,UserManager<AUser> userManager)
     {
         _tokenService = tokenService;
         _roomService = roomService;
+        _userManager = userManager;
     }
 
 
@@ -39,19 +46,10 @@ public class RoomController : ControllerBase
         // Lấy danh sách tin nhắn
         List<MessageModel> messages = await _roomService.GetMessageHistoryAsync(getHistoryRequest);
 
-        if (getHistoryRequest.Type == MessageType.All) return Ok(messages);
+    return Ok(messages);
 
-        if ((getHistoryRequest.Type & MessageType.Media) != 0) // Kiểm tra nếu chứa Media
-        {
-            List<FilePaths> mediaResponse = new();
-            foreach (var message in messages) mediaResponse.AddRange(message.filePaths);
-            return Ok(mediaResponse);
-        }
-
-        return Ok(new List<MessageModel>()); // Trường hợp không khớp kiểu nào
-    }
-
-    // API to update group name
+}
+ // API to update group name
     [HttpPut("update-group-name")]
     public async Task<IActionResult> UpdateGroupName(UpdateGroupNameRequest request)
     {
@@ -61,8 +59,11 @@ public class RoomController : ControllerBase
         var userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
         if (userResponse == null || !userResponse.Success) return BadRequest("Invalid or missing token.");
 
-        var result = await _roomService.UpdateGroupNameAsync(request.Id, userResponse.User.UserName, request.NewName);
-        if (result) return Ok("Group name updated successfully.");
+        var result = await _roomService.UpdateGroupNameAsync(request.Id,userResponse.User.Id.ToString(),request.NewName);
+        if (result)
+        {
+            return Ok("Group name updated successfully.");
+        }
         return StatusCode(500, "Failed to update group name.");
     }
 
@@ -76,17 +77,20 @@ public class RoomController : ControllerBase
         if (userResponse == null || !userResponse.Success) return BadRequest("Invalid or missing token.");
         var newUrl = await UploadToStoreS3.CloudinaryService.UploadToStorageAsync(file);
 
-        var result = await _roomService.UpdateAvatarAsync(GroupId, userResponse.User.UserName, newUrl.Url);
-        if (result) return Ok("Avatar updated successfully.");
+        var result = await _roomService.UpdateAvatarAsync(GroupId,userResponse.User.Id.ToString(),newUrl.Url);
+        if (result)
+        {
+            return Ok("Avatar updated successfully.");
+        }
         return StatusCode(500, "Failed to update avatar.");
     }
 
     [HttpPut("update-nickname")]
     public async Task<IActionResult> UpdateNickNameAsync(UpdateNickNameRequest request)
     {
-        if (request == null
-            || string.IsNullOrEmpty(request.GroupId)
-            || string.IsNullOrEmpty(request.UserName)
+        if (request == null 
+            || string.IsNullOrEmpty(request.GroupId) 
+            || string.IsNullOrEmpty(request.UserId)
             || string.IsNullOrEmpty(request.NewNickName)
            )
             return BadRequest("Invalid request.");
@@ -94,8 +98,7 @@ public class RoomController : ControllerBase
         var userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
         if (userResponse == null || !userResponse.Success) return BadRequest("Invalid or missing token.");
 
-        var result = await _roomService.UpdateNickNameAsync(request.GroupId, userResponse.User.UserName,
-            request.UserName, request.NewNickName);
+        var result = await _roomService.UpdateNickNameAsync(request.GroupId,userResponse.User.Id.ToString(), request.UserId, request.NewNickName);
         if (result)
             return Ok("Nickname updated successfully.");
         return BadRequest("Failed to update nickname.");
@@ -103,18 +106,27 @@ public class RoomController : ControllerBase
 
     // API to add a member to the group
     [HttpPut("add-member")]
-    public async Task<IActionResult> JoinRoomAsync(AddMemberRequest request)
+    public async Task<IActionResult> JoinRoomAsync(AddMemberInputRequest request)
     {
-        if (request == null
-            || string.IsNullOrEmpty(request.GroupId)
-            || string.IsNullOrEmpty(request.AddedName)
-           )
+        if (request == null 
+        || string.IsNullOrEmpty(request.GroupId) 
+        || string.IsNullOrEmpty(request.AddedId)
+        )
+        {
             return BadRequest("Invalid request.");
+        }
         // Lấy thông tin người dùng từ Token
-        var userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-        if (userResponse == null || !userResponse.Success) return BadRequest("Invalid or missing token.");
-        var result = await _roomService.JoinRoomAsync(request, userResponse.User.UserName);
-        if (result) return Ok("Member added successfully.");
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+        if (userResponse == null || !userResponse.Success)
+        {
+            return BadRequest("Invalid or missing token.");
+        }
+        Participant participant = await Participant.CreateAsync(_userManager, request.AddedId, null);
+        var result = await _roomService.JoinRoomAsync(new AddMemberRequest{GroupId = request.GroupId,Added=participant},userResponse.User.Id.ToString());
+        if (result)
+        {   
+            return Ok("Member added successfully.");
+        }
         return StatusCode(500, "Failed to add member.");
     }
 
@@ -123,18 +135,20 @@ public class RoomController : ControllerBase
     public async Task<IActionResult> KickMemberAsync(RemoveMemberRequest request)
     {
         // Kiểm tra đầu vào
-        if (request == null
-            || string.IsNullOrEmpty(request.GroupId)
-            || string.IsNullOrEmpty(request.KickedName))
+        if (request == null 
+        || string.IsNullOrEmpty(request.GroupId) 
+        || string.IsNullOrEmpty(request.KickedId))
+        {
             return BadRequest("Invalid request.");
+        }
 
         // Lấy thông tin người dùng từ Token
         var userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
         if (userResponse == null || !userResponse.Success) return BadRequest("Invalid or missing token.");
 
         // Lấy vai trò của người thực hiện hành động (kicker) và người bị kick (kicked)
-        var kickerRole = await RoomChatHelper.GetRoleAsync(request.GroupId, userResponse.User.UserName);
-        var kickedRole = await RoomChatHelper.GetRoleAsync(request.GroupId, request.KickedName);
+        ParticipantRole? kickerRole = await RoomChatHelper.GetRoleAsync(request.GroupId, userResponse.User.Id.ToString());
+        ParticipantRole? kickedRole = await RoomChatHelper.GetRoleAsync(request.GroupId, request.KickedId);
 
         // Kiểm tra quyền hạn của kicker
         if (kickerRole == null || kickedRole == null)

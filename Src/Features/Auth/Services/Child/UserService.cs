@@ -42,18 +42,17 @@ public class UserService : IUserService
         return await TokenHelper.ConvertRolesIdtoRolesName(guids,_roleManager);
     }
 
-    public async Task<string> GetFullName(string userName)
+
+   
+
+    private async Task<AUser?> GetUserByNameAsync(string userName)
     {
-        var user = await GetUserByNameAsync(userName);
-        if (user == null) return LocalValue.Get(KeyStore.DefaultUserImage);
-        return user.FirstName + " " + user.LastName;
+        if (string.IsNullOrWhiteSpace(userName)) return null;
+        return await _userManager.FindByNameAsync(userName);
     }
 
-    public async Task<AUser?> FindUserByUserNameAsync(string userName)
-    {
-        return await GetUserByNameAsync(userName);
-    }
-
+    
+    public async Task<AUser?> FindUserByUserNameAsync(string userName) => await GetUserByNameAsync(userName);
     public async Task<AUser?> FindUserByEmailAsync(string email)
     {
         if (string.IsNullOrWhiteSpace(email)) return null;

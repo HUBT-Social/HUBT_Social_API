@@ -1,3 +1,5 @@
+using HUBTSOCIAL.Src.Features.Chat.Models;
+
 namespace HUBT_Social_API.Features.Chat.DTOs;
 
 public class MessageInputRequest
@@ -42,6 +44,28 @@ public class MediaRequest : MediaInputRequest
 }
 
 public class DeleteGroupRequest
+    {
+        public string GroupId { get; set; }
+    }
+
+public class AddMemberInputRequest
 {
-    public string GroupId { get; set; }
+    public string GroupId { get; set; } = String.Empty;
+    public string AddedId { get; set; }
+}
+public class AddMemberRequest
+{
+    public string GroupId { get; set; } = String.Empty;
+    public Participant Added { get; set; }
+}
+
+public class RemoveMemberRequest
+{
+    public string GroupId { get; set; } = String.Empty;
+    public string KickedId { get; set; } = String.Empty;
+}
+
+public class LeaveRoomRequest
+{
+    public string GroupId { get; set; } = String.Empty;
 }

@@ -1,5 +1,6 @@
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
+using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
@@ -8,7 +9,10 @@ using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.DTOs;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using Microsoft.IdentityModel.Tokens;
 
 namespace HUBT_Social_API.Features.Chat.Controllers;
 
@@ -18,13 +22,15 @@ public class ChatController : ControllerBase
 {
     private readonly IChatService _chatService;
     private readonly IRoomService _roomService;
+    private readonly UserManager<AUser> _userManager;
     private readonly ITokenService _tokenService;
 
-    public ChatController(IChatService chatService, ITokenService tokenService, IRoomService roomService)
+    public ChatController(IChatService chatService,ITokenService tokenService,IRoomService roomService,UserManager<AUser> userManager)
     {
         _chatService = chatService;
         _tokenService = tokenService;
         _roomService = roomService;
+        _userManager = userManager;
     }
 
     /// <summary>
@@ -44,10 +50,10 @@ public class ChatController : ControllerBase
             return BadRequest(new { message = "Token is not valid" });
 
         // Tạo danh sách Participant
-        var participants = CreateParticipants(createGroupRequest.UserNames, userResponse.User.UserName);
+        var participants = CreateParticipants(createGroupRequest.UserIds, userResponse.User.Id.ToString());
 
         // Tạo ChatRoomModel
-        var newChatRoom = CreateChatRoom(createGroupRequest.GroupName, participants);
+        var newChatRoom = CreateChatRoom(createGroupRequest.GroupName, participants.Result);
 
         // Lưu ChatRoom vào database
         var groupId = await _chatService.CreateGroupAsync(newChatRoom);
@@ -61,44 +67,34 @@ public class ChatController : ControllerBase
     {
         if (string.IsNullOrEmpty(request.GroupName))
             return LocalValue.Get(KeyStore.GroupNameRequired);
-        if (request.UserNames.Count < 2)
+        if (request.UserIds.Count < 2)
             return LocalValue.Get(KeyStore.NotEnoughMembers);
         return null;
     }
-
-    // Phương thức tạo danh sách Participant
-    private List<Participant> CreateParticipants(IEnumerable<string> userNames, string ownerUserName)
-    {
-        var participants = userNames
-            .Select(userName => new Participant
+            // Phương thức tạo danh sách Participant
+            private async Task<List<Participant>> CreateParticipants(IEnumerable<string> userIds, string ownerUserId)
             {
-                UserName = userName,
-                NickName = userName // Hiện tại là lấy theo userName, sau này sẽ lấy bằng cách call đến userService để lấy đúngđúng
-            })
-            .ToList();
+                var participants = await Task.WhenAll(userIds.Select(userId => Participant.CreateAsync(_userManager, userId, null)));
 
-        participants.Add(new Participant
-        {
-            UserName = ownerUserName,
-            Role = ParticipantRole.Owner,
-            NickName = ownerUserName
-        });
+                List<Participant> participantList = participants.ToList();
 
-        return participants;
-    }
+                Participant owner = await Participant.CreateAsync(_userManager, ownerUserId, ParticipantRole.Owner);
+                participantList.Add(owner);
 
-    // Phương thức tạo ChatRoomModel
-    private ChatRoomModel CreateChatRoom(string groupName, List<Participant> participants)
-    {
-        return new ChatRoomModel
-        {
-            Name = groupName,
-            AvatarUrl = LocalValue.Get(KeyStore.DefaultUserImage),
-            Participant = participants,
-            CreatedAt = DateTime.UtcNow
-        };
-    }
-
+                return participantList;
+            }
+            // Phương thức tạo ChatRoomModel
+            private ChatRoomModel CreateChatRoom(string groupName, List<Participant> participants)
+            {
+                return new ChatRoomModel
+                {
+                    Name = groupName,
+                    AvatarUrl = LocalValue.Get(KeyStore.DefaultUserImage),
+                    Participant = participants,
+                    CreatedAt = DateTime.UtcNow
+                };
+            }
+    
     /// <summary>
     /// </summary>
     /// <param name="request"></param>
@@ -129,9 +125,8 @@ public class ChatController : ControllerBase
     /// <param name="page"></param>
     /// <param name="limit"></param>
     /// <returns></returns>
-    [HttpPost("search-group")]
-    public async Task<IActionResult> SearchGroupsAsync([FromQuery] string keyword, [FromQuery] int page = 1,
-        [FromQuery] int limit = 5)
+    [HttpGet("search-group")]
+    public async Task<IActionResult> SearchGroupsAsync([FromQuery] string keyword, [FromQuery] int page=1, [FromQuery] int limit=5)
     {
         if (string.IsNullOrWhiteSpace(keyword))
             return BadRequest("Keyword is required.");
@@ -166,8 +161,11 @@ public class ChatController : ControllerBase
     {
         if (string.IsNullOrEmpty(userName))
             return BadRequest("Username is required.");
-
-        var rooms = await _chatService.GetRoomsOfUserNameAsync(userName, page, limit);
+        string? userId = await UserHelper.GetUserIdByUserName(_userManager,userName);
+        if(string.IsNullOrEmpty(userId))
+            return BadRequest("UserName is not exits");
+        
+        var rooms = await _chatService.GetRoomsOfUserIdAsync(userName,page,limit);
         if (rooms.Any())
             return Ok(rooms);
 
@@ -188,7 +186,7 @@ public class ChatController : ControllerBase
         {
             return BadRequest("Token is not valid");
         }
-        var rooms = await _chatService.GetRoomsOfUserNameAsync(userResponse.User.UserName,page,limit);
+        List<RoomLoadingRespone> rooms = await _chatService.GetRoomsOfUserIdAsync(userResponse.User.Id.ToString(),page,limit);
         return Ok(rooms);
     }
 }

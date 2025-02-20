@@ -45,7 +45,7 @@ public class MessageUploadService : IMessageUploadService
         Console.WriteLine("13");
         await SendingItem.SendChatItem(chatRequest.GroupId,message,hubContext); 
 
-        var updateResult = await SaveChatItem.Save(_chatRooms, chatRoom, message);
+        UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,chatRoom.Id,message);
         return updateResult.ModifiedCount > 0;
     }
     private async Task<LinkMetadataModel?> FetchLinkMetadataAsync(string url)
@@ -90,8 +90,7 @@ public class MessageUploadService : IMessageUploadService
             return null;
         }
     }
-
-    private List<string> ExtractLinksIfPresent(string message)
+        private List<string> ExtractLinksIfPresent(string message)
     {
         if (!Regex.IsMatch(message, @"(http|https):\/\/[^\s]+|www\.[^\s]+")) return new List<string>(); // Không có link
 

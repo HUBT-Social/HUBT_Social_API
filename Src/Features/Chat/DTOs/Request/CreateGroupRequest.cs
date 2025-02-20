@@ -1,10 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace HUBTSOCIAL.Src.Features.Chat.DTOs;
-
-public class CreateGroupRequest
+namespace HUBTSOCIAL.Src.Features.Chat.DTOs
 {
-    [Required] public string GroupName { get; set; }
+    public class CreateGroupRequest
+    {
+        [Required]
+        public string GroupName { get; set; }
+        [Required]
+        public List<string> UserIds { get; set; } = [];
+    }
 
-    [Required] public List<string> UserNames { get; set; } = [];
 }

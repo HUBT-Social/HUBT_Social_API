@@ -1,27 +1,34 @@
+using System.Threading.Tasks;
+using Amazon.Runtime;
+using FirebaseAdmin.Auth;
 using HUBT_Social_API.Core.Settings;
+using HUBT_Social_API.Features.Auth.Models;
 using HUBTSOCIAL.Src.Features.Chat.Collections;
+using HUBTSOCIAL.Src.Features.Chat.Helpers;
+using Microsoft.AspNetCore.Identity;
 
 namespace HUBTSOCIAL.Src.Features.Chat.Models;
 
 public class Participant
 {
-    /// <summary>
-    ///     UserName dùng để định danh người dùng.
-    /// </summary>
-    public string UserName { get; set; } = string.Empty; // Id của người dùng
-
-    public ParticipantRole Role { get; set; } = ParticipantRole.Member; // Vai trò của người dùng (vd: Admin, Member)
+    public string UserId { get; set; } = string.Empty;
+    public ParticipantRole Role { get; set; }
     public string NickName { get; set; } = string.Empty;
     public string? ProfilePhoto { get; set; }
-
-    /// <summary>
-    ///     Ảnh đại diện mặc định nếu ProfilePhoto không có.
-    /// </summary>
     public string DefaultAvatarImage { get; set; } = LocalValue.Get(KeyStore.DefaultUserImage);
-   
 
-    public void setProfilePhoto(string ProfilePhoto)
+    // Constructor private để bắt buộc dùng phương thức CreateAsync
+    private Participant(string userId, ParticipantRole? role)
     {
-        this.ProfilePhoto = ProfilePhoto;
+        this.UserId = userId;
+        this.Role = role??ParticipantRole.Member;
+    }
+
+    public static async Task<Participant> CreateAsync(UserManager<AUser> userManager, string userId, ParticipantRole? role)
+    {
+        var participant = new Participant(userId, role);
+        participant.NickName = await UserHelper.GetFullNameById(userManager, userId);
+        participant.ProfilePhoto = await UserHelper.GetAvatarUserById(userManager,userId);
+        return participant;
     }
 }

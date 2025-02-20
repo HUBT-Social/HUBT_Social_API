@@ -1,6 +1,7 @@
 using AspNetCore.Identity.MongoDbCore.Extensions;
 using AspNetCore.Identity.MongoDbCore.Infrastructure;
 using HUBT_Social_API.Features.Auth.Models;
+using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using Microsoft.AspNetCore.Identity;
 
 namespace HUBT_Social_API.Core.Configurations;
@@ -36,6 +37,8 @@ public static class IdentityConfiguration
             .AddSignInManager<SignInManager<AUser>>()
             .AddRoleManager<RoleManager<ARole>>()
             .AddDefaultTokenProviders();
+       
+
         return services;
     }
 }

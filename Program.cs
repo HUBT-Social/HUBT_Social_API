@@ -54,7 +54,7 @@ namespace HUBT_Social_API;
             {
                 options.AddPolicy("AllowSpecificOrigin", policy =>
                 {
-                    policy.WithOrigins("https://chatuitest.onrender.com")  // Chỉ cho phép origin này
+                    policy.WithOrigins("https://chatuitest.onrender.com","http://localhost:3000")  // Chỉ cho phép origin này
                         .AllowAnyMethod()   // Cho phép bất kỳ phương thức HTTP nào
                         .AllowAnyHeader()   // Cho phép bất kỳ header nào
                         .AllowCredentials(); // Cho phép gửi credentials như cookies, authorization headers

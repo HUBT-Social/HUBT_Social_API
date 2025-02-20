@@ -13,9 +13,17 @@ public static class SendingItem
 
         try
         {
-            Console.WriteLine("giui tin: ",chatItem.messageType);
-            await _hubContext.Clients.Group(groupId).SendAsync("ReceiveChat", chatItem);
-            Console.WriteLine("14");
+            try
+            {
+                Console.WriteLine("giui tin: ",chatItem.messageType);
+                await _hubContext.Clients.Group(groupId).SendAsync("ReceiveChat", groupId,chatItem);
+                Console.WriteLine("14");
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi và xử lý tùy theo nhu cầu
+                Console.WriteLine($"Error sending ReceiveChat: {ex.Message}");
+            }
         }
         catch (Exception ex)
         {
