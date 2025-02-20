@@ -54,21 +54,8 @@ public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest ge
     // Lấy danh sách tin nhắn
     List<MessageModel> messages = await _roomService.GetMessageHistoryAsync(getHistoryRequest);
 
-    if (getHistoryRequest.Type == MessageType.All)
-    {
-        return Ok(messages);
-    }
-    else if ((getHistoryRequest.Type & MessageType.Media) != 0) // Kiểm tra nếu chứa Media
-    {
-        List<FilePaths> mediaResponse = new();
-        foreach (var message in messages)
-        {
-            mediaResponse.AddRange(message.filePaths); 
-        }
-        return Ok(mediaResponse);
-    }
+    return Ok(messages);
 
-    return Ok(new List<MessageModel>()); // Trường hợp không khớp kiểu nào
 }
  // API to update group name
     [HttpPut("update-group-name")]
@@ -157,7 +144,7 @@ public async Task<IActionResult> GetHistoryChat([FromQuery] GetHistoryRequest ge
         {
             return BadRequest("Invalid or missing token.");
         }
-        Participant participant = new Participant(_userHelper,request.AddedId,null);
+        Participant participant = new InitParticipant(_userHelper,request.AddedId,null);
         var result = await _roomService.JoinRoomAsync(new AddMemberRequest{GroupId = request.GroupId,Added=participant},userResponse.User.Id.ToString());
         if (result)
         {   

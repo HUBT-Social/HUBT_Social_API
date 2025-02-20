@@ -155,7 +155,7 @@ public class RoomService : IRoomService
 
             // Tạo định nghĩa cập nhật để thay đổi `NickName` của `Participant` khớp
             var update = Builders<ChatRoomModel>.Update.Set(
-                r => r.Participant[-1].NickName, // `-1` đại diện cho phần tử được tìm qua `ElemMatch`
+                "Participant.$.NickName", // `-1` đại diện cho phần tử được tìm qua `ElemMatch`
                 newNickName
             );
 
@@ -430,7 +430,7 @@ public class RoomService : IRoomService
         .Take(limit) // Lấy đúng số lượng tin nhắn cần thiết
         .ToList(); // Chuyển đổi thành danh sách
 
-        return filteredItems;
+        return filteredItems??new List<MessageModel>();
     }
 
    

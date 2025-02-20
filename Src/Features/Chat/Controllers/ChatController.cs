@@ -69,13 +69,13 @@ public class ChatController : ControllerBase
                 return null;
             }
             // Phương thức tạo danh sách Participant
-            private List<Participant> CreateParticipants(IEnumerable<string> userIds, string ownerUserId)
+            private async List<Participant> CreateParticipants(IEnumerable<string> userIds, string ownerUserId)
             {
                 var participants = userIds
-                    .Select(userId => new Participant(_userHelper,userId,null))
+                    .Select(async userId => await Participant.InitParticipant(_userHelper,userId,null))
                     .ToList();
-                
-                participants.Add(new Participant(_userHelper,ownerUserId,ParticipantRole.Owner)); 
+                Participant owner =await Participant.InitParticipant(_userHelper,ownerUserId,ParticipantRole.Owner);
+                participants.Add(owner); 
                 
                 foreach(var participant in participants){
                     Console.WriteLine(participant.UserId);

@@ -22,13 +22,20 @@ public class Participant
     /// Ảnh đại diện mặc định nếu ProfilePhoto không có.
     /// </summary>
     public string DefaultAvatarImage { get; set; } = LocalValue.Get(KeyStore.DefaultUserImage);
-
-    public Participant(UserHelper userHelper, string userId,ParticipantRole? role)
+    public Participant(string userId, ParticipantRole role, string nickName,string? profilePhoto = null)
     {
         this.UserId = userId;
-        this.NickName = userHelper.GetFullNameById(userId).ToString();
-        this.ProfilePhoto = userHelper.GetAvaterUserById(userId).ToString();
-        this.Role = role??ParticipantRole.Member;
+        this.Role = role;
+        this.NickName = nickName;
+        this.ProfilePhoto = profilePhoto;
     }
-   
+    public async static Task<Participant> InitParticipant(UserHelper userHelper, string userId,ParticipantRole? role)
+    {
+        string UserId = userId;
+        string NickName = await userHelper.GetFullNameById(userId);
+        string ProfilePhoto = await userHelper.GetAvatarUserById(userId);
+        ParticipantRole Role = role??ParticipantRole.Member;
+        Participant participant= new Participant(UserId, Role,NickName,ProfilePhoto);
+        return participant;
+    }
 }
