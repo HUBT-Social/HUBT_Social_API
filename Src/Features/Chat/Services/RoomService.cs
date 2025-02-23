@@ -464,4 +464,31 @@ public class RoomService : IRoomService
 
         return filteredItems??new List<MessageModel>();
     }
+
+    public async Task<List<ChatUserResponse>> GetRoomUserAsync(string groupId)
+    {
+        var chatRoom = await _chatRooms
+            .Find(room => room.Id == groupId)
+            .FirstOrDefaultAsync();
+
+
+        if (chatRoom == null || chatRoom.Participant == null)
+        {
+            return new List<ChatUserResponse>();
+        }
+
+        // Lấy thêm thông tin user nếu cần
+        var participants = chatRoom.Participant;
+        List<ChatUserResponse> res = new List<ChatUserResponse>();
+        foreach (var participant in participants)
+        {
+            ChatUserResponse chatUserResponse = new ChatUserResponse();
+            chatUserResponse.id = participant.UserId;
+            chatUserResponse.name = participant.NickName;
+            chatUserResponse.profilePhoto = participant.ProfilePhoto??participant.DefaultAvatarImage;
+            res.Add(chatUserResponse);
+        }
+
+        return res;
+    }
 }

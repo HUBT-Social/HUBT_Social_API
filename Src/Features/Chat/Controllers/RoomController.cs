@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using HUBT_Social_API.Core.Service.Upload;
 using HUBT_Social_API.Core.Settings;
 using HUBT_Social_API.Features.Auth.Dtos.Reponse;
@@ -9,6 +10,7 @@ using HUBT_Social_API.Src.Core.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -49,6 +51,62 @@ public class RoomController : ControllerBase
     return Ok(messages);
 
 }
+    
+    [Authorize]
+    [HttpGet("get-room-user")]
+    public async Task<IActionResult> GetRoomUser([FromQuery] string groupId)
+    {
+        if (string.IsNullOrEmpty(groupId))
+        {
+            return BadRequest(new { Message = "GroupId không được để trống." });
+        }
+
+        var res = await _roomService.GetRoomUserAsync(groupId);
+
+        if (res.Count == 0)
+        {
+            return NotFound(new { Message = $"Không tìm thấy phòng chat với groupId: {groupId}." });
+        }
+        // Giả định UserId hiện tại được lấy từ token (hoặc cấu hình)
+        var currentUserId = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(currentUserId))
+        {
+            return Unauthorized(new { Message = "Không xác định được người dùng hiện tại." });
+        }
+
+        // Lọc currentUser và otherUsers
+        var currentUser = res.FirstOrDefault(p => p.id == currentUserId);
+        if (currentUser == null)
+        {
+            return Unauthorized(new { Message = "Người dùng hiện tại không có trong phòng chat." });
+        }
+
+        var otherUsers = res.Where(p => p.id != currentUserId).ToList();
+
+        // Ánh xạ sang ChatUserDTO
+        var currentUserDto = new ChatUserResponse
+        {
+            id = currentUser.id,
+            name = currentUser.name ?? "Unknown",
+            profilePhoto = currentUser.profilePhoto
+        };
+
+        var otherUsersDto = otherUsers.Select(p => new ChatUserResponse
+        {
+            id = p.id,
+            name = p.name ?? "Unknown",
+            profilePhoto = p.profilePhoto
+        }).ToList();
+
+        // Trả về kết quả
+        return Ok(new
+        {
+            GroupId = groupId,
+            CurrentUser = currentUserDto,
+            OtherUsers = otherUsersDto
+        });
+    }
+ 
  // API to update group name
     [HttpPut("update-group-name")]
     public async Task<IActionResult> UpdateGroupName(UpdateGroupNameRequest request)
