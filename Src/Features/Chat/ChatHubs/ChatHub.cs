@@ -83,7 +83,13 @@ public class ChatHub : Hub
             return;
         }
 
-        await Clients.Caller.SendAsync("ReceiveProcess", inputRequest.RequestId, MessageStatus.Pending);
+        await Clients.Caller
+        .SendAsync("ReceiveProcess", 
+            new
+            {
+                requestId = inputRequest.RequestId, 
+                status = MessageStatus.Pending
+            });
 
         var chatRequest = new ChatRequest
         {
@@ -97,7 +103,13 @@ public class ChatHub : Hub
         bool isSuccess = await _uploadChatServices.SendChatAsync(chatRequest);
         var status = isSuccess ? MessageStatus.Sent : MessageStatus.Failed;
 
-        await Clients.Caller.SendAsync("ReceiveProcess", inputRequest.RequestId, status);
+        await Clients.Caller
+            .SendAsync("ReceiveProcess", 
+                new
+                {
+                    requestId= inputRequest.RequestId, 
+                    status = status
+                });
     }
 
 
