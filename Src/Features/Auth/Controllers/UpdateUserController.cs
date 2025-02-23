@@ -1,11 +1,15 @@
 using HUBT_Social_API.Core.Service.Upload;
 using HUBT_Social_API.Core.Settings;
+using HUBT_Social_API.Features.Auth.Dtos.Reponse;
 using HUBT_Social_API.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Features.Auth.Dtos.Request.UpdateUserRequest;
+using HUBT_Social_API.Features.Auth.Services.Child;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Src.Core.Helpers;
 using HUBT_Social_API.Src.Features.Auth.Dtos.Request;
 using HUBT_Social_API.Src.Features.Auth.Dtos.Request.UpdateUserRequest;
+using HUBT_Social_API.Src.Features.Notifcate.Models.Requests;
+using HUBT_Social_API.Src.Features.Notifcate.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,9 +25,11 @@ public class UpdateUserController : ControllerBase
     protected readonly ITokenService _tokenService;
 
     protected readonly IUserService _userService;
+    private readonly IFireBaseNotificationService _fireBaseNotificationService;
 
-    public UpdateUserController(ITokenService tokenService, IEmailService emailService, IUserService userService)
+    public UpdateUserController(ITokenService tokenService, IEmailService emailService, IUserService userService, IFireBaseNotificationService fireBaseNotificationService)
     {
+        _fireBaseNotificationService = fireBaseNotificationService;
         _tokenService = tokenService;
         _emailService = emailService;
         _userService = userService;
@@ -167,8 +173,24 @@ public class UpdateUserController : ControllerBase
     [HttpPut("update/fcm-token")]
     public async Task<IActionResult> StoreFcm(StoreFCMRequest request)
     {
+        UserResponse userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+
+
+        if (string.IsNullOrWhiteSpace(userResponse?.User?.UserName))
+            return new BadRequestObjectResult(LocalValue.Get(KeyStore.UserNotFound));
+
+        if (userResponse.User.FCMToken != request.FcmToken && !string.IsNullOrEmpty(userResponse.User.FCMToken))
+            await _fireBaseNotificationService.SendPushNotificationAsync(new SendMessageRequest { Token = userResponse.User.FCMToken, Title = "Thông báo", Body = "Bạn đã đăng nhập ở một thiết bị khác" });
         return await UpdateHelper.HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError,
-            (userName, _) => _userService.UpdateStatusAsync(userName, request.FcmToken), new object(), Request,
+            (userName, _) => _userService.UpdateFcmTokenAsync(userName, request.FcmToken), new object(), Request,
+            _tokenService);
+    }
+    [HttpPut("Delete/fcm-token")]
+    public async Task<IActionResult> DeleteStoreFcm()
+    {
+
+        return await UpdateHelper.HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError,
+            (userName, _) => _userService.UpdateStatusAsync(userName,""), new object(), Request,
             _tokenService);
     }
 
