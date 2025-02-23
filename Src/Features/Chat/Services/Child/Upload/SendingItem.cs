@@ -1,5 +1,6 @@
 using FireSharp.Extensions;
 using HUBT_Social_API.Features.Chat.ChatHubs;
+using HUBT_Social_API.Features.Chat.DTOs;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.SignalR;
 
