@@ -18,11 +18,10 @@ public class RoomService : IRoomService
 
     public RoomService(
         IMongoCollection<ChatRoomModel> chatRooms,
-        IUserService userService, IHubContext<ChatHub> hubContext,
+        IHubContext<ChatHub> hubContext,
         IUserConnectionManager userConnectionManager)
     {
         _chatRooms = chatRooms;
-        _userService = userService;
         _hubContext = hubContext;
         _userConnectionManager = userConnectionManager;
     }
@@ -449,8 +448,8 @@ public class RoomService : IRoomService
         if (chatRoom == null)
             return new List<MessageModel>();
 
-        var limit = getItemsHistoryRequest.Limit;
-        var timeFilter = getItemsHistoryRequest.Time;
+        int limit = getItemsHistoryRequest.Limit??20;
+        DateTime? timeFilter = getItemsHistoryRequest.Time;
 
         // Lọc các item theo thời gian và loại (nếu có)
         var filteredItems = chatRoom.Content
@@ -458,7 +457,7 @@ public class RoomService : IRoomService
             item.createdAt < timeFilter && // Lọc theo thời gian
             (getItemsHistoryRequest.Type == MessageType.All || (item.messageType & getItemsHistoryRequest.Type) != 0)) // Lọc theo loại nếu có
         .OrderByDescending(item => item.createdAt) // Sắp xếp theo thời gian giảm dần
-        .Skip((getItemsHistoryRequest.Page - 1) * limit) // Bỏ qua số lượng bản ghi tương ứng với trang
+        .Skip((getItemsHistoryRequest.Page??1 - 1) * limit) // Bỏ qua số lượng bản ghi tương ứng với trang
         .Take(limit) // Lấy đúng số lượng tin nhắn cần thiết
         .ToList(); // Chuyển đổi thành danh sách
 
