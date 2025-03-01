@@ -64,59 +64,52 @@ namespace HUBT_Social_API.Features.Chat.Controllers
             
             [Authorize]
             [HttpGet("get-member")]
-            public async Task<IActionResult> GetRoomUser([FromQuery,Required] string groupId)
+            public async Task<IActionResult> GetRoomUser([FromQuery, Required] string groupId)
             {
                 if (string.IsNullOrEmpty(groupId))
                 {
                     return BadRequest(new { Message = "GroupId không được để trống." });
                 }
 
-                var res = await _roomService.GetRoomUserAsync(groupId);
-
-                if (res.Count == 0)
+                var users = await _roomService.GetRoomUserAsync(groupId).ConfigureAwait(false);
+                if (users == null || !users.Any())
                 {
-                    return NotFound(new { Message = $"Không tìm thấy phòng chat với groupId: {groupId}." });
+                    return BadRequest(new { Message = "Không tìm thấy thành viên trong phòng chat." });
                 }
-                // Giả định UserId hiện tại được lấy từ token (hoặc cấu hình)
-                var currentUserId = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;                                                                                              
+
+                var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(currentUserId))
                 {
                     return Unauthorized(new { Message = "Không xác định được người dùng hiện tại." });
                 }
 
-                // Lọc currentUser và otherUsers
-                var currentUser = res.FirstOrDefault(p => p.id == currentUserId);
+                var currentUser = users.FirstOrDefault(u => u.id == currentUserId);
                 if (currentUser == null)
                 {
                     return Unauthorized(new { Message = "Người dùng hiện tại không có trong phòng chat." });
                 }
 
-                var otherUsers = res.Where(p => p.id != currentUserId).ToList();
-
-                // Ánh xạ sang ChatUserDTO
-                var currentUserDto = new ChatUserResponse
-                {
-                    id = currentUser.id,
-                    name = currentUser.name ?? "Unknown",
-                    profilePhoto = currentUser.profilePhoto
-                };
-
-                var otherUsersDto = otherUsers.Select(p => new ChatUserResponse
-                {
-                    id = p.id,
-                    name = p.name ?? "Unknown",
-                    profilePhoto = p.profilePhoto
-                }).ToList();
-
-                // Trả về kết quả
                 return Ok(new
                 {
                     GroupId = groupId,
-                    CurrentUser = currentUserDto,
-                    OtherUsers = otherUsersDto
+                    CurrentUser = new ChatUserResponse
+                    {
+                        id = currentUser.id,
+                        name = currentUser.name ?? "Unknown",
+                        profilePhoto = currentUser.profilePhoto
+                    },
+                    OtherUsers = users
+                        .Where(u => u.id != currentUserId)
+                        .Select(u => new ChatUserResponse
+                        {
+                            id = u.id,
+                            name = u.name ?? "Unknown",
+                            profilePhoto = u.profilePhoto
+                        })
+                        .ToList()
                 });
             }
-        
+
         // API to update group name
             [HttpPut("update-group-name")]
             public async Task<IActionResult> UpdateGroupName(UpdateGroupNameRequest request)
