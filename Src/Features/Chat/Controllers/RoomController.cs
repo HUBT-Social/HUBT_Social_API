@@ -64,7 +64,7 @@ namespace HUBT_Social_API.Features.Chat.Controllers
             
             [Authorize]
             [HttpGet("get-member")]
-            public async Task<IActionResult> GetRoomUser([FromQuery, Required] string groupId)
+            public async Task<IActionResult> GetRoomUser(string groupId)
             {
                 if (string.IsNullOrEmpty(groupId))
                 {

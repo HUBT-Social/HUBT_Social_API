@@ -430,7 +430,7 @@ public class RoomService : IRoomService
         .Where(item =>
             item.createdAt < timeFilter && // Lọc theo thời gian
             (getItemsHistoryRequest.Type == MessageType.All || (item.messageType & getItemsHistoryRequest.Type) != 0)) // Lọc theo loại nếu có
-        .OrderByDescending(item => item.createdAt) // Sắp xếp theo thời gian giảm dần
+        .OrderBy(item => item.createdAt) // Sắp xếp theo thời gian giảm dần
         .Skip((getItemsHistoryRequest.Page??1 - 1) * limit) // Bỏ qua số lượng bản ghi tương ứng với trang
         .Take(limit) // Lấy đúng số lượng tin nhắn cần thiết
         .ToList(); // Chuyển đổi thành danh sách
