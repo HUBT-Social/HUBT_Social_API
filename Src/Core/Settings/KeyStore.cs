@@ -95,6 +95,7 @@ public static class KeyStore
     public const string UserInfoUpdatedSuccess = "UserInfoUpdatedSuccess";
     public const string UserInfoUpdateError = "UserInfoUpdateError";
 
+
     // Các key cho lỗi OTP và password
     public const string PasswordCheckEmptyError = "PasswordCheckEmptyError";
     public const string OtpVerifyEmptyError = "OtpVerifyEmptyError";
@@ -138,6 +139,9 @@ public static class KeyStore
     public const string Email2Text12 = "Email2Text12";
     public const string Email2Text13 = "Email2Text13";
 
+    // API
+    public const string ApiError = "ApiError";
+    public const string ApiSendSuccess = "ApiSendSuccess";
 
     public const string TokenValid = "TokenValid";
 

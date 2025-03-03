@@ -28,9 +28,9 @@ namespace HUBT_Social_API;
             builder.Services.ConfigureSMPT(builder.Configuration);
             builder.Services.FirebaseService(builder.Configuration);
             builder.Services.AddConfigureationService(builder.Configuration);
-            
+            builder.Services.AddRegisterClientService(builder.Configuration);
 
-            builder.Services.AddChatMongoCollections(builder.Configuration);
+        builder.Services.AddChatMongoCollections(builder.Configuration);
             builder.Services.AddAuthMongoCollections(builder.Configuration);
             builder.Services.ConfigureJwt(builder.Configuration);
         }

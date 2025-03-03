@@ -4,5 +4,6 @@ namespace HUBT_Social_API.Src.Features.Notifcate.Services;
 
 public interface IFireBaseNotificationService
 {
-    Task SendPushNotificationAsync(SendMessageRequest request);
+    Task SendPushNotificationToOneAsync(SendMessageRequest request);
+    Task SendPushNotificationToManyAsync(SendGroupMessageRequest request);
 }

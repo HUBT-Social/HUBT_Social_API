@@ -1,6 +1,12 @@
-﻿namespace HUBT_Social_API.Src.Features.Auth.Dtos.Request;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 
-public class StoreFCMRequest
+namespace HUBT_Social_API.Src.Features.Auth.Dtos.Request
 {
-    public string FcmToken { get; set; } = string.Empty;
+    public class StoreFCMRequest
+    {
+        [Required(ErrorMessage = "FcmToken không được để trống.")]
+        [RegularExpression(@"^([a-zA-Z0-9\-\_:]{100,})$", ErrorMessage = "FcmToken không hợp lệ.")]
+        public string FcmToken { get; set; } = string.Empty;
+    }
 }

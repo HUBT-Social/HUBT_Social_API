@@ -20,7 +20,7 @@ public class SendNotificationController : ControllerBase
     {
         try
         {
-            await _notification.SendPushNotificationAsync(request);
+            await _notification.SendPushNotificationToOneAsync(request);
             return Ok();
         }
         catch (Exception ex)
