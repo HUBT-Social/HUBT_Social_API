@@ -13,9 +13,11 @@ using MongoDB.Driver;
 public class MediaUploadService : IMediaUploadService
 {
     private readonly IMongoCollection<ChatRoomModel> _chatRooms;
-    public MediaUploadService(IMongoCollection<ChatRoomModel> chatRooms)
+    private readonly IMongoCollection<ChatHistory> _chatHistory;
+    public MediaUploadService(IMongoCollection<ChatRoomModel> chatRooms,IMongoCollection<ChatHistory> chatHistory)
     {
         _chatRooms = chatRooms;
+        _chatHistory = chatHistory;
     }
     public async Task<bool> UploadMediaAsync(MediaRequest mediaRequest,IHubContext<ChatHub> hubContext)
     {
@@ -52,11 +54,11 @@ public class MediaUploadService : IMediaUploadService
                 }
             }
 
-        MessageModel message = await MessageModel.CreateMediaMessageAsync(mediaRequest.UserId,FilePaths,mediaRequest.ReplyToMessage);
+        MessageModel message = await MessageModel.CreateMediaMessageAsync(chatRoom.CurrentBlockId,mediaRequest.UserId,FilePaths,mediaRequest.ReplyToMessage);
         
         await SendingItem.SendChatItem(mediaRequest.GroupId,message,hubContext);
 
-        UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,chatRoom.Id,message);
+        UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,_chatHistory,chatRoom.Id,message);
 
         return updateResult.ModifiedCount > 0;
     }

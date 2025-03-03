@@ -1,3 +1,4 @@
+using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Models;
 using MongoDB.Driver;
@@ -7,11 +8,13 @@ namespace HUBTSOCIAL.Src.Features.Chat.Helpers
     public static class RoomChatHelper
     {
         private static IMongoCollection<ChatRoomModel> _chatRooms;
+        private static IMongoCollection<ChatHistory> _chatHistory;
 
         // Constructor để gán collection (_chatRooms) khi khởi tạo
-        public static void Initialize(IMongoCollection<ChatRoomModel> chatRooms)
+        public static void Initialize(IMongoCollection<ChatRoomModel> chatRooms,IMongoCollection<ChatHistory> chatHistory)
         {
             _chatRooms = chatRooms;
+            _chatHistory = chatHistory;
         }
 
         // Phương thức lấy role của participant
@@ -55,15 +58,37 @@ namespace HUBTSOCIAL.Src.Features.Chat.Helpers
         // Phương thức lấy thông tin của một message
         public static async Task<MessageModel?> GetInfoMessageAsync(string roomId, string messageId)
         {
-            var filter = Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, roomId);
-            var chatRoom = await _chatRooms.Find(filter).FirstOrDefaultAsync();
+            var filter0 = Builders<ChatRoomModel>.Filter.Eq(cr => cr.Id, roomId);
+            var chatRoom = await _chatRooms.Find(filter0).FirstOrDefaultAsync();
 
             if (chatRoom == null)
                 return null;
+            var parts = messageId.Split('_');
+            string blockId =  parts.Length == 2 ? parts[1] : null;
 
-            var message = chatRoom.Content.FirstOrDefault(ci => ci.id == messageId);
+            var hotMessage = chatRoom.HotContent
+                .FirstOrDefault(m => m.id == messageId);
 
-            return message;
+            if (hotMessage != null) return hotMessage;
+
+            // 2. Tìm trong ChatHistory dựa trên BlockId
+            var filter = Builders<ChatHistory>.Filter.And(
+                Builders<ChatHistory>.Filter.Eq(ch => ch.RoomId, roomId),
+                Builders<ChatHistory>.Filter.ElemMatch(ch => ch.HistoryChat, b => b.BlockId == blockId)
+            );
+
+            var projection = Builders<ChatHistory>.Projection
+                .Include(ch => ch.HistoryChat[-1].Data); // Chỉ lấy block cần thiết
+
+            var chatHistory = await _chatHistory
+                .Find(filter)
+                .Project<ChatHistory>(projection)
+                .FirstOrDefaultAsync();
+
+            if (chatHistory == null || !chatHistory.HistoryChat.Any()) return null;
+
+            var block = chatHistory.HistoryChat.FirstOrDefault(b => b.BlockId == blockId);
+            return block?.Data.FirstOrDefault(m => m.id == messageId);
         }
         public static async Task<List<string>> GetUserGroupConnected(string UserId)
         {

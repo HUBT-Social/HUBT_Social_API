@@ -256,11 +256,11 @@ public class ChatService : IChatService
     private async Task<(string LastInteraction, string LastTime)> GetRecentChatItemAsync(ChatRoomModel chatRoom)
     {
         // Nếu không có danh sách ChatItems hoặc rỗng, trả về chuỗi rỗng
-        if (chatRoom.Content == null || !chatRoom.Content.Any())
+        if (chatRoom.HotContent == null || !chatRoom.HotContent.Any())
             return (string.Empty, string.Empty);
 
         // Lấy tin nhắn mới nhất dựa vào Timestamp
-        var recentMessage = chatRoom.Content
+        var recentMessage = chatRoom.HotContent
             .OrderByDescending(m => m.createdAt)
             .FirstOrDefault();
         

@@ -1,4 +1,5 @@
 ﻿using HUBT_Social_API.Features.Auth.Dtos.Collections;
+using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBT_Social_API.src.Features.Auth.Dtos.Collections;
 using HUBT_Social_API.Src.Features.Auth.Dtos.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Helpers;
@@ -31,8 +32,9 @@ public static class MongoDbConfiguration
         var chatDatabase = chatClient.GetDatabase("HUBT_Management");
 
         services.AddScoped<IMongoCollection<ChatRoomModel>>(s => chatDatabase.GetCollection<ChatRoomModel>("ChatRoom"));
+        services.AddScoped<IMongoCollection<ChatHistory>>(s => chatDatabase.GetCollection<ChatHistory>("Contents"));
         
-        RoomChatHelper.Initialize(chatDatabase.GetCollection<ChatRoomModel>("ChatRoom"));
+        RoomChatHelper.Initialize(chatDatabase.GetCollection<ChatRoomModel>("ChatRoom"),chatDatabase.GetCollection<ChatHistory>("Contents"));
         return services;
     }
 }
