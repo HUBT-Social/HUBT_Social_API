@@ -15,7 +15,7 @@ namespace HUBTSOCIAL.Src.Features.Chat.Models
         public string BackGroundUrl { get; set; } = string.Empty;
         public DateTime LastInteractionTime { get; set; }
         public List<Participant> Participant { get; set; } = new();
-        public string CurrentBlockId { get; set; }= "FirstBlock";
+        public string PreBlockId { get; set; }= "First_Block";
         public List<PageReference> PageReference { get; set; } = new();
         public List<MessageModel> HotContent { get; set; } = new(); // Chỉ là danh sách, logic tách riêng
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -23,18 +23,4 @@ namespace HUBTSOCIAL.Src.Features.Chat.Models
 
     }
 
-    public class PageReference
-    {
-        public string BlockId { get; set; }
-        public string PreBlockId { get; set; } = string.Empty; // Khởi tạo rỗng
-    }
-}
-
-// Định nghĩa ChatPage cho Shared Store
-public class ChatPage
-{
-    public string BlockId { get; set; }
-    public List<MessageModel> Data { get; set; }
-    public DateTime StartTime { get; set; }
-    public DateTime EndTime { get; set; }
 }

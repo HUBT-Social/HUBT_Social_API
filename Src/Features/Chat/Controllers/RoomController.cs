@@ -106,6 +106,23 @@ namespace HUBT_Social_API.Features.Chat.Controllers
                         .ToList()
                 });
             }
+            [Authorize]
+            [HttpGet("get-room-user")]
+            public async Task<IActionResult> GetUser(string groupId)
+            {
+                if (string.IsNullOrEmpty(groupId))
+                {
+                    return BadRequest(new { Message = "GroupId không được để trống." });
+                }
+
+                var users = await _roomService.GetRoomUserAsync(groupId).ConfigureAwait(false);
+                if (users == null || !users.Any())
+                {
+                    return BadRequest(new { Message = "Không tìm thấy thành viên trong phòng chat." });
+                }      
+
+                return Ok(users);
+            }
 
         // API to update group name
             [HttpPut("update-group-name")]

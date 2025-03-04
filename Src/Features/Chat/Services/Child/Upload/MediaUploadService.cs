@@ -54,7 +54,7 @@ public class MediaUploadService : IMediaUploadService
                 }
             }
 
-        MessageModel message = await MessageModel.CreateMediaMessageAsync(chatRoom.CurrentBlockId,mediaRequest.UserId,FilePaths,mediaRequest.ReplyToMessage);
+        MessageModel message = await MessageModel.CreateMediaMessageAsync(chatRoom.PreBlockId,mediaRequest.UserId,FilePaths,mediaRequest.ReplyToMessage);
         
         await SendingItem.SendChatItem(mediaRequest.GroupId,message,hubContext);
 

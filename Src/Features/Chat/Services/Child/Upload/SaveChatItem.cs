@@ -34,7 +34,7 @@ namespace HUBT_Social_API.Features.Chat.Services.Child
                 var newPageRef = new PageReference
                 {
                     BlockId = newBlockId,
-                    PreBlockId = room.CurrentBlockId
+                    PreBlockId = room.PreBlockId
                 };
 
                 // Tạo block mới từ HotContent hiện tại + tin nhắn mới
@@ -73,7 +73,7 @@ namespace HUBT_Social_API.Features.Chat.Services.Child
                 var update = Builders<ChatRoomModel>.Update.Combine(
                     updateLastInteractionTime,
                     Builders<ChatRoomModel>.Update.Push(cr => cr.PageReference, newPageRef),
-                    Builders<ChatRoomModel>.Update.Set(cr => cr.CurrentBlockId, newBlockId),
+                    Builders<ChatRoomModel>.Update.Set(cr => cr.PreBlockId, newBlockId),
                     Builders<ChatRoomModel>.Update.Set(cr => cr.HotContent, new List<MessageModel>(){message})
                 );
 

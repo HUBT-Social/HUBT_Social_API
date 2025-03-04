@@ -383,9 +383,13 @@ public class RoomService : IRoomService
         }
         else
         {
+            string preBlockId = string.Empty;
+
             // Nếu không có LastBlockId, lấy từ block gần nhất hoặc HotContent
-            if (string.IsNullOrEmpty(getItemsHistoryRequest.PreBlockId))
+            if (string.IsNullOrEmpty(getItemsHistoryRequest.LastBlockId))
             {
+                var pageRef = chatRoom.PageReference.Find(p => p.BlockId == chatRoom.PreBlockId.ToString());
+                preBlockId = pageRef?.PreBlockId.ToString() ?? string.Empty;
                 // Thêm HotContent (tin nhắn mới nhất)
                 messages.AddRange(chatRoom.HotContent);
 
@@ -393,7 +397,7 @@ public class RoomService : IRoomService
                 if (chatHistory.HistoryChat.Any())
                 {
                     var latestBlock = chatHistory.HistoryChat
-                        .Find(b => b.BlockId == chatRoom.CurrentBlockId.ToString());
+                        .Find(b => b.BlockId == preBlockId);
                         
                     if (latestBlock != null)
                     {
@@ -403,14 +407,20 @@ public class RoomService : IRoomService
             }
             else
             {
-                // Tìm block tương ứng với LastBlockId
-                var Block = chatHistory.HistoryChat
-                    .FirstOrDefault(b => b.BlockId == getItemsHistoryRequest.PreBlockId);
-
-                if (Block != null)
+                var pageRef = chatRoom.PageReference.Find(p => p.BlockId == getItemsHistoryRequest.LastBlockId.ToString());
+                if(pageRef != null)
                 {
-                    messages.AddRange(Block.Data);
+                    preBlockId = pageRef?.PreBlockId.ToString() ?? string.Empty;
+                    // Tìm block tương ứng với LastBlockId
+                    var Block = chatHistory.HistoryChat
+                        .FirstOrDefault(b => b.BlockId == preBlockId);
+
+                    if (Block != null)
+                    {
+                        messages.AddRange(Block.Data);
+                    }
                 }
+                
             }
         }
 
