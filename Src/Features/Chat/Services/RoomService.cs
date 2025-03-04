@@ -358,9 +358,10 @@ public class RoomService : IRoomService
     
   
 
-    public async Task<List<MessageModel>> GetMessageHistoryAsync(GetHistoryRequest getItemsHistoryRequest)
+    public async Task<(List<MessageModel>,string)> GetMessageHistoryAsync(GetHistoryRequest getItemsHistoryRequest)
     {
         List<MessageModel> messages = new List<MessageModel>();
+        string preBlockId = string.Empty;
 
         // Tìm phòng chat dựa trên ID phòng
         var chatRoom = await _chatRooms
@@ -369,7 +370,7 @@ public class RoomService : IRoomService
 
         // Nếu không tìm thấy phòng chat, trả về danh sách rỗng
         if (chatRoom == null)
-            return messages;
+            return (messages,preBlockId);
 
         // Tìm ChatHistory dựa trên RoomId
         var chatHistory = await _chatHistory
@@ -383,13 +384,10 @@ public class RoomService : IRoomService
         }
         else
         {
-            string preBlockId = string.Empty;
 
             // Nếu không có LastBlockId, lấy từ block gần nhất hoặc HotContent
             if (string.IsNullOrEmpty(getItemsHistoryRequest.LastBlockId))
             {
-                var pageRef = chatRoom.PageReference.Find(p => p.BlockId == chatRoom.PreBlockId.ToString());
-                preBlockId = pageRef?.PreBlockId.ToString() ?? string.Empty;
                 // Thêm HotContent (tin nhắn mới nhất)
                 messages.AddRange(chatRoom.HotContent);
 
@@ -397,9 +395,9 @@ public class RoomService : IRoomService
                 if (chatHistory.HistoryChat.Any())
                 {
                     var latestBlock = chatHistory.HistoryChat
-                        .Find(b => b.BlockId == preBlockId);
+                        .Find(b => b.BlockId == chatRoom.CachePageReference.PreBlockId.ToString());
                         
-                    if (latestBlock != null)
+                    if (latestBlock != null)    
                     {
                         messages.AddRange(latestBlock.Data); // Lấy ra số lượng cần từ cuối danh sách
                     }
@@ -431,7 +429,7 @@ public class RoomService : IRoomService
             .OrderBy(item => item.createdAt) // Sắp xếp tăng dần thay vì giảm dần
             .ToList();
 
-        return filteredItems;
+        return (filteredItems,preBlockId);
     }
 
     public async Task<List<ChatUserResponse>> GetRoomUserAsync(string groupId)

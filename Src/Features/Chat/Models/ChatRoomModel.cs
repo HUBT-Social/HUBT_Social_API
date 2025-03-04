@@ -15,7 +15,7 @@ namespace HUBTSOCIAL.Src.Features.Chat.Models
         public string BackGroundUrl { get; set; } = string.Empty;
         public DateTime LastInteractionTime { get; set; }
         public List<Participant> Participant { get; set; } = new();
-        public string PreBlockId { get; set; }= "First_Block";
+        public PageReference CachePageReference { get; set; }
         public List<PageReference> PageReference { get; set; } = new();
         public List<MessageModel> HotContent { get; set; } = new(); // Chỉ là danh sách, logic tách riêng
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

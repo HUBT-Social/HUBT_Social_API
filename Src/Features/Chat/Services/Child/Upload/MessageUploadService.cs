@@ -47,7 +47,7 @@ public class MessageUploadService : IMessageUploadService
             }
         }
         Console.WriteLine("12");
-        MessageModel message = await MessageModel.CreateTextMessageAsync(chatRoom.PreBlockId,chatRequest.UserId,MessageContent.Content,chatRequest.ReplyToMessage);
+        MessageModel message = await MessageModel.CreateTextMessageAsync(/*chatRoom.CachePageReference.BlockId*/"sbvdjbvhjhsvv",chatRequest.UserId,MessageContent.Content,chatRequest.ReplyToMessage);
         Console.WriteLine("13");
         await SendingItem.SendChatItem(chatRequest.GroupId,message,hubContext); 
 
