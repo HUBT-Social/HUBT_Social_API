@@ -10,9 +10,8 @@ public class GetHistoryRequest
     /// </summary>
     [Required]
     public string ChatRoomId { get; set; } = string.Empty;
-    public int? Page { get; set; }
-    public int? Limit { get; set; }
-
+    public string LastBlockId { get; set; } = string.Empty;
+    //public int Limit { get; set; } = 20;
     public MessageType? Type { get; set; } = MessageType.All;
-    public DateTime? Time { get; set; } = DateTime.Now;
+    
 }

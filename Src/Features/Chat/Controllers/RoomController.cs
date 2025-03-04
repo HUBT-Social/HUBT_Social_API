@@ -52,13 +52,15 @@ namespace HUBT_Social_API.Features.Chat.Controllers
                     _ => MessageType.None
                 };
 
-                // Kiểm tra null cho Time
-                if (getHistoryRequest.Time == null) getHistoryRequest.Time = DateTime.Now;
-
                 // Lấy danh sách tin nhắn
-                List<MessageModel> messages = await _roomService.GetMessageHistoryAsync(getHistoryRequest);
+                (List<MessageModel> messages,string blockId) = await _roomService.GetMessageHistoryAsync(getHistoryRequest);
 
-            return Ok(messages);
+            return Ok(new 
+                    {
+                        messages = messages,
+                        blockId = blockId
+                    }
+                );
 
             }
             
@@ -108,6 +110,23 @@ namespace HUBT_Social_API.Features.Chat.Controllers
                         })
                         .ToList()
                 });
+            }
+            [Authorize]
+            [HttpGet("get-room-user")]
+            public async Task<IActionResult> GetUser(string groupId)
+            {
+                if (string.IsNullOrEmpty(groupId))
+                {
+                    return BadRequest(new { Message = "GroupId không được để trống." });
+                }
+
+                var users = await _roomService.GetRoomUserAsync(groupId).ConfigureAwait(false);
+                if (users == null || !users.Any())
+                {
+                    return BadRequest(new { Message = "Không tìm thấy thành viên trong phòng chat." });
+                }      
+
+                return Ok(users);
             }
 
         // API to update group name
@@ -257,23 +276,23 @@ namespace HUBT_Social_API.Features.Chat.Controllers
                 return StatusCode(500, "Failed to remove member.");
             }
 
-            [HttpPut("update-action-status")]
-            public async Task<ActionResult> UpdateActionStatusAsync(UpdateStatusMessageRequest unsendMessageRequest)
-            {
-                if (string.IsNullOrEmpty(unsendMessageRequest.ChatRoomId)
-                    || string.IsNullOrEmpty(unsendMessageRequest.MessageId))
-                    return BadRequest("Invalid request.");
-                // Lấy thông tin người dùng từ Token
-                var userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
-                if (userResponse == null || !userResponse.Success) return BadRequest("Invalid or missing token.");
-                var senderOfItem =
-                    await RoomChatHelper.GetInfoMessageAsync(unsendMessageRequest.ChatRoomId, unsendMessageRequest.MessageId);
-                if (senderOfItem == null) return BadRequest("Invalid value request.");
-                if (senderOfItem.sentBy != userResponse.User.UserName) return BadRequest("You are not owner of this message");
-                var updated = await _roomService.UpdateActionStatusAsync(unsendMessageRequest.ChatRoomId,
-                    unsendMessageRequest.MessageId, unsendMessageRequest.messageActionStatus);
-                return updated ? Ok("Updated") : BadRequest("Err to Update.");
-            }
+            // [HttpPut("update-action-status")]
+            // public async Task<ActionResult> UpdateActionStatusAsync(UpdateStatusMessageRequest unsendMessageRequest)
+            // {
+            //     if (string.IsNullOrEmpty(unsendMessageRequest.ChatRoomId)
+            //         || string.IsNullOrEmpty(unsendMessageRequest.MessageId))
+            //         return BadRequest("Invalid request.");
+            //     // Lấy thông tin người dùng từ Token
+            //     var userResponse = await TokenHelper.GetUserResponseFromToken(Request, _tokenService);
+            //     if (userResponse == null || !userResponse.Success) return BadRequest("Invalid or missing token.");
+            //     var senderOfItem =
+            //         await RoomChatHelper.GetInfoMessageAsync(unsendMessageRequest.ChatRoomId, unsendMessageRequest.MessageId);
+            //     if (senderOfItem == null) return BadRequest("Invalid value request.");
+            //     if (senderOfItem.sentBy != userResponse.User.UserName) return BadRequest("You are not owner of this message");
+            //     var updated = await _roomService.UpdateActionStatusAsync(unsendMessageRequest.ChatRoomId,
+            //         unsendMessageRequest.MessageId, unsendMessageRequest.messageActionStatus);
+            //     return updated ? Ok("Updated") : BadRequest("Err to Update.");
+            // }
         }
 }
 

@@ -1,9 +1,11 @@
 using HUBT_Social_API.Features.Chat.ChatHubs;
-using HUBT_Social_API.Features.Chat.DTOs;
-using HUBT_Social_API.Features.Chat.Services.Interfaces;
-using HUBTSOCIAL.Src.Features.Chat.Helpers;
-using HUBTSOCIAL.Src.Features.Chat.Models;
 using Microsoft.AspNetCore.SignalR;
+using HUBTSOCIAL.Src.Features.Chat.Helpers;
+using HUBT_Social_API.Src.Core.Helper;
+using HUBT_Social_API.Features.Chat.DTOs;
+using HUBTSOCIAL.Src.Features.Chat.Models;
+using HUBT_Social_API.Features.Chat.Services.Interfaces;
+
 namespace HUBT_Social_API.Features.Chat.Services.Child;
 
 public class UploadChatServices : IUploadChatServices
@@ -62,8 +64,8 @@ public class UploadChatServices : IUploadChatServices
                     ReplyToMessage = replyMessage
                 };
                 try { return await _messageUploadService.UploadMessageAsync(messageRequest, _hubContext); }
-                catch { 
-                    Console.WriteLine("Gửi mess lỗi.");
+                catch(Exception exex) { 
+                    Console.WriteLine("Gửi mess lỗi."+ exex.Message);
                     
                     return false; }
             }));
@@ -78,7 +80,7 @@ public class UploadChatServices : IUploadChatServices
                 var mediaRequest = new MediaRequest
                 {
                     GroupId = chatRequest.GroupId,
-                    Medias = chatRequest.Medias,
+                    Medias = chatRequest.Medias.ConvertBase64sToFormFiles(),
                     UserId = chatRequest.UserId,
                     ReplyToMessage = replyMessage
                 };
