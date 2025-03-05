@@ -181,8 +181,17 @@ public class UpdateUserController : ControllerBase
         if (string.IsNullOrWhiteSpace(userResponse?.User?.UserName))
             return new BadRequestObjectResult(LocalValue.Get(KeyStore.UserNotFound));
 
-        if (userResponse.User.FCMToken != request.FcmToken && !string.IsNullOrEmpty(userResponse.User.FCMToken))
-            await _fireBaseNotificationService.SendPushNotificationAsync(new SendMessageRequest { Token = userResponse.User.FCMToken, Title = "Thông báo", Body = "Bạn đã đăng nhập ở một thiết bị khác" });
+        if (userResponse.User.FCMToken != request.FcmToken)
+        {
+            try
+            {
+                await _fireBaseNotificationService.SendPushNotificationToOneAsync(new SendMessageRequest { Token = userResponse.User.FCMToken, Title = "Thông báo", Body = "Bạn đã đăng nhập ở một thiết bị khác" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
         return await UpdateHelper.HandleUserUpdate(KeyStore.UserInfoUpdatedSuccess, KeyStore.UserInfoUpdateError,
             (userName, _) => _userService.UpdateFcmTokenAsync(userName, request.FcmToken), new object(), Request,
             _tokenService);

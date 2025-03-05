@@ -6,3 +6,11 @@ public enum Gender
     Male,
     Female
 }
+
+public enum ApiType
+{
+    GET,
+    POST,
+    PUT,
+    DELETE
+}
