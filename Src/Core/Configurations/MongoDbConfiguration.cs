@@ -32,9 +32,9 @@ public static class MongoDbConfiguration
         var chatDatabase = chatClient.GetDatabase("HUBT_Management");
 
         services.AddScoped<IMongoCollection<ChatRoomModel>>(s => chatDatabase.GetCollection<ChatRoomModel>("ChatRoom"));
-        services.AddScoped<IMongoCollection<ChatHistory>>(s => chatDatabase.GetCollection<ChatHistory>("Contents"));
+
         
-        RoomChatHelper.Initialize(chatDatabase.GetCollection<ChatRoomModel>("ChatRoom"),chatDatabase.GetCollection<ChatHistory>("Contents"));
+        RoomChatHelper.Initialize(chatDatabase.GetCollection<ChatRoomModel>("ChatRoom"));
         return services;
     }
 }
