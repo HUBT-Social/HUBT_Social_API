@@ -53,14 +53,9 @@ namespace HUBT_Social_API.Features.Chat.Controllers
                 };
 
                 // Lấy danh sách tin nhắn
-                (List<MessageModel> messages,string blockId) = await _roomService.GetMessageHistoryAsync(getHistoryRequest);
+                List<MessageModel> messages = await _roomService.GetMessageHistoryAsync(getHistoryRequest);
 
-            return Ok(new 
-                    {
-                        messages = messages,
-                        blockId = blockId
-                    }
-                );
+            return Ok(messages);
 
             }
             

@@ -20,20 +20,17 @@ public class RoomService : IRoomService
 {
 
     private readonly IMongoCollection<ChatRoomModel> _chatRooms;
-    private readonly IMongoCollection<ChatHistory> _chatHistory;
     public readonly IHubContext<ChatHub> _hubContext;
     private readonly IUserConnectionManager _userConnectionManager;
 
     public RoomService(
         IMongoCollection<ChatRoomModel> chatRooms,
         IHubContext<ChatHub> hubContext,
-        IUserConnectionManager userConnectionManager,
-        IMongoCollection<ChatHistory> chatHistory)
+        IUserConnectionManager userConnectionManager)
     {
         _chatRooms = chatRooms;
         _hubContext = hubContext;
         _userConnectionManager = userConnectionManager;
-        _chatHistory = chatHistory;
     }
 // Update methods
     /// <summary>
@@ -358,79 +355,40 @@ public class RoomService : IRoomService
     
   
 
-    public async Task<(List<MessageModel>,string)> GetMessageHistoryAsync(GetHistoryRequest getItemsHistoryRequest)
+    public async Task<List<MessageModel>> GetMessageHistoryAsync(GetHistoryRequest request)
     {
-        List<MessageModel> messages = new List<MessageModel>();
-        string preBlockId = string.Empty;
+        if (request.Limit <= 0) return new List<MessageModel>();
 
-        // Tìm phòng chat dựa trên ID phòng
-        var chatRoom = await _chatRooms
-            .Find(room => room.Id == getItemsHistoryRequest.ChatRoomId)
-            .FirstOrDefaultAsync();
-
-        // Nếu không tìm thấy phòng chat, trả về danh sách rỗng
-        if (chatRoom == null)
-            return (messages,preBlockId);
-
-        // Tìm ChatHistory dựa trên RoomId
-        var chatHistory = await _chatHistory
-            .Find(chatHistory => chatHistory.RoomId == getItemsHistoryRequest.ChatRoomId)
-            .FirstOrDefaultAsync();
-
-        // Nếu không có ChatHistory, chỉ trả về HotContent (nếu có)
-        if (chatHistory == null)
+        try
         {
-            messages.AddRange(chatRoom.HotContent);
+            // Tính toán vị trí bắt đầu và số lượng phần tử cần lấy
+            int totalMessages = await _chatRooms
+                .Find(cr => cr.Id == request.ChatRoomId)
+                .Project(cr => cr.Content.Count)
+                .FirstOrDefaultAsync();
+
+            int startIndex = totalMessages - request.CurrentQuantity - request.Limit;
+            Console.WriteLine("Vị trí lấy: ",startIndex.ToString());
+            int count = request.Limit;
+            // Truy vấn tin nhắn với Slice
+            var projection = Builders<ChatRoomModel>.Projection
+                .Include(cr => cr.Content)
+                .Slice(cr => cr.Content, startIndex, count);
+
+            var result = await _chatRooms
+                .Find(cr => cr.Id == request.ChatRoomId)
+                .Project<ChatRoomModel>(projection)
+                .FirstOrDefaultAsync();
+
+            return result?.Content ?? new List<MessageModel>();
         }
-        else
+        catch (Exception ex)
         {
-
-            // Nếu không có LastBlockId, lấy từ block gần nhất hoặc HotContent
-            if (string.IsNullOrEmpty(getItemsHistoryRequest.LastBlockId))
-            {
-                // Thêm HotContent (tin nhắn mới nhất)
-                messages.AddRange(chatRoom.HotContent);
-
-                // Nếu cần thêm tin nhắn từ ChatHistory
-                if (chatHistory.HistoryChat.Any())
-                {
-                    var latestBlock = chatHistory.HistoryChat
-                        .Find(b => b.BlockId == chatRoom.CachePageReference.PreBlockId.ToString());
-                        
-                    if (latestBlock != null)    
-                    {
-                        messages.AddRange(latestBlock.Data); // Lấy ra số lượng cần từ cuối danh sách
-                    }
-                }
-            }
-            else
-            {
-                var pageRef = chatRoom.PageReference.Find(p => p.BlockId == getItemsHistoryRequest.LastBlockId.ToString());
-                if(pageRef != null)
-                {
-                    preBlockId = pageRef?.PreBlockId.ToString() ?? string.Empty;
-                    // Tìm block tương ứng với LastBlockId
-                    var Block = chatHistory.HistoryChat
-                        .FirstOrDefault(b => b.BlockId == preBlockId);
-
-                    if (Block != null)
-                    {
-                        messages.AddRange(Block.Data);
-                    }
-                }
-                
-            }
+            Console.WriteLine($"Lỗi khi lấy tin nhắn: {ex.Message}");
+            return new List<MessageModel>();
         }
-
-        // Lọc theo MessageType và sắp xếp theo thời gian tăng dần
-        var filteredItems = messages
-            .Where(item => getItemsHistoryRequest.Type == MessageType.All || 
-                        (item.messageType & getItemsHistoryRequest.Type) != 0)
-            .OrderBy(item => item.createdAt) // Sắp xếp tăng dần thay vì giảm dần
-            .ToList();
-
-        return (filteredItems,preBlockId);
     }
+
 
     public async Task<List<ChatUserResponse>> GetRoomUserAsync(string groupId)
     {

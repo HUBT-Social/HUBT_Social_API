@@ -15,11 +15,10 @@ using MongoDB.Driver;
 public class MessageUploadService : IMessageUploadService
 {
     private readonly IMongoCollection<ChatRoomModel> _chatRooms;
-    private readonly IMongoCollection<ChatHistory> _chatHistory;
-    public MessageUploadService(IMongoCollection<ChatRoomModel> chatRooms,IMongoCollection<ChatHistory> chatHistory)
+
+    public MessageUploadService(IMongoCollection<ChatRoomModel> chatRooms)
     {
         _chatRooms = chatRooms;
-        _chatHistory = chatHistory;
     }
     public async Task<bool> UploadMessageAsync(MessageRequest chatRequest,IHubContext<ChatHub> hubContext)
     {
@@ -47,11 +46,11 @@ public class MessageUploadService : IMessageUploadService
             }
         }
         Console.WriteLine("12");
-        MessageModel message = await MessageModel.CreateTextMessageAsync(/*chatRoom.CachePageReference.BlockId*/"sbvdjbvhjhsvv",chatRequest.UserId,MessageContent.Content,chatRequest.ReplyToMessage);
+        MessageModel message = await MessageModel.CreateTextMessageAsync(chatRequest.UserId,MessageContent.Content,chatRequest.ReplyToMessage);
         Console.WriteLine("13");
         await SendingItem.SendChatItem(chatRequest.GroupId,message,hubContext); 
 
-        UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,_chatHistory,chatRoom.Id,message);
+        UpdateResult updateResult = await SaveChatItem.Save(_chatRooms,chatRoom.Id,message);
         return updateResult.ModifiedCount > 0;
     }
         private async Task<LinkMetadataModel?> FetchLinkMetadataAsync(string url)

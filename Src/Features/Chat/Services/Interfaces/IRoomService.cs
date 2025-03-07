@@ -61,6 +61,6 @@ public interface IRoomService
 
 
     //Get
-    Task<(List<MessageModel>,string)> GetMessageHistoryAsync(GetHistoryRequest getItemsHistoryRequest);
+    Task<List<MessageModel>> GetMessageHistoryAsync(GetHistoryRequest getItemsHistoryRequest);
     Task<List<ChatUserResponse>> GetRoomUserAsync(string groupId);
 } 
