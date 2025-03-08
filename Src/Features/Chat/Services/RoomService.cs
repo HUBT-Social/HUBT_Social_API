@@ -1,10 +1,16 @@
+
+
+using System.ComponentModel;
+using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Auth.Services.Interfaces;
 using HUBT_Social_API.Features.Chat.ChatHubs;
 using HUBT_Social_API.Features.Chat.DTOs;
 using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBT_Social_API.Features.Chat.Services.Interfaces;
 using HUBTSOCIAL.Src.Features.Chat.Collections;
+using HUBTSOCIAL.Src.Features.Chat.Helpers;
 using HUBTSOCIAL.Src.Features.Chat.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using MongoDB.Driver;
 
@@ -15,16 +21,18 @@ public class RoomService : IRoomService
     private readonly IMongoCollection<ChatRoomModel> _chatRooms;
     public readonly IHubContext<ChatHub> _hubContext;
     private readonly IUserConnectionManager _userConnectionManager;
-    private readonly IUserService _userService;
+    private readonly UserManager<AUser> _userManager;
 
     public RoomService(
         IMongoCollection<ChatRoomModel> chatRooms,
         IHubContext<ChatHub> hubContext,
-        IUserConnectionManager userConnectionManager)
+        IUserConnectionManager userConnectionManager,
+        UserManager<AUser> userManager)
     {
         _chatRooms = chatRooms;
         _hubContext = hubContext;
         _userConnectionManager = userConnectionManager;
+        _userManager = userManager;
     }
 
 // Update methods
@@ -393,10 +401,23 @@ public class RoomService : IRoomService
                 .Find(cr => cr.Id == request.ChatRoomId)
                 .Project(cr => cr.Content.Count)
                 .FirstOrDefaultAsync();
+            
+            if(totalMessages == request.CurrentQuantity)
+            {
+                return new List<MessageModel>();
+            }
 
             int startIndex = totalMessages - request.CurrentQuantity - request.Limit;
-            Console.WriteLine("Vị trí lấy: ",startIndex.ToString());
             int count = request.Limit;
+
+            if(startIndex < 0)
+            {
+                startIndex = 0;
+                count = totalMessages-request.CurrentQuantity;
+            }
+
+            Console.WriteLine("Vị trí lấy: ",startIndex.ToString());
+            
             // Truy vấn tin nhắn với Slice
             var projection = Builders<ChatRoomModel>.Projection
                 .Include(cr => cr.Content)
@@ -434,10 +455,12 @@ public class RoomService : IRoomService
         List<ChatUserResponse> res = new List<ChatUserResponse>();
         foreach (var participant in participants)
         {
+
             ChatUserResponse chatUserResponse = new ChatUserResponse();
+            string? userAvatar = await UserHelper.GetAvatarUserById(_userManager,participant.UserId);
             chatUserResponse.id = participant.UserId;
             chatUserResponse.name = participant.NickName;
-            chatUserResponse.profilePhoto = participant.ProfilePhoto??participant.DefaultAvatarImage;
+            chatUserResponse.profilePhoto = userAvatar??participant.DefaultAvatarImage;
             res.Add(chatUserResponse);
         }
 
