@@ -1,3 +1,4 @@
+using HUBT_Social_API.Features.Auth.Models;
 using HUBT_Social_API.Features.Chat.Services.Child;
 using HUBTSOCIAL.Src.Features.Chat.Collections;
 using HUBTSOCIAL.Src.Features.Chat.Models;

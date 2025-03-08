@@ -218,7 +218,7 @@ public class ChatService : IChatService
             .ToListAsync();
 
         // Duyệt qua các phòng chat và gọi GetGroupByIdAsync cho từng phòng song song
-        var tasks = chatRooms.Select(cr => GetGroupByIdAsync(cr.Id)).ToList();
+        var tasks = chatRooms.Select(cr => GetGroupByIdAsync(cr)).ToList();
 
         // Chờ tất cả các tác vụ hoàn thành
         var listRespone = await Task.WhenAll(tasks);
@@ -230,15 +230,8 @@ public class ChatService : IChatService
         return filteredList.Any() ? filteredList : new List<RoomLoadingRespone>();
     }
 
-    private async Task<RoomLoadingRespone?> GetGroupByIdAsync(string id)
+    private async Task<RoomLoadingRespone> GetGroupByIdAsync(ChatRoomModel chatRoom)
     {
-        // Tìm phòng chat theo ID
-        ChatRoomModel chatRoom = await _chatRooms.Find(c => c.Id == id).FirstOrDefaultAsync();
-
-        // Nếu không tìm thấy phòng, trả về null
-        if (chatRoom == null)
-            return null;
-
         // Lấy tin nhắn gần đây và thời gian tương tác
         var (LastInteraction, LastTime) = await GetRecentChatItemAsync(chatRoom);
 
