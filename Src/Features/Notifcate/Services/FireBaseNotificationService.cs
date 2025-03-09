@@ -16,7 +16,7 @@ public class FireBaseNotificationService : IFireBaseNotificationService
         if (request is SendMessageRequest sendToOne)
         {
             message = new Message
-            {
+            { 
                 Token = sendToOne.Token,
                 Notification = new Notification
                 {

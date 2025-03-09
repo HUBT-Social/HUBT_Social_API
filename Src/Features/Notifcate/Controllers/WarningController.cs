@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace HUBT_Social_API.Src.Features.Notifcate.Controllers
 {
-    [Route("api/notation")]
+    [Route("api/notification/hubt")]
     [ApiController]
     [Authorize]
     public class WarningController(INotationService notationService,
